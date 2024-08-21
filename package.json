@@ -1,0 +1,43 @@
+{
+	"name": "example-app-name",
+	"description": "This is an example project description",
+	"version": "0.0.0",
+	"private": true,
+	"scripts": {
+		"dev": "next dev --turbo",
+		"build": "next build && yarn build:worker",
+		"build:worker": "node build-worker.js",
+		"start:worker": "node worker/worker.js",
+		"dev:worker": "nodemon worker/worker.js",
+		"start": "next start",
+		"lint": "next lint",
+		"add-static": "mkdir -p ./.next/standalone/public/_next && cp -r ./.next/static ./.next/standalone/public/_next/ && cp -r ./public/. ./.next/standalone/public/",
+		"templatize": "node templatize.js"
+	},
+	"dependencies": {
+		"@emotion/react": "^11.11.3",
+		"@emotion/styled": "^11.11.0",
+		"@mui/material": "^5.15.5",
+		"dotenv": "^16.4.5",
+		"eventsource": "^2.0.2",
+		"next": "14.2.5",
+		"pocketbase": "^0.20.3",
+		"react": "^18",
+		"react-dom": "^18",
+		"react-text-gradients-and-animations": "^1.1.7"
+	},
+	"devDependencies": {
+		"@babel/core": "^7.23.7",
+		"@types/eventsource": "^1.1.15",
+		"@types/node": "^20",
+		"@types/react": "^18",
+		"@types/react-dom": "^18",
+		"@types/seedrandom": "^3.0.8",
+		"@types/stopword": "^2.0.3",
+		"eslint": "^8",
+		"eslint-config-next": "14.2.5",
+		"nodemon": "^3.1.0",
+		"prompts": "^2.4.2",
+		"typescript": "^5"
+	}
+}

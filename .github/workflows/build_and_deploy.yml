@@ -1,0 +1,82 @@
+name: Deploy Next.js site
+on:
+    # push:
+    #     branches: ["master"]
+    workflow_dispatch:
+
+permissions:
+    contents: read
+    pages: write
+    id-token: write
+
+concurrency:
+    group: "nextdeploy"
+    cancel-in-progress: false
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+            - name: Detect package manager
+              working-directory: ./
+              id: detect-package-manager
+              run: |
+                  if [ -f "${{ github.workspace }}/yarn.lock" ]; then
+                    echo "manager=yarn" >> $GITHUB_OUTPUT
+                    echo "command=install" >> $GITHUB_OUTPUT
+                    echo "runner=yarn" >> $GITHUB_OUTPUT
+                    exit 0
+                  else
+                    echo "Unable to determine package manager"
+                    exit 1
+                  fi
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "20.10.0"
+                  cache: ${{ steps.detect-package-manager.outputs.manager }}
+                  cache-dependency-path: |
+                      ${{ github.workspace }}/yarn.lock
+            - name: Restore cache
+              uses: actions/cache@v3
+              with:
+                  path: |
+                      .next/cache
+                  # Generate a new cache whenever packages or source files change.
+                  key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json', '**/yarn.lock') }}-${{ hashFiles('**.[jt]s', '**.[jt]sx') }}
+                  # If source files changed but packages didn't, rebuild from a prior cache.
+                  restore-keys: |
+                      ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json', '**/yarn.lock') }}-
+            - name: Install dependencies
+              working-directory: ./
+              run: ${{ steps.detect-package-manager.outputs.manager }} ${{ steps.detect-package-manager.outputs.command }}
+            - name: Build with Next.js
+              working-directory: ./
+              run: ${{ steps.detect-package-manager.outputs.runner }} build
+            - name: Add static JS scripts etc to the standalone app. In future consider uploading the static files to a CDN.
+              working-directory: ./
+              run: ${{ steps.detect-package-manager.outputs.runner }} add-static
+            - name: Upload artifact
+              uses: actions/upload-pages-artifact@v3
+              with:
+                  name: example-app-name
+                  path: ./.next/standalone
+
+    # Deployment job
+    deploy:
+        runs-on: self-hosted
+        needs: build
+        steps:
+            - name: Download artifact
+              uses: actions/download-artifact@v4
+              with:
+                  name: example-app-name
+                  path: ./
+            - name: Extract artifact and restart the app
+              run: |
+                  echo "moving the artifact";
+                  tar -xf artifact.tar -C /home/ubuntu/services/example-app-name;
+                  rm artifact.tar;
+                  pm2 restart "Example App Name" && pm2 reset "Example App Name"
