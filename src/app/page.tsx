@@ -18,23 +18,21 @@ export default async function Main({
 	}
 	const pb = await initPocketBase();
 	return (
-		<main className="hero">
-			<div className="hero-body">
-				<Title />
-				<Subtitle />
-				<div className="buttons">
-					{!pb.authStore.isValid && (
-						<>
-							<Link className="button is-secondary" href="/sign-in">
-								Sign in
-							</Link>
-							<Link className="button is-link" href="/sign-up">
-								or Sign up
-							</Link>
-						</>
-					)}
-				</div>
+		<>
+			<Title />
+			<Subtitle />
+			<div className="buttons">
+				{pb.authStore.isValid ? null : (
+					<>
+						<Link className="button is-secondary" href="/sign-in">
+							Sign in
+						</Link>
+						<Link className="button is-link" href="/sign-up">
+							or Sign up
+						</Link>
+					</>
+				)}
 			</div>
-		</main>
+		</>
 	);
 }

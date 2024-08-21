@@ -19,6 +19,7 @@
 		"@mui/material": "^5.15.5",
 		"dotenv": "^16.4.5",
 		"eventsource": "^2.0.2",
+		"force-graph": "^1.43.5",
 		"next": "14.2.5",
 		"pocketbase": "^0.20.3",
 		"react": "^18",

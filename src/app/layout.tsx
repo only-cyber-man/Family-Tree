@@ -25,16 +25,16 @@ export default async function RootLayout({
 			<head>
 				<link
 					rel="stylesheet"
-					href="https://cdn.jsdelivr.net/npm/bulma@1.0.0/css/bulma.min.css"></link>
+					href="https://cdn.jsdelivr.net/npm/bulma@1.0.0/css/bulma.min.css"
+				></link>
 				<link
 					rel="stylesheet"
-					href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"></link>
+					href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+				></link>
+				<script src="//unpkg.com/force-graph" defer></script>
 			</head>
 			<body className={inter.className}>
-				<nav
-					className="navbar"
-					role="navigation"
-					aria-label="main navigation">
+				<nav className="navbar" role="navigation" aria-label="main navigation">
 					<div className="navbar-brand">
 						<Link className="navbar-item" href="/">
 							<Image
@@ -51,21 +51,17 @@ export default async function RootLayout({
 							Home
 						</Link>
 						{pb.authStore.isValid && (
-							<Link href="/secure-link" className="navbar-item">
-								Secure link
+							<Link href="/trees" className="navbar-item">
+								Trees
 							</Link>
 						)}
-						<Link href="/unsecured-link" className="navbar-item">
-							Unsecured link
-						</Link>
 						<div className="navbar-end">
 							<div className="navbar-item">
 								{pb.authStore.isValid && (
 									<>
 										<div style={{ marginRight: "1rem" }}>
-											Logged as
+											Logged as{" "}
 											<b>
-												{" "}
 												{pb.authStore.model?.username ??
 													pb.authStore.model?.email}
 											</b>
@@ -76,14 +72,10 @@ export default async function RootLayout({
 
 								{!pb.authStore.isValid && (
 									<div className="buttons">
-										<Link
-											className="button is-primary"
-											href="/sign-up">
+										<Link className="button is-primary" href="/sign-up">
 											<strong>Sign up</strong>
 										</Link>
-										<Link
-											className="button is-light"
-											href="/sign-in">
+										<Link className="button is-light" href="/sign-in">
 											Log in
 										</Link>
 									</div>
@@ -92,9 +84,7 @@ export default async function RootLayout({
 						</div>
 					</div>
 				</nav>
-				<div className="hero">
-					<div className="hero-body">{children}</div>
-				</div>
+				<div className="section">{children}</div>
 			</body>
 		</html>
 	);
