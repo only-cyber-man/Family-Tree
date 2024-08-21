@@ -1,6 +1,6 @@
 {
-	"name": "example-app-name",
-	"description": "This is an example project description",
+	"name": "family-tree",
+	"description": "Visualize your family tree",
 	"version": "0.0.0",
 	"private": true,
 	"scripts": {
@@ -11,8 +11,7 @@
 		"dev:worker": "nodemon worker/worker.js",
 		"start": "next start",
 		"lint": "next lint",
-		"add-static": "mkdir -p ./.next/standalone/public/_next && cp -r ./.next/static ./.next/standalone/public/_next/ && cp -r ./public/. ./.next/standalone/public/",
-		"templatize": "node templatize.js"
+		"add-static": "mkdir -p ./.next/standalone/public/_next && cp -r ./.next/static ./.next/standalone/public/_next/ && cp -r ./public/. ./.next/standalone/public/"
 	},
 	"dependencies": {
 		"@emotion/react": "^11.11.3",
@@ -37,7 +36,6 @@
 		"eslint": "^8",
 		"eslint-config-next": "14.2.5",
 		"nodemon": "^3.1.0",
-		"prompts": "^2.4.2",
 		"typescript": "^5"
 	}
 }

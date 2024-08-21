@@ -61,7 +61,7 @@ jobs:
             - name: Upload artifact
               uses: actions/upload-pages-artifact@v3
               with:
-                  name: example-app-name
+                  name: family-tree
                   path: ./.next/standalone
 
     # Deployment job
@@ -72,11 +72,11 @@ jobs:
             - name: Download artifact
               uses: actions/download-artifact@v4
               with:
-                  name: example-app-name
+                  name: family-tree
                   path: ./
             - name: Extract artifact and restart the app
               run: |
                   echo "moving the artifact";
-                  tar -xf artifact.tar -C /home/ubuntu/services/example-app-name;
+                  tar -xf artifact.tar -C /home/ubuntu/services/family-tree;
                   rm artifact.tar;
-                  pm2 restart "Example App Name" && pm2 reset "Example App Name"
+                  pm2 restart "Family Tree" && pm2 reset "Family Tree"

@@ -9,8 +9,8 @@ import { BurgerButton } from "./Burger";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-	title: "Example App Name",
-	description: "This is an example project description",
+	title: "Family Tree",
+	description: "Visualize your family tree",
 };
 
 export default async function RootLayout({
