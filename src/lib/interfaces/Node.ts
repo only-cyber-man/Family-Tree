@@ -1,7 +1,7 @@
 import { RecordModel } from "pocketbase";
-import type { Node as VisualizationNode } from "@neo4j-nvl/base";
+// import type { Node as VisualizationNode } from "@neo4j-nvl/base";
 import { Tree, TreeData } from "./Tree";
-import { NodeElement } from "./NodeElement";
+import { ElementDefinition, NodeDataDefinition } from "cytoscape";
 
 export interface NodeData {
 	id: string;
@@ -45,15 +45,13 @@ export class Node {
 		);
 	}
 
-	get visualization(): VisualizationNode {
-		const html = document.createElement("div");
-		html.innerText = this.name;
-		return {
+	get visualization(): ElementDefinition {
+		const data: NodeDataDefinition = {
 			id: this.id,
-			// html: NodeElement({
-			// 	node: this,
-			// }) as unknown as HTMLElement,
-			html,
+			label: this.name,
+		};
+		return {
+			data,
 		};
 	}
 

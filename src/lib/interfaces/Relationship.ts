@@ -1,7 +1,7 @@
 import { RecordModel } from "pocketbase";
 import { Node, NodeData } from "./Node";
 import { RelationshipName, RelationshipNameData } from "./RelationshipName";
-import type { Relationship as VisualizationRelationship } from "@neo4j-nvl/base";
+import { EdgeDataDefinition, ElementDefinition } from "cytoscape";
 
 export interface RelationshipData {
 	id: string;
@@ -38,12 +38,15 @@ export class Relationship {
 	public relationshipName?: RelationshipName;
 	public tree?: Relationship;
 
-	get visualization(): VisualizationRelationship {
-		return {
-			from: this.sourceNodeId,
-			to: this.targetNodeId,
+	get visualization(): ElementDefinition {
+		const data: EdgeDataDefinition = {
 			id: this.id,
-			// type
+			source: this.sourceNodeId,
+			target: this.targetNodeId,
+			label: this.relationshipName?.name,
+		};
+		return {
+			data,
 		};
 	}
 
