@@ -10,7 +10,7 @@ const loginButtonHandler = async (
 ) => {
 	setIsLoading(true);
 	try {
-		await pb.collection("users").authWithPassword(login, password);
+		await pb.collection("ft_users").authWithPassword(login, password);
 		document.cookie = pb.authStore.exportToCookie({ httpOnly: false });
 		window.location.reload();
 	} catch (error: any) {
@@ -80,12 +80,11 @@ export const LoginForm = () => {
 			<div className="field">
 				<p className="control">
 					<button
-						className={`button is-primary ${
-							isLoading ? "is-loading" : ""
-						}`}
+						className={`button is-primary ${isLoading ? "is-loading" : ""}`}
 						onClick={() => {
 							loginButtonHandler(setIsLoading, login, password);
-						}}>
+						}}
+					>
 						Login
 					</button>
 				</p>

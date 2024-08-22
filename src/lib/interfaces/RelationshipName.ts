@@ -1,43 +1,41 @@
 import { RecordModel } from "pocketbase";
 
-export interface UserData {
+type RelationshipGroup = "BIOLOGICAL" | "IRRELEVANT" | "IN-LAW" | "CHURCH";
+
+export interface RelationshipNameData {
 	id: string;
-	username: string;
-	email: string;
-	name: string;
-	avatar?: string;
 	created: string;
 	updated: string;
+
+	name: string;
+	group: RelationshipGroup;
 }
 
-export class User {
+export class RelationshipName {
 	public readonly id: string;
 	public readonly created: Date;
 	public readonly updated: Date;
-	public username: string;
-	public email: string;
-	public name: string;
-	public avatar?: string;
 
-	constructor(data: UserData | RecordModel) {
+	public name: string;
+	public group: RelationshipGroup;
+
+	constructor(data: RelationshipNameData | RecordModel) {
 		this.id = data.id;
 		this.created = new Date(data.created);
 		this.updated = new Date(data.updated);
-		this.username = data.username;
-		this.email = data.email;
+
 		this.name = data.name;
-		this.avatar = data.avatar;
+		this.group = data.group;
 	}
 
-	public serialize(): UserData {
+	public serialize(): RelationshipNameData {
 		return {
 			id: this.id,
-			username: this.username,
-			email: this.email,
-			name: this.name,
-			avatar: this.avatar,
 			created: this.created.toISOString(),
 			updated: this.updated.toISOString(),
+
+			name: this.name,
+			group: this.group,
 		};
 	}
 }

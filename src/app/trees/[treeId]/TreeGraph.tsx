@@ -1,38 +1,57 @@
 "use client";
 
-import ForceGraph from "force-graph";
-import { useEffect, useRef } from "react";
+import {
+	Node,
+	NodeData,
+	Relationship,
+	RelationshipData,
+	Tree,
+	TreeData,
+} from "@/lib";
+import { BasicNvlWrapper } from "@neo4j-nvl/react";
 
-export const TreeGraph = () => {
-	const treeGraph = useRef<HTMLDivElement>(null);
-
-	useEffect(() => {
-		if (!treeGraph.current) {
-			return;
-		}
-		// treeGraph.current.graph
-		const Graph = ForceGraph()(treeGraph.current);
-		Graph.graphData({
-			nodes: [{ id: "Harry" }, { id: "Sally" }, { id: "Alice" }],
-			links: [
-				{ source: "Harry", target: "Sally" },
-				{ source: "Harry", target: "Alice" },
-			],
-		}).nodeCanvasObject((node, ctx, globalScale) => {
-			console.log(node.id);
-		});
-	}, [treeGraph]);
+export const TreeGraph = ({
+	nodesData,
+	relationshipsData,
+	treeData,
+}: {
+	treeData: TreeData;
+	relationshipsData: RelationshipData[];
+	nodesData: NodeData[];
+}) => {
+	const tree = new Tree(treeData);
+	const nodes = nodesData.map((n) => new Node(n));
+	const relationships = relationshipsData.map((r) => new Relationship(r));
 
 	return (
 		<div
-			ref={treeGraph}
 			style={{
-				maxHeight: "70vh",
+				width: "100%",
+				height: "70vh",
 				flex: 1,
-				overflow: "hidden",
 				border: "1px solid black",
-				backgroundColor: "gray",
 			}}
-		></div>
+		>
+			{/* <BasicNvlWrapper
+				nodes={nodes.map((n) => n.visualization)}
+				rels={relationships.map((r) => r.visualization)}
+				nvlOptions={{}}
+				nvlCallbacks={{
+					onLayoutDone: () => {
+						console.log("Layout done");
+					},
+				}}
+				style={{
+					width: "100%",
+					height: "100%",
+				}}
+			/> */}
+			<BasicNvlWrapper
+				nodes={[{ id: "0" }, { id: "1" }]}
+				rels={[{ id: "10", from: "0", to: "1" }]}
+				nvlOptions={{ initialZoom: 2 }}
+				nvlCallbacks={{ onLayoutDone: () => console.log("layout done") }}
+			/>
+		</div>
 	);
 };

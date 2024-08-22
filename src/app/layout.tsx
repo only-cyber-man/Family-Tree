@@ -31,7 +31,6 @@ export default async function RootLayout({
 					rel="stylesheet"
 					href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
 				></link>
-				<script src="//unpkg.com/force-graph" defer></script>
 			</head>
 			<body className={inter.className}>
 				<nav className="navbar" role="navigation" aria-label="main navigation">

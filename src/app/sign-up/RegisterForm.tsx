@@ -26,11 +26,8 @@ export const RegisterForm = () => {
 
 	const lastRegisterStep = async () => {
 		await pb
-			.collection("users")
-			.authWithPassword(
-				registrationData.username,
-				registrationData.password
-			);
+			.collection("ft_users")
+			.authWithPassword(registrationData.username, registrationData.password);
 		document.cookie = pb.authStore.exportToCookie({ httpOnly: false });
 		window.location.reload();
 	};
@@ -40,9 +37,7 @@ export const RegisterForm = () => {
 		try {
 			const username = registrationData.username;
 			const name =
-				registrationData.name.length > 0
-					? registrationData.name
-					: username;
+				registrationData.name.length > 0 ? registrationData.name : username;
 			setRegistrationData({
 				...registrationData,
 				name,
@@ -53,14 +48,14 @@ export const RegisterForm = () => {
 			if (password !== passwordConfirm) {
 				throw new Error("Passwords do not match!");
 			}
-			await pb.collection("users").create({
+			await pb.collection("ft_users").create({
 				username,
 				name,
 				email,
 				password,
 				passwordConfirm,
 			});
-			await pb.collection("users").requestVerification(email);
+			await pb.collection("ft_users").requestVerification(email);
 			await lastRegisterStep();
 		} catch (error: any) {
 			console.log(JSON.stringify(error, null, 2));
@@ -213,9 +208,7 @@ export const RegisterForm = () => {
 			<div className="field">
 				<p className="control">
 					<button
-						className={`button is-primary ${
-							isLoading ? "is-loading" : ""
-						}`}
+						className={`button is-primary ${isLoading ? "is-loading" : ""}`}
 						onClick={() => {
 							registerButtonHandler();
 						}}

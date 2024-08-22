@@ -18,7 +18,7 @@ export async function initPocketBase() {
 	try {
 		(pb.authStore.isValid &&
 			!pb.authStore.isAdmin &&
-			(await pb.collection("users").authRefresh())) ||
+			(await pb.collection("ft_users").authRefresh())) ||
 			(pb.authStore.isValid &&
 				pb.authStore.isAdmin &&
 				(await pb.admins.authRefresh()));
