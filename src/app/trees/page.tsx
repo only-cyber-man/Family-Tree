@@ -2,6 +2,7 @@ import { Tree } from "@/lib";
 import { initPocketBase } from "@/lib/ssr";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { CreateTreeButton } from "./CreateTree";
 
 export default async function TreesPage() {
 	const pb = await initPocketBase();
@@ -37,6 +38,7 @@ export default async function TreesPage() {
 					</div>
 				))}
 			</div>
+			<CreateTreeButton />
 		</div>
 	);
 }
