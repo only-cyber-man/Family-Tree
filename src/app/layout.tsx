@@ -5,6 +5,7 @@ import Image from "next/image";
 import { initPocketBase } from "@/lib/ssr";
 import { LogoutButton } from "./LogoutButton";
 import { BurgerButton } from "./Burger";
+import { Providers } from "./providers";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -83,7 +84,9 @@ export default async function RootLayout({
 						</div>
 					</div>
 				</nav>
-				<div className="section">{children}</div>
+				<Providers>
+					<div className="section">{children}</div>
+				</Providers>
 			</body>
 		</html>
 	);

@@ -1,7 +1,7 @@
 import { RecordModel } from "pocketbase";
 import { Node, NodeData } from "./Node";
 import { RelationshipName, RelationshipNameData } from "./RelationshipName";
-import { EdgeDataDefinition, ElementDefinition } from "cytoscape";
+import { Edge } from "vis-network/esnext";
 
 export interface RelationshipData {
 	id: string;
@@ -12,7 +12,6 @@ export interface RelationshipData {
 	targetNode: string;
 	relationshipName: string;
 	tree: string;
-	isBidirectional: boolean;
 
 	expand?: {
 		sourceNode?: NodeData;
@@ -21,6 +20,11 @@ export interface RelationshipData {
 		tree?: RelationshipData;
 	};
 }
+
+export type CreateRelationshipData = Omit<
+	RelationshipData,
+	"id" | "created" | "updated"
+>;
 
 export class Relationship {
 	public readonly id: string;
@@ -31,22 +35,38 @@ export class Relationship {
 	public targetNodeId: string;
 	public relationshipId: string;
 	public treeId: string;
-	public isBidirectional: boolean;
 
 	public sourceNode?: Node;
 	public targetNode?: Node;
 	public relationshipName?: RelationshipName;
 	public tree?: Relationship;
 
-	get visualization(): ElementDefinition {
-		const data: EdgeDataDefinition = {
-			id: this.id,
-			source: this.sourceNodeId,
-			target: this.targetNodeId,
-			label: this.relationshipName?.name,
-		};
+	get isBidirectional(): boolean {
+		return this.relationshipName?.isBidirectional ?? false;
+	}
+
+	get visualization(): Edge {
+		let label = this.relationshipName?.name;
+		if (label && this.isBidirectional) {
+			label = label.replaceAll("_TO", "").replaceAll("IS_", "");
+		}
+
 		return {
-			data,
+			from: this.sourceNodeId,
+			to: this.targetNodeId,
+			length: 500,
+			width: RelationshipName.groupToLabel(this.relationshipName?.group).width,
+			color: RelationshipName.groupToLabel(this.relationshipName?.group).color,
+			font: {
+				size: RelationshipName.groupToLabel(this.relationshipName?.group)
+					.fontSize,
+			},
+			label,
+			arrows: {
+				to: {
+					enabled: !this.isBidirectional,
+				},
+			},
 		};
 	}
 
@@ -59,7 +79,6 @@ export class Relationship {
 		this.targetNodeId = data.targetNode;
 		this.relationshipId = data.relationshipName;
 		this.treeId = data.tree;
-		this.isBidirectional = data.isBidirectional;
 
 		if (data.expand) {
 			if (data.expand.sourceNode) {
@@ -89,7 +108,6 @@ export class Relationship {
 			targetNode: this.targetNodeId,
 			relationshipName: this.relationshipId,
 			tree: this.treeId,
-			isBidirectional: this.isBidirectional,
 
 			expand: {
 				sourceNode: this.sourceNode?.serialize(),

@@ -1,58 +1,72 @@
 "use client";
 
-import {
-	Node,
-	NodeData,
-	Relationship,
-	RelationshipData,
-	Tree,
-	TreeData,
-} from "@/lib";
-import { ElementDefinition } from "cytoscape";
-import CytoscapeComponent from "react-cytoscapejs";
+import { useEffect, useRef, useState } from "react";
+import { Network } from "vis-network/esnext";
+import { AddNodeButton } from "./AddNodeButton";
+import { useTree } from "@/lib/hooks/useTree";
+import { AddRelationshipButton } from "./AddRelationshipButton";
+import { Node } from "@/lib";
+import { RemoveNodeButton } from "./RemoveNodeButton";
+import { RemoveRelationshipButton } from "./RemoveRelationshipButton";
 
-export const TreeGraph = ({
-	nodesData,
-	relationshipsData,
-	treeData,
-}: {
-	treeData: TreeData;
-	relationshipsData: RelationshipData[];
-	nodesData: NodeData[];
-}) => {
-	const tree = new Tree(treeData);
-	const nodes = nodesData.map((n) => new Node(n));
-	const relationships = relationshipsData.map((r) => new Relationship(r));
+export const TreeGraph = () => {
+	const { tree } = useTree();
+	const graphArea = useRef<HTMLDivElement>(null);
 
-	const elements: ElementDefinition[] = [
-		...nodes.map((n) => n.visualization),
-		...relationships.map((r) => r.visualization),
-	];
+	useEffect(() => {
+		const container = graphArea.current;
+		if (!container || !tree) {
+			return;
+		}
+		const network = new Network(
+			container,
+			{
+				nodes: tree.nodes.map((n) => n.visualization),
+				edges: tree.relationships.map((r) => r.visualization),
+			},
+			{
+				physics: {
+					solver: "repulsion",
+				},
+			}
+		);
+		return () => {
+			network.destroy();
+		};
+	}, [tree, graphArea]);
+
+	if (!tree) {
+		return <div>Loading...</div>;
+	}
 
 	return (
-		<div
-			style={{
-				width: "100%",
-				height: "70vh",
-				flex: 1,
-				border: "1px solid black",
-				backgroundColor: "white",
-				borderRadius: "5px",
-			}}
-		>
-			<CytoscapeComponent
-				elements={elements}
+		<>
+			<div
 				style={{
 					width: "100%",
-					height: "100%",
+					height: "70vh",
+					flex: 1,
+					border: "1px solid black",
+					backgroundColor: "white",
+					borderRadius: "5px",
+					position: "relative",
 				}}
-				maxZoom={2}
-				minZoom={0.5}
-				// https://js.cytoscape.org/#layouts
-				layout={{
-					name: "grid", // random
+				ref={graphArea}
+			></div>
+			<div
+				style={{
+					width: "100%",
+					flexDirection: "row",
+					justifyContent: "space-evenly",
+					display: "flex",
+					margin: 16,
 				}}
-			/>
-		</div>
+			>
+				<RemoveRelationshipButton />
+				<RemoveNodeButton />
+				<AddNodeButton />
+				<AddRelationshipButton />
+			</div>
+		</>
 	);
 };

@@ -1,5 +1,6 @@
 import { Tree } from "@/lib";
 import { initPocketBase } from "@/lib/ssr";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 export default async function TreesPage() {
@@ -28,12 +29,9 @@ export default async function TreesPage() {
 								<p className="title">{tree.name}</p>
 							</div>
 							<footer className="card-footer">
-								<a href={`/trees/${tree.id}`} className="card-footer-item">
+								<Link href={`/trees/${tree.id}`} className="card-footer-item">
 									View
-								</a>
-								<a href={`/trees/${tree.id}/edit`} className="card-footer-item">
-									Edit
-								</a>
+								</Link>
 							</footer>
 						</div>
 					</div>
