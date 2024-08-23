@@ -65,6 +65,7 @@ export const RemoveNodeButton = () => {
 	return (
 		<button
 			className={`button is-danger ${isLoading && "is-loading"}`}
+			style={{ marginBottom: "1rem", marginRight: "1rem" }}
 			onClick={removeNode}
 		>
 			Remove Node

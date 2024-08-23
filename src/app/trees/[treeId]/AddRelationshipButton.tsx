@@ -122,6 +122,7 @@ export const AddRelationshipButton = () => {
 		<button
 			className={`button is-primary ${isLoading && "is-loading"}`}
 			onClick={addNode}
+			style={{ marginBottom: "1rem", marginRight: "1rem" }}
 		>
 			Add Relationship
 		</button>

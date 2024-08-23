@@ -129,6 +129,7 @@ export const AddNodeButton = () => {
 		<button
 			className={`button is-primary ${isLoading && "is-loading"}`}
 			onClick={addNode}
+			style={{ marginBottom: "1rem", marginRight: "1rem" }}
 		>
 			Add Node
 		</button>

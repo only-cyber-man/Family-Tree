@@ -94,8 +94,8 @@ export const TreeGraph = () => {
 				style={{
 					width: "100%",
 					flexDirection: "row",
-					justifyContent: "space-evenly",
 					display: "flex",
+					flexWrap: "wrap",
 					margin: 16,
 				}}
 			>

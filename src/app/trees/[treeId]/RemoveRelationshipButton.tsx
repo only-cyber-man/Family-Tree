@@ -77,6 +77,7 @@ export const RemoveRelationshipButton = () => {
 	return (
 		<button
 			className={`button is-danger ${isLoading && "is-loading"}`}
+			style={{ marginBottom: "1rem", marginRight: "1rem" }}
 			onClick={removeRelationship}
 		>
 			Remove Relationship
