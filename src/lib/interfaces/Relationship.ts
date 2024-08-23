@@ -54,7 +54,6 @@ export class Relationship {
 		return {
 			from: this.sourceNodeId,
 			to: this.targetNodeId,
-			length: 500,
 			width: RelationshipName.groupToLabel(this.relationshipName?.group).width,
 			color: RelationshipName.groupToLabel(this.relationshipName?.group).color,
 			font: {

@@ -1,7 +1,6 @@
 import { RecordModel } from "pocketbase";
 import { Tree, TreeData } from "./Tree";
 import { Color, Node as VisualizationNode } from "vis-network/esnext";
-import { randomInt } from "crypto";
 
 export type Gender = "male" | "female";
 
@@ -11,7 +10,7 @@ export interface NodeData {
 	updated: string;
 
 	name: string;
-	birthDate?: string;
+	birthDate: string;
 	deathDate?: string;
 	picture?: string;
 	tree: string;
@@ -28,7 +27,7 @@ export class Node {
 	public readonly updated: Date;
 
 	public name: string;
-	public birthDate: Date | null;
+	public birthDate: Date;
 	public deathDate: Date | null;
 	public pictureUrl?: string;
 	public treeId: string;
@@ -36,10 +35,7 @@ export class Node {
 
 	public tree?: Tree;
 
-	get age(): number | null {
-		if (!this.birthDate) {
-			return null;
-		}
+	get age(): number {
 		const deathDate = this.deathDate || new Date();
 		const fullYearAge = deathDate.getFullYear() - this.birthDate.getFullYear();
 		const monthAge = deathDate.getMonth() - this.birthDate.getMonth();
@@ -49,7 +45,7 @@ export class Node {
 		);
 	}
 
-	visualization(y: number, isOther: boolean = false): VisualizationNode {
+	visualization(y: number, x: number): VisualizationNode {
 		const color: Color = {
 			background: this.gender === "male" ? "#4A90E2" : "#FFB6C1",
 			border: this.gender === "male" ? "#2C6EAA" : "#FF6F91",
@@ -62,7 +58,6 @@ export class Node {
 				border: this.gender === "male" ? "#4A90E2" : "#FF85A1",
 			},
 		};
-
 		return {
 			id: this.id,
 			color,
@@ -70,9 +65,10 @@ export class Node {
 			borderWidthSelected: 8,
 			title: this.name,
 			fixed: {
-				y: !isOther,
+				y: true,
 			},
 			y,
+			x,
 			label:
 				this.name +
 				"\n\n" +
@@ -90,7 +86,7 @@ export class Node {
 		this.updated = new Date(data.updated);
 
 		this.name = data.name;
-		this.birthDate = data.birthDate ? new Date(data.birthDate) : null;
+		this.birthDate = new Date(data.birthDate);
 		this.deathDate = data.deathDate ? new Date(data.deathDate) : null;
 		this.pictureUrl = data.picture;
 		this.treeId = data.tree;
@@ -110,7 +106,7 @@ export class Node {
 			updated: this.updated.toISOString(),
 
 			name: this.name,
-			birthDate: this.birthDate?.toISOString(),
+			birthDate: this.birthDate.toISOString(),
 			deathDate: this.deathDate?.toISOString(),
 			picture: this.pictureUrl,
 			tree: this.treeId,

@@ -53,7 +53,7 @@ export const AddNodeButton = () => {
 					</div>
 
 					<div className="field">
-						<label className="label">Birth Date - Optional</label>
+						<label className="label">Birth Date - Required</label>
 						<div className="control">
 							<input className="input" type="date" ref={birthDateRef} />
 						</div>

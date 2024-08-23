@@ -7,7 +7,7 @@ import { useTree } from "@/lib/hooks/useTree";
 import { AddRelationshipButton } from "./AddRelationshipButton";
 import { RemoveNodeButton } from "./RemoveNodeButton";
 import { RemoveRelationshipButton } from "./RemoveRelationshipButton";
-import { Node, Relationship } from "@/lib";
+import { Node } from "@/lib";
 
 export const TreeGraph = () => {
 	const { tree } = useTree();
@@ -18,75 +18,36 @@ export const TreeGraph = () => {
 		if (!container || !tree) {
 			return;
 		}
+		const baseYear = tree.nodes.reduce((acc, node) => {
+			if (node.birthDate.getFullYear() < acc) {
+				return node.birthDate.getFullYear();
+			}
+			return acc;
+		}, Infinity);
+		const nodesWithLevel: { node: Node; level: number }[] = tree.nodes.map(
+			(node) => ({
+				node,
+				level: node.birthDate.getFullYear() - baseYear,
+			})
+		);
 
-		const isParent = (name?: string) => {
-			return name === "IS_MOTHER_OF" || name === "IS_FATHER_OF";
+		const rangeInterval = 20;
+		const Xrange: { [key: number]: number } = {};
+		const getX = (level: number) => {
+			const selectedRange = Math.floor(level / rangeInterval);
+			if (!Xrange[selectedRange]) {
+				Xrange[selectedRange] = 1;
+			} else {
+				Xrange[selectedRange] += 1;
+			}
+			return Xrange[selectedRange];
 		};
-		const isSameLevel = (name?: string) => {
-			return name === "IS_MARRIED_TO" || name === "IS_DIVORCED_TO";
-		};
-
-		const nodesWithLevel: { node: Node; level: number; isOther: boolean }[] =
-			tree.nodes.map((node) => {
-				let parentId = tree.relationships.find(
-					(relationship) =>
-						isParent(relationship.relationshipName?.name) &&
-						relationship.targetNodeId === node.id
-				)?.sourceNodeId;
-				// let level = parentId === undefined ? 0 : 1;
-				let level = 0;
-				while (parentId) {
-					parentId = tree.relationships.find(
-						(relationship) =>
-							isParent(relationship.relationshipName?.name) &&
-							relationship.targetNodeId === parentId
-					)?.sourceNodeId;
-					level++;
-				}
-				return {
-					node,
-					level,
-					isOther: false,
-				};
-			});
-		// level out // TODO: FIX
-		// const nodesWithLevelOut = nodesWithLevel.map((nwl) => {
-		// 	let marriedSrc = tree.relationships.find(
-		// 		(relationship) =>
-		// 			isSameLevel(relationship.relationshipName?.name) &&
-		// 			relationship.sourceNodeId === nwl.node.id
-		// 	);
-		// 	let marriedTrgt = tree.relationships.find(
-		// 		(relationship) =>
-		// 			isSameLevel(relationship.relationshipName?.name) &&
-		// 			relationship.targetNodeId === nwl.node.id
-		// 	);
-		// 	if (marriedSrc) {
-		// 		const leveledNode = nodesWithLevel.find(
-		// 			({ node }) => node.id === marriedSrc.targetNodeId
-		// 		);
-		// 		if (leveledNode) {
-		// 			console.log("src", nwl);
-		// 			nwl.level = leveledNode.level;
-		// 		}
-		// 	}
-		// 	if (marriedTrgt) {
-		// 		const leveledNode = nodesWithLevel.find(
-		// 			({ node }) => node.id === marriedTrgt.sourceNodeId
-		// 		);
-		// 		if (leveledNode) {
-		// 			console.log("tgt", nwl);
-		// 			nwl.level = leveledNode.level;
-		// 		}
-		// 	}
-		// 	return nwl;
-		// });
 
 		const network = new Network(
 			container,
 			{
-				nodes: nodesWithLevel.map(({ node, isOther, level }) =>
-					node.visualization(level * 200, isOther)
+				nodes: nodesWithLevel.map(({ node, level }) =>
+					node.visualization(level * 8, getX(level) * 200)
 				),
 				edges: tree.relationships.map((r) => r.visualization()),
 			},
@@ -95,12 +56,14 @@ export const TreeGraph = () => {
 					enabled: false,
 				},
 				edges: {
-					physics: false,
 					smooth: false,
+					length: 500,
 				},
 				nodes: {
-					physics: false,
 					shape: "box",
+				},
+				layout: {
+					randomSeed: 1,
 				},
 			}
 		);
