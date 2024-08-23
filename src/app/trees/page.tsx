@@ -3,6 +3,8 @@ import { initPocketBase } from "@/lib/ssr";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { CreateTreeButton } from "./CreateTree";
+import { DeleteTreeButton } from "./DeleteTreeButton";
+import { ManageInvitedButton } from "./ManageInvitedButton";
 
 export default async function TreesPage() {
 	const pb = await initPocketBase();
@@ -33,6 +35,8 @@ export default async function TreesPage() {
 								<Link href={`/trees/${tree.id}`} className="card-footer-item">
 									View
 								</Link>
+								<DeleteTreeButton treeId={tree.id} treeName={tree.name} />
+								<ManageInvitedButton treeData={tree.serialize()} />
 							</footer>
 						</div>
 					</div>

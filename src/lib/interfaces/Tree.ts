@@ -47,6 +47,13 @@ export class Tree {
 		}
 	}
 
+	public revoke(invitedId: string) {
+		this.invitedIds = this.invitedIds.filter((id) => id !== invitedId);
+		if (this.invited) {
+			this.invited = this.invited.filter((user) => user.id !== invitedId);
+		}
+	}
+
 	public serialize(): TreeData {
 		return {
 			id: this.id,

@@ -2,6 +2,7 @@ import { initPocketBase } from "@/lib/ssr";
 import Link from "next/link";
 import { Subtitle } from "./Subtitle";
 import { Title } from "./Title";
+import { redirect } from "next/navigation";
 
 export default async function Main({
 	searchParams: { err },
@@ -17,6 +18,9 @@ export default async function Main({
 		);
 	}
 	const pb = await initPocketBase();
+	if (pb.authStore.isValid) {
+		return redirect("/trees")
+	}
 	return (
 		<>
 			<Title />
