@@ -69,10 +69,10 @@ export class Node {
 			borderWidth: 5,
 			borderWidthSelected: 8,
 			title: this.name,
-			// fixed: {
-			// 	y: !isOther,
-			// },
-			// y,
+			fixed: {
+				y: !isOther,
+			},
+			y,
 			label:
 				this.name +
 				"\n\n" +
