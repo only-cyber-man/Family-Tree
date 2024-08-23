@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { Network } from "vis-network/esnext";
 import { AddNodeButton } from "./AddNodeButton";
 import { useTree } from "@/lib/hooks/useTree";
 import { AddRelationshipButton } from "./AddRelationshipButton";
-import { Node } from "@/lib";
 import { RemoveNodeButton } from "./RemoveNodeButton";
 import { RemoveRelationshipButton } from "./RemoveRelationshipButton";
+import { Node, Relationship } from "@/lib";
 
 export const TreeGraph = () => {
 	const { tree } = useTree();
@@ -18,15 +18,26 @@ export const TreeGraph = () => {
 		if (!container || !tree) {
 			return;
 		}
+
+		// TODO: sort hierarchically in the family (y, isOther)
+
 		const network = new Network(
 			container,
 			{
-				nodes: tree.nodes.map((n) => n.visualization),
-				edges: tree.relationships.map((r) => r.visualization),
+				nodes: tree.nodes.map((n) => n.visualization(0, false)),
+				edges: tree.relationships.map((r) => r.visualization()),
 			},
 			{
 				physics: {
-					solver: "repulsion",
+					enabled: false,
+				},
+				edges: {
+					physics: false,
+					smooth: false,
+				},
+				nodes: {
+					physics: false,
+					shape: "box",
 				},
 			}
 		);

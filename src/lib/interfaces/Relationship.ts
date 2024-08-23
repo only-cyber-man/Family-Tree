@@ -45,7 +45,7 @@ export class Relationship {
 		return this.relationshipName?.isBidirectional ?? false;
 	}
 
-	get visualization(): Edge {
+	visualization(): Edge {
 		let label = this.relationshipName?.name;
 		if (label && this.isBidirectional) {
 			label = label.replaceAll("_TO", "").replaceAll("IS_", "");

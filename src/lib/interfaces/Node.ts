@@ -1,6 +1,7 @@
 import { RecordModel } from "pocketbase";
 import { Tree, TreeData } from "./Tree";
 import { Color, Node as VisualizationNode } from "vis-network/esnext";
+import { randomInt } from "crypto";
 
 export type Gender = "male" | "female";
 
@@ -48,7 +49,7 @@ export class Node {
 		);
 	}
 
-	get visualization(): VisualizationNode {
+	visualization(y: number, isOther: boolean = false): VisualizationNode {
 		const color: Color = {
 			background: this.gender === "male" ? "#4A90E2" : "#FFB6C1",
 			border: this.gender === "male" ? "#2C6EAA" : "#FF6F91",
@@ -68,6 +69,10 @@ export class Node {
 			borderWidth: 5,
 			borderWidthSelected: 8,
 			title: this.name,
+			// fixed: {
+			// 	y: !isOther,
+			// },
+			// y,
 			label:
 				this.name +
 				"\n\n" +
