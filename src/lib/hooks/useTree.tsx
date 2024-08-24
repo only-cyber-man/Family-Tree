@@ -30,10 +30,12 @@ type TreeContextType = {
 	isLoading: boolean;
 	error: string | null;
 
-	filterOutRelationShips: (relationShipNames: string[]) => void;
-	filterOutNodesAge: (minAge: number, maxAge: number) => void;
-	filterOutNodesGender: (genderToSee: Gender | "both") => void;
-	filterOutNodesName: (name: string) => void;
+	filterOut: (options: {
+		relationships: { relationShipNames: string[] };
+		nodesAge: { minAge: number; maxAge: number };
+		nodesGender: { genderToSee: Gender | "both" };
+		nodesName: { name: string };
+	}) => void;
 	shouldUpdateRelationships: boolean;
 	setShouldUpdateRelationships: (value: boolean) => void;
 };
@@ -190,58 +192,55 @@ export const TreeProvider: React.FC<{ children: React.ReactNode }> = ({
 		});
 	};
 
-	const filterOutRelationShips = (relationShipNames: string[]) => {
+	const filterOut = (options: {
+		relationships: { relationShipNames: string[] };
+		nodesAge: { minAge: number; maxAge: number };
+		nodesGender: {
+			genderToSee: Gender | "both";
+		};
+		nodesName: { name: string };
+	}) => {
 		if (!tree) {
 			return;
 		}
 		tree.relationships.forEach((relationship) => {
+			let isVisible = true;
 			if (
-				relationShipNames.includes(relationship.relationshipName?.name ?? "")
+				options.relationships.relationShipNames.includes(
+					relationship.relationshipName?.name ?? ""
+				)
 			) {
-				relationship.setVisible(false);
-			} else {
-				relationship.setVisible(true);
+				isVisible = false;
 			}
+			relationship.setVisible(isVisible);
 		});
-	};
-
-	const filterOutNodesAge = (minAge: number, maxAge: number) => {
-		if (!tree) {
-			return;
-		}
 		tree.nodes.forEach((node) => {
-			if (node.age < minAge || node.age > maxAge) {
-				node.setVisible(false);
-			} else {
-				node.setVisible(true);
+			let isVisible = true;
+			if (node.age < options.nodesAge.minAge) {
+				isVisible = false;
 			}
-		});
-	};
-
-	const filterOutNodesGender = (genderToSee: Gender | "both") => {
-		if (!tree) {
-			return;
-		}
-		tree.nodes.forEach((node) => {
-			node.setVisible(node.gender === genderToSee || genderToSee === "both");
-		});
-	};
-
-	const filterOutNodesName = (name: string) => {
-		if (!tree) {
-			return;
-		}
-		const filtersNames = name
-			.split(",")
-			.map((name) => name.trim().toLowerCase())
-			.filter((name) => name.length > 0);
-		tree.nodes.forEach((node) => {
-			node.setVisible(
-				filtersNames.length === 0 ||
-					!filtersNames.some((filterName) =>
-						node.name.includes(filterName.toLowerCase())
-					)
-			);
+			if (node.age > options.nodesAge.maxAge) {
+				isVisible = false;
+			}
+			if (
+				options.nodesGender.genderToSee !== "both" &&
+				options.nodesGender.genderToSee !== node.gender
+			) {
+				isVisible = false;
+			}
+			const filtersNames = options.nodesName.name
+				.split(",")
+				.map((name) => name.trim().toLowerCase())
+				.filter((name) => name.length > 0);
+			if (
+				filtersNames.length > 0 &&
+				filtersNames.some((filterName) =>
+					node.name.includes(filterName.toLowerCase())
+				)
+			) {
+				isVisible = false;
+			}
+			node.setVisible(isVisible);
 		});
 	};
 
@@ -257,10 +256,7 @@ export const TreeProvider: React.FC<{ children: React.ReactNode }> = ({
 				isLoading,
 				error,
 
-				filterOutRelationShips,
-				filterOutNodesAge,
-				filterOutNodesGender,
-				filterOutNodesName,
+				filterOut,
 				shouldUpdateRelationships,
 				setShouldUpdateRelationships,
 			}}

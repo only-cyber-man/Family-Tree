@@ -71,6 +71,9 @@ export const TreeGraph = () => {
 				},
 			}
 		);
+		// network.on("click", (properties) => {
+		// 	console.log("props", properties);
+		// });
 		setShouldUpdateRelationships(false);
 		return () => {
 			network.destroy();

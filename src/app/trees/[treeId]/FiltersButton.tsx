@@ -3,14 +3,7 @@ import { useTree } from "@/lib/hooks/useTree";
 import { useState } from "react";
 
 export const FiltersButton = () => {
-	const {
-		filterOutRelationShips,
-		filterOutNodesAge,
-		filterOutNodesGender,
-		filterOutNodesName,
-		tree,
-		setShouldUpdateRelationships,
-	} = useTree();
+	const { filterOut, tree, setShouldUpdateRelationships } = useTree();
 	const [relationshipNameFilters, setRelationshipNameFilters] = useState<
 		string[]
 	>([]);
@@ -31,10 +24,12 @@ export const FiltersButton = () => {
 	);
 
 	const filterOutButtonHandler = () => {
-		filterOutRelationShips(relationshipNameFilters);
-		filterOutNodesAge(minimumAge, maximumAge);
-		filterOutNodesGender(gender);
-		filterOutNodesName(nameFilter);
+		filterOut({
+			relationships: { relationShipNames: relationshipNameFilters },
+			nodesAge: { minAge: minimumAge, maxAge: maximumAge },
+			nodesGender: { genderToSee: gender },
+			nodesName: { name: nameFilter },
+		});
 		setShouldUpdateRelationships(true);
 		setIsOpen(false);
 	};
