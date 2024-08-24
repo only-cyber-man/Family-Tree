@@ -11,7 +11,7 @@ import {
 } from "../interfaces";
 import { getPocketbaseError, pb } from "..";
 
-interface FullTree {
+export interface FullTree {
 	object: Tree;
 	relationships: Relationship[];
 	nodes: Node[];
@@ -38,6 +38,9 @@ type TreeContextType = {
 	}) => void;
 	shouldUpdateRelationships: boolean;
 	setShouldUpdateRelationships: (value: boolean) => void;
+
+	selectedNode: Node | null;
+	setSelectedNode: (node: Node | null) => void;
 };
 
 const TreeContext = createContext<TreeContextType | undefined>(undefined);
@@ -50,6 +53,7 @@ export const TreeProvider: React.FC<{ children: React.ReactNode }> = ({
 	const [error, setError] = useState<string | null>(null);
 	const [shouldUpdateRelationships, setShouldUpdateRelationships] =
 		useState(false);
+	const [selectedNode, setSelectedNode] = useState<Node | null>(null);
 
 	const fetchTree = async (id: string): Promise<FullTree | void> => {
 		try {
@@ -98,6 +102,7 @@ export const TreeProvider: React.FC<{ children: React.ReactNode }> = ({
 				femaleCount,
 			};
 			setTree(newTree);
+			setSelectedNode(null);
 			setError(null);
 			return newTree;
 		} catch (error: any) {
@@ -259,6 +264,9 @@ export const TreeProvider: React.FC<{ children: React.ReactNode }> = ({
 				filterOut,
 				shouldUpdateRelationships,
 				setShouldUpdateRelationships,
+
+				selectedNode,
+				setSelectedNode,
 			}}
 		>
 			{children}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { Network } from "vis-network/esnext";
 import { AddNodeButton } from "./AddNodeButton";
 import { useTree } from "@/lib/hooks/useTree";
@@ -9,10 +9,15 @@ import { RemoveNodeButton } from "./RemoveNodeButton";
 import { RemoveRelationshipButton } from "./RemoveRelationshipButton";
 import { Node } from "@/lib";
 import { FiltersButton } from "./FiltersButton";
+import { SelectNodeModal } from "./SelectNodeModal";
 
 export const TreeGraph = () => {
-	const { tree, shouldUpdateRelationships, setShouldUpdateRelationships } =
-		useTree();
+	const {
+		tree,
+		shouldUpdateRelationships,
+		setShouldUpdateRelationships,
+		setSelectedNode,
+	} = useTree();
 	const graphArea = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
@@ -71,9 +76,17 @@ export const TreeGraph = () => {
 				},
 			}
 		);
-		// network.on("click", (properties) => {
-		// 	console.log("props", properties);
-		// });
+		network.on("click", (properties) => {
+			const {
+				nodes: [nodeId],
+			} = properties;
+			const node = tree.nodes.find((n) => n.id === nodeId);
+			if (node) {
+				setSelectedNode(node);
+			} else {
+				setSelectedNode(null);
+			}
+		});
 		setShouldUpdateRelationships(false);
 		return () => {
 			network.destroy();
@@ -83,6 +96,7 @@ export const TreeGraph = () => {
 		graphArea,
 		shouldUpdateRelationships,
 		setShouldUpdateRelationships,
+		setSelectedNode,
 	]);
 
 	if (!tree) {
@@ -117,6 +131,7 @@ export const TreeGraph = () => {
 				<AddNodeButton />
 				<AddRelationshipButton />
 				<FiltersButton />
+				<SelectNodeModal />
 			</div>
 		</>
 	);
