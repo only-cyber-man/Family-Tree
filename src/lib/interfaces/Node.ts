@@ -61,8 +61,8 @@ export class Node {
 		return {
 			id: this.id,
 			color,
-			borderWidth: 5,
-			borderWidthSelected: 8,
+			borderWidth: this.age / 10,
+			borderWidthSelected: this.age / 9,
 			title: this.name,
 			fixed: {
 				y: true,

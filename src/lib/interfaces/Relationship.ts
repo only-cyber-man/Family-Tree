@@ -41,6 +41,8 @@ export class Relationship {
 	public relationshipName?: RelationshipName;
 	public tree?: Relationship;
 
+	public isVisible: boolean = true;
+
 	get isBidirectional(): boolean {
 		return this.relationshipName?.isBidirectional ?? false;
 	}
@@ -95,6 +97,10 @@ export class Relationship {
 				this.tree = new Relationship(data.expand.tree);
 			}
 		}
+	}
+
+	public setVisible(visible: boolean): void {
+		this.isVisible = visible;
 	}
 
 	public serialize(): RelationshipData {

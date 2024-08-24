@@ -8,6 +8,7 @@ import { AddRelationshipButton } from "./AddRelationshipButton";
 import { RemoveNodeButton } from "./RemoveNodeButton";
 import { RemoveRelationshipButton } from "./RemoveRelationshipButton";
 import { Node } from "@/lib";
+import { FiltersButton } from "./FiltersButton";
 
 export const TreeGraph = () => {
 	const { tree } = useTree();
@@ -49,7 +50,9 @@ export const TreeGraph = () => {
 				nodes: nodesWithLevel.map(({ node, level }) =>
 					node.visualization(level * 8, getX(level) * 200)
 				),
-				edges: tree.relationships.map((r) => r.visualization()),
+				edges: tree.relationships
+					.filter((r) => r.isVisible)
+					.map((r) => r.visualization()),
 			},
 			{
 				physics: {
@@ -103,6 +106,7 @@ export const TreeGraph = () => {
 				<RemoveNodeButton />
 				<AddNodeButton />
 				<AddRelationshipButton />
+				<FiltersButton />
 			</div>
 		</>
 	);

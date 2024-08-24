@@ -19,13 +19,15 @@ interface FullTree {
 
 type TreeContextType = {
 	tree: FullTree | null;
-	fetchTree: (id: string) => Promise<void>;
+	fetchTree: (id: string) => Promise<FullTree | void>;
 	createNode: (data: FormData) => Promise<void>;
 	createRelationship: (data: CreateRelationshipData) => Promise<void>;
 	deleteNode: (id: string) => Promise<void>;
 	deleteRelationship: (id: string) => Promise<void>;
 	isLoading: boolean;
 	error: string | null;
+
+	filterOutRelationShips: (relationShipNames: string[]) => void;
 };
 
 const TreeContext = createContext<TreeContextType | undefined>(undefined);
@@ -37,7 +39,7 @@ export const TreeProvider: React.FC<{ children: React.ReactNode }> = ({
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 
-	const fetchTree = async (id: string) => {
+	const fetchTree = async (id: string): Promise<FullTree | void> => {
 		try {
 			setIsLoading(true);
 			pb.autoCancellation(false);
@@ -64,13 +66,15 @@ export const TreeProvider: React.FC<{ children: React.ReactNode }> = ({
 			const relationshipNames = relationshipsNamesRecords.map(
 				(relationshipNameRecord) => new RelationshipName(relationshipNameRecord)
 			);
-			setTree({
-				nodes,
+			const newTree: FullTree = {
 				object: tree,
-				relationshipNames,
 				relationships,
-			});
+				nodes,
+				relationshipNames,
+			};
+			setTree(newTree);
 			setError(null);
+			return newTree;
 		} catch (error: any) {
 			setError(getPocketbaseError(error));
 		} finally {
@@ -143,6 +147,21 @@ export const TreeProvider: React.FC<{ children: React.ReactNode }> = ({
 		});
 	};
 
+	const filterOutRelationShips = (relationShipNames: string[]) => {
+		if (!tree) {
+			return;
+		}
+		tree.relationships.forEach((relationship) => {
+			if (
+				relationShipNames.includes(relationship.relationshipName?.name ?? "")
+			) {
+				relationship.setVisible(false);
+			} else {
+				relationship.setVisible(true);
+			}
+		});
+	};
+
 	return (
 		<TreeContext.Provider
 			value={{
@@ -154,6 +173,8 @@ export const TreeProvider: React.FC<{ children: React.ReactNode }> = ({
 				deleteRelationship,
 				isLoading,
 				error,
+
+				filterOutRelationShips,
 			}}
 		>
 			{children}
