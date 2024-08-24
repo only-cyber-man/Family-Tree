@@ -35,6 +35,8 @@ export class Node {
 
 	public tree?: Tree;
 
+	public isVisible: boolean = true;
+
 	get age(): number {
 		const deathDate = this.deathDate || new Date();
 		const fullYearAge = deathDate.getFullYear() - this.birthDate.getFullYear();
@@ -97,6 +99,10 @@ export class Node {
 				this.tree = new Tree(data.expand.tree);
 			}
 		}
+	}
+
+	public setVisible(visible: boolean): void {
+		this.isVisible = visible;
 	}
 
 	public serialize(): NodeData {

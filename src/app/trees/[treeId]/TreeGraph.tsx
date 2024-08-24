@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Network } from "vis-network/esnext";
 import { AddNodeButton } from "./AddNodeButton";
 import { useTree } from "@/lib/hooks/useTree";
@@ -11,7 +11,8 @@ import { Node } from "@/lib";
 import { FiltersButton } from "./FiltersButton";
 
 export const TreeGraph = () => {
-	const { tree } = useTree();
+	const { tree, shouldUpdateRelationships, setShouldUpdateRelationships } =
+		useTree();
 	const graphArea = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
@@ -25,12 +26,12 @@ export const TreeGraph = () => {
 			}
 			return acc;
 		}, Infinity);
-		const nodesWithLevel: { node: Node; level: number }[] = tree.nodes.map(
-			(node) => ({
+		const nodesWithLevel: { node: Node; level: number }[] = tree.nodes
+			.filter((n) => n.isVisible)
+			.map((node) => ({
 				node,
 				level: node.birthDate.getFullYear() - baseYear,
-			})
-		);
+			}));
 
 		const rangeInterval = 20;
 		const Xrange: { [key: number]: number } = {};
@@ -70,10 +71,16 @@ export const TreeGraph = () => {
 				},
 			}
 		);
+		setShouldUpdateRelationships(false);
 		return () => {
 			network.destroy();
 		};
-	}, [tree, graphArea]);
+	}, [
+		tree,
+		graphArea,
+		shouldUpdateRelationships,
+		setShouldUpdateRelationships,
+	]);
 
 	if (!tree) {
 		return <div>Loading...</div>;

@@ -1,11 +1,23 @@
+import { Gender } from "@/lib";
 import { useTree } from "@/lib/hooks/useTree";
 import { useState } from "react";
 
 export const FiltersButton = () => {
-	const { filterOutRelationShips, tree } = useTree();
+	const {
+		filterOutRelationShips,
+		filterOutNodesAge,
+		filterOutNodesGender,
+		filterOutNodesName,
+		tree,
+		setShouldUpdateRelationships,
+	} = useTree();
 	const [relationshipNameFilters, setRelationshipNameFilters] = useState<
 		string[]
 	>([]);
+	const [minimumAge, setMinimumAge] = useState(0);
+	const [maximumAge, setMaximumAge] = useState(100);
+	const [gender, setGender] = useState<Gender | "both">("both");
+	const [nameFilter, setNameFilter] = useState("");
 	const [currentFilter, setCurrentFilter] = useState(
 		tree?.relationshipNames.map((rn) => rn.name)[0] ?? ""
 	);
@@ -18,6 +30,15 @@ export const FiltersButton = () => {
 		(rn) => rn.name
 	);
 
+	const filterOutButtonHandler = () => {
+		filterOutRelationShips(relationshipNameFilters);
+		filterOutNodesAge(minimumAge, maximumAge);
+		filterOutNodesGender(gender);
+		filterOutNodesName(nameFilter);
+		setShouldUpdateRelationships(true);
+		setIsOpen(false);
+	};
+
 	return (
 		<>
 			<div className={`modal ${isOpen && "is-active"}`}>
@@ -27,7 +48,7 @@ export const FiltersButton = () => {
 				></div>
 				<div className="modal-content box">
 					<div className="field">
-						<label className="label">Relationship to filter out</label>
+						<label className="label">Relationship to exlude</label>
 						<div className="control">
 							<div className="select">
 								<select
@@ -42,6 +63,9 @@ export const FiltersButton = () => {
 							<button
 								className="button"
 								onClick={() => {
+									if (relationshipNameFilters.includes(currentFilter)) {
+										return;
+									}
 									setRelationshipNameFilters([
 										...relationshipNameFilters,
 										currentFilter,
@@ -52,13 +76,13 @@ export const FiltersButton = () => {
 								Add
 							</button>
 						</div>
-						<hr />
 						{relationshipNameFilters.map((name, index) => (
 							<div
 								key={`filter-${index}`}
 								className="tag"
 								style={{
 									margin: "0.5rem",
+									marginBottom: "0.1rem",
 								}}
 							>
 								{name}
@@ -73,12 +97,86 @@ export const FiltersButton = () => {
 							</div>
 						))}
 					</div>
+					<div className="field">
+						<label className="label">Minimum Age</label>
+						<input
+							style={{
+								width: "100%",
+							}}
+							value={minimumAge}
+							onChange={(e) => setMinimumAge(Number(e.target.value))}
+							min={-1}
+							max={maximumAge}
+							type="range"
+						/>
+						<div
+							className="is-fullwidth"
+							style={{
+								display: "flex",
+								justifyContent: "space-between",
+							}}
+						>
+							<span>-1</span>
+							<span>{minimumAge}</span>
+							<span>{maximumAge}</span>
+						</div>
+					</div>
+					<div className="field">
+						<label className="label">Maximum Age</label>
+						<input
+							style={{
+								width: "100%",
+							}}
+							value={maximumAge}
+							onChange={(e) => setMaximumAge(Number(e.target.value))}
+							min={minimumAge}
+							max={100}
+							type="range"
+						/>
+						<div
+							className="is-fullwidth"
+							style={{
+								display: "flex",
+								justifyContent: "space-between",
+							}}
+						>
+							<span>{minimumAge}</span>
+							<span>{maximumAge}</span>
+							<span>{100}</span>
+						</div>
+					</div>
+					<div className="field">
+						<label className="label">Gender to see</label>
+						<div className="control">
+							<div className="select is-fullwidth">
+								<select
+									value={gender}
+									onChange={(e) => setGender(e.target.value as Gender | "both")}
+								>
+									<option>both</option>
+									<option>male</option>
+									<option>female</option>
+								</select>
+							</div>
+						</div>
+					</div>
+					<div className="field">
+						<label className="label">
+							Exclude by name <i>(comma separate for multiple)</i>
+						</label>
+						<div className="control">
+							<input
+								type="text"
+								className="input"
+								placeholder="John"
+								value={nameFilter}
+								onChange={(e) => setNameFilter(e.target.value)}
+							/>
+						</div>
+					</div>
 					<button
 						className="button is-link is-fullwidth"
-						onClick={() => {
-							filterOutRelationShips(relationshipNameFilters);
-							setIsOpen(false);
-						}}
+						onClick={filterOutButtonHandler}
 					>
 						Filter out
 					</button>

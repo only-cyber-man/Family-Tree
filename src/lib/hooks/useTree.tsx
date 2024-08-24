@@ -3,6 +3,7 @@
 import React, { createContext, useState, useContext } from "react";
 import {
 	CreateRelationshipData,
+	Gender,
 	Node,
 	Relationship,
 	RelationshipName,
@@ -15,6 +16,8 @@ interface FullTree {
 	relationships: Relationship[];
 	nodes: Node[];
 	relationshipNames: RelationshipName[];
+	femaleCount: number;
+	maleCount: number;
 }
 
 type TreeContextType = {
@@ -28,6 +31,11 @@ type TreeContextType = {
 	error: string | null;
 
 	filterOutRelationShips: (relationShipNames: string[]) => void;
+	filterOutNodesAge: (minAge: number, maxAge: number) => void;
+	filterOutNodesGender: (genderToSee: Gender | "both") => void;
+	filterOutNodesName: (name: string) => void;
+	shouldUpdateRelationships: boolean;
+	setShouldUpdateRelationships: (value: boolean) => void;
 };
 
 const TreeContext = createContext<TreeContextType | undefined>(undefined);
@@ -38,6 +46,8 @@ export const TreeProvider: React.FC<{ children: React.ReactNode }> = ({
 	const [tree, setTree] = useState<FullTree | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
+	const [shouldUpdateRelationships, setShouldUpdateRelationships] =
+		useState(false);
 
 	const fetchTree = async (id: string): Promise<FullTree | void> => {
 		try {
@@ -66,11 +76,24 @@ export const TreeProvider: React.FC<{ children: React.ReactNode }> = ({
 			const relationshipNames = relationshipsNamesRecords.map(
 				(relationshipNameRecord) => new RelationshipName(relationshipNameRecord)
 			);
+			const [femaleCount, maleCount] = nodes.reduce(
+				(previous, { gender }) => {
+					if (gender === "female") {
+						return [previous[0] + 1, previous[1]];
+					} else {
+						return [previous[0], previous[1] + 1];
+					}
+				},
+				[0, 0]
+			);
+
 			const newTree: FullTree = {
 				object: tree,
 				relationships,
 				nodes,
 				relationshipNames,
+				maleCount,
+				femaleCount,
 			};
 			setTree(newTree);
 			setError(null);
@@ -88,11 +111,15 @@ export const TreeProvider: React.FC<{ children: React.ReactNode }> = ({
 		}
 		const record = await pb.collection("ft_nodes").create(data);
 		const node = new Node(record);
+		const toAddFemale = node.gender === "female" ? 1 : 0;
+		const toAddMale = node.gender === "male" ? 1 : 0;
 		setTree({
 			nodes: [...tree.nodes, node],
 			object: tree.object,
 			relationshipNames: tree.relationshipNames,
 			relationships: tree.relationships,
+			femaleCount: tree.femaleCount + toAddFemale,
+			maleCount: tree.maleCount + toAddMale,
 		});
 	};
 
@@ -114,6 +141,8 @@ export const TreeProvider: React.FC<{ children: React.ReactNode }> = ({
 			object: tree.object,
 			relationshipNames: tree.relationshipNames,
 			relationships: [...tree.relationships, relationship],
+			femaleCount: tree.femaleCount,
+			maleCount: tree.maleCount,
 		});
 	};
 
@@ -123,11 +152,23 @@ export const TreeProvider: React.FC<{ children: React.ReactNode }> = ({
 		}
 		await pb.collection("ft_nodes").delete(id);
 		const nodes = tree.nodes.filter((node) => node.id !== id);
+		const [femaleCount, maleCount] = nodes.reduce(
+			(previous, { gender }) => {
+				if (gender === "female") {
+					return [previous[0] + 1, previous[1]];
+				} else {
+					return [previous[0], previous[1] + 1];
+				}
+			},
+			[0, 0]
+		);
 		setTree({
 			nodes,
 			object: tree.object,
 			relationshipNames: tree.relationshipNames,
 			relationships: tree.relationships,
+			femaleCount,
+			maleCount,
 		});
 	};
 
@@ -144,6 +185,8 @@ export const TreeProvider: React.FC<{ children: React.ReactNode }> = ({
 			object: tree.object,
 			relationshipNames: tree.relationshipNames,
 			relationships,
+			femaleCount: tree.femaleCount,
+			maleCount: tree.maleCount,
 		});
 	};
 
@@ -162,6 +205,46 @@ export const TreeProvider: React.FC<{ children: React.ReactNode }> = ({
 		});
 	};
 
+	const filterOutNodesAge = (minAge: number, maxAge: number) => {
+		if (!tree) {
+			return;
+		}
+		tree.nodes.forEach((node) => {
+			if (node.age < minAge || node.age > maxAge) {
+				node.setVisible(false);
+			} else {
+				node.setVisible(true);
+			}
+		});
+	};
+
+	const filterOutNodesGender = (genderToSee: Gender | "both") => {
+		if (!tree) {
+			return;
+		}
+		tree.nodes.forEach((node) => {
+			node.setVisible(node.gender === genderToSee || genderToSee === "both");
+		});
+	};
+
+	const filterOutNodesName = (name: string) => {
+		if (!tree) {
+			return;
+		}
+		const filtersNames = name
+			.split(",")
+			.map((name) => name.trim().toLowerCase())
+			.filter((name) => name.length > 0);
+		tree.nodes.forEach((node) => {
+			node.setVisible(
+				filtersNames.length === 0 ||
+					!filtersNames.some((filterName) =>
+						node.name.includes(filterName.toLowerCase())
+					)
+			);
+		});
+	};
+
 	return (
 		<TreeContext.Provider
 			value={{
@@ -175,6 +258,11 @@ export const TreeProvider: React.FC<{ children: React.ReactNode }> = ({
 				error,
 
 				filterOutRelationShips,
+				filterOutNodesAge,
+				filterOutNodesGender,
+				filterOutNodesName,
+				shouldUpdateRelationships,
+				setShouldUpdateRelationships,
 			}}
 		>
 			{children}
