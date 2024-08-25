@@ -44,10 +44,11 @@ const relatives = {
 				r.targetNodeId === nodeId && r.relationshipName?.name === "IS_FATHER_OF"
 		);
 
+		// The below is marked `as any` because `yarn build` thinks that the array returned is (Node | undefined)[] instead of Node[] (which it is duh)
 		return [
 			getNodeById(tree, motherRelationship?.sourceNodeId),
 			getNodeById(tree, fatherRelationship?.sourceNodeId),
-		].filter((n) => n !== undefined);
+		].filter((n) => n !== undefined) as any;
 	},
 	getGrandParents,
 	getSiblings: (nodeId: string, tree: FullTree): Node[] => {

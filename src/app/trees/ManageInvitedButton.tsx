@@ -44,7 +44,7 @@ export const ManageInvitedButton = ({ treeData }: { treeData: TreeData }) => {
 		};
 
 		getEmails();
-	}, []);
+	}, [tree.invitedIds]);
 
 	const deleteSelectedHandler = async () => {
 		try {
