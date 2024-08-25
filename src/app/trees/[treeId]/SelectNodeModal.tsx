@@ -242,7 +242,7 @@ export const SelectNodeModal = () => {
 						justifyContent: "space-between",
 					}}
 				>
-					<EditNodeButton node={node} />
+					{tree.isCreator ? <EditNodeButton node={node} /> : null}
 					<button
 						className="button"
 						onClick={() => setShowRelatives(!showRelatives)}

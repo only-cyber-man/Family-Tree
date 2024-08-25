@@ -18,6 +18,8 @@ export interface FullTree {
 	relationshipNames: RelationshipName[];
 	femaleCount: number;
 	maleCount: number;
+
+	isCreator: boolean;
 }
 
 type TreeContextType = {
@@ -101,6 +103,7 @@ export const TreeProvider: React.FC<{ children: React.ReactNode }> = ({
 				relationshipNames,
 				maleCount,
 				femaleCount,
+				isCreator: tree.creatorId === pb.authStore.model?.id,
 			};
 			setTree(newTree);
 			setSelectedNode(null);
@@ -128,6 +131,7 @@ export const TreeProvider: React.FC<{ children: React.ReactNode }> = ({
 			relationships: tree.relationships,
 			femaleCount: tree.femaleCount + toAddFemale,
 			maleCount: tree.maleCount + toAddMale,
+			isCreator: tree.object.creatorId === pb.authStore.model?.id,
 		});
 	};
 
@@ -158,6 +162,7 @@ export const TreeProvider: React.FC<{ children: React.ReactNode }> = ({
 			relationships: tree.relationships,
 			femaleCount: tree.femaleCount + toAddFemale,
 			maleCount: tree.maleCount + toAddMale,
+			isCreator: tree.object.creatorId === pb.authStore.model?.id,
 		});
 		return node;
 	};
@@ -182,6 +187,7 @@ export const TreeProvider: React.FC<{ children: React.ReactNode }> = ({
 			relationships: [...tree.relationships, relationship],
 			femaleCount: tree.femaleCount,
 			maleCount: tree.maleCount,
+			isCreator: tree.object.creatorId === pb.authStore.model?.id,
 		});
 	};
 
@@ -208,6 +214,7 @@ export const TreeProvider: React.FC<{ children: React.ReactNode }> = ({
 			relationships: tree.relationships,
 			femaleCount,
 			maleCount,
+			isCreator: tree.object.creatorId === pb.authStore.model?.id,
 		});
 	};
 
@@ -226,6 +233,7 @@ export const TreeProvider: React.FC<{ children: React.ReactNode }> = ({
 			relationships,
 			femaleCount: tree.femaleCount,
 			maleCount: tree.maleCount,
+			isCreator: tree.object.creatorId === pb.authStore.model?.id,
 		});
 	};
 

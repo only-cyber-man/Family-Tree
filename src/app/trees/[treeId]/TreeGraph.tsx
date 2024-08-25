@@ -127,10 +127,14 @@ export const TreeGraph = () => {
 					margin: 16,
 				}}
 			>
-				<RemoveRelationshipButton />
-				<RemoveNodeButton />
-				<AddNodeButton />
-				<AddRelationshipButton />
+				{tree.isCreator ? (
+					<>
+						<RemoveRelationshipButton />
+						<RemoveNodeButton />
+						<AddNodeButton />
+						<AddRelationshipButton />
+					</>
+				) : null}
 				<FiltersButton />
 				<SelectNodeModal />
 				<ExportVisibleButton />
