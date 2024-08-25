@@ -1,6 +1,9 @@
+"use client";
+
 import { Node } from "@/lib";
 import { FullTree, useTree } from "@/lib/hooks/useTree";
 import { useState } from "react";
+import { EditNodeButton } from "./EditNodeButton";
 
 const capitalizeFirstLetter = (string: string) => {
 	return string.charAt(0).toUpperCase() + string.slice(1);
@@ -238,7 +241,7 @@ export const SelectNodeModal = () => {
 						justifyContent: "space-between",
 					}}
 				>
-					<button className="button is-primary">Edit</button>
+					<EditNodeButton node={node} />
 					<button
 						className="button"
 						onClick={() => setShowRelatives(!showRelatives)}

@@ -24,6 +24,7 @@ type TreeContextType = {
 	tree: FullTree | null;
 	fetchTree: (id: string) => Promise<FullTree | void>;
 	createNode: (data: FormData) => Promise<void>;
+	editNode: (id: string, data: FormData) => Promise<Node | null>;
 	createRelationship: (data: CreateRelationshipData) => Promise<void>;
 	deleteNode: (id: string) => Promise<void>;
 	deleteRelationship: (id: string) => Promise<void>;
@@ -128,6 +129,37 @@ export const TreeProvider: React.FC<{ children: React.ReactNode }> = ({
 			femaleCount: tree.femaleCount + toAddFemale,
 			maleCount: tree.maleCount + toAddMale,
 		});
+	};
+
+	const editNode = async (id: string, data: FormData): Promise<Node | null> => {
+		if (!tree) {
+			return null;
+		}
+		const record = await pb.collection("ft_nodes").update(id, data);
+		const node = new Node(record);
+		const previous = tree.nodes.find((n) => n.id === id);
+		const toAddFemale =
+			previous?.gender === record.gender
+				? 0
+				: record.gender === "female"
+				? 1
+				: -1;
+		const toAddMale =
+			previous?.gender === record.gender
+				? 0
+				: record.gender === "male"
+				? 1
+				: -1;
+		const nodes = tree.nodes.map((n) => (n.id === id ? node : n));
+		setTree({
+			nodes,
+			object: tree.object,
+			relationshipNames: tree.relationshipNames,
+			relationships: tree.relationships,
+			femaleCount: tree.femaleCount + toAddFemale,
+			maleCount: tree.maleCount + toAddMale,
+		});
+		return node;
 	};
 
 	const createRelationship = async (data: CreateRelationshipData) => {
@@ -255,6 +287,7 @@ export const TreeProvider: React.FC<{ children: React.ReactNode }> = ({
 				tree,
 				fetchTree,
 				createNode,
+				editNode,
 				createRelationship,
 				deleteNode,
 				deleteRelationship,
