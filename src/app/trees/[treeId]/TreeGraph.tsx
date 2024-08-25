@@ -10,6 +10,7 @@ import { RemoveRelationshipButton } from "./RemoveRelationshipButton";
 import { Node } from "@/lib";
 import { FiltersButton } from "./FiltersButton";
 import { SelectNodeModal } from "./SelectNodeModal";
+import { ExportVisibleButton } from "./ExportVisibleButton";
 
 export const TreeGraph = () => {
 	const {
@@ -132,6 +133,7 @@ export const TreeGraph = () => {
 				<AddRelationshipButton />
 				<FiltersButton />
 				<SelectNodeModal />
+				<ExportVisibleButton />
 			</div>
 		</>
 	);
