@@ -251,6 +251,10 @@ export const TreeProvider: React.FC<{ children: React.ReactNode }> = ({
 			}
 			relationship.setVisible(isVisible);
 		});
+		const filtersNames = options.nodesName.name
+			.split(",")
+			.map((name) => name.trim().toLowerCase())
+			.filter((name) => name.length > 0);
 		tree.nodes.forEach((node) => {
 			let isVisible = true;
 			if (node.age < options.nodesAge.minAge) {
@@ -265,15 +269,9 @@ export const TreeProvider: React.FC<{ children: React.ReactNode }> = ({
 			) {
 				isVisible = false;
 			}
-			const filtersNames = options.nodesName.name
-				.split(",")
-				.map((name) => name.trim().toLowerCase())
-				.filter((name) => name.length > 0);
 			if (
 				filtersNames.length > 0 &&
-				filtersNames.some((filterName) =>
-					node.name.includes(filterName.toLowerCase())
-				)
+				filtersNames.some((name) => node.name.toLowerCase().includes(name))
 			) {
 				isVisible = false;
 			}
