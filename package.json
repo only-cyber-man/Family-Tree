@@ -24,7 +24,7 @@
 		"ics": "^3.7.6",
 		"keycharm": "^0.4.0",
 		"next": "14.2.5",
-		"pocketbase": "^0.20.3",
+		"pocketbase": "^0.25.1",
 		"react": "^18",
 		"react-dom": "^18",
 		"react-text-gradients-and-animations": "^1.1.7",

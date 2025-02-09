@@ -2524,10 +2524,10 @@ picomatch@^2.0.4, picomatch@^2.2.1, picomatch@^2.3.1:
   resolved "https://registry.yarnpkg.com/picomatch/-/picomatch-2.3.1.tgz#3ba3833733646d9d3e4995946c1365a67fb07a42"
   integrity sha512-JU3teHTNjmE2VCGFzuY8EXzCDVwEqB2a8fsIvwaStHhAWJEeVd1o1QD80CU6+ZdEXXSLbSsuLwJjkCBWqRQUVA==
 
-pocketbase@^0.20.3:
-  version "0.20.3"
-  resolved "https://registry.yarnpkg.com/pocketbase/-/pocketbase-0.20.3.tgz#f7a80048a452d095025fcbc6ee3216fb44c6baf3"
-  integrity sha512-qembHhE7HumDBZpxWgFIbhJPeaCoUIdwhW59xF/VlMR79pDTYz/LaQ4q89y7GczKo4X9actFgFN8hs4dTl0spQ==
+pocketbase@^0.25.1:
+  version "0.25.1"
+  resolved "https://registry.yarnpkg.com/pocketbase/-/pocketbase-0.25.1.tgz#e2bb606d2e39a992d9b328d67a24a9879ba7337d"
+  integrity sha512-2IH0KLI/qMNR/E17C7BGWX2FxW7Tead+igLHOWZ45P56v/NyVT18Jnmddeft+3qWWGL1Hog2F8bc4orWV/+Fcg==
 
 postcss@8.4.31:
   version "8.4.31"
