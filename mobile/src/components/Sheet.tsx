@@ -202,6 +202,8 @@ function BottomRouteSheet({
 				snapPoints={dynamic ? undefined : snapPoints}
 				enableDynamicSizing={!!dynamic}
 				enablePanDownToClose
+				// The library default (true) makes iOS VoiceOver treat the sheet as one element and hide its contents.
+				accessible={false}
 				onClose={onClose}
 				animationConfigs={sheetOpenConfig}
 				backdropComponent={renderBackdrop}
