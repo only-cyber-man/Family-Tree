@@ -30,6 +30,10 @@ export interface NodeData {
 	picture?: string;
 	tree: string;
 	gender: Gender;
+	/** Free-text note; PocketBase returns "" when empty. */
+	note?: string;
+	/** ft_users id of the account this person is ("" when not linked). */
+	user?: string;
 
 	expand?: {
 		tree?: TreeData;
@@ -47,6 +51,8 @@ export class Node {
 	public pictureUrl?: string;
 	public treeId: string;
 	public gender: Gender;
+	public note: string;
+	public userId: string | null;
 
 	public tree?: Tree;
 
@@ -73,6 +79,8 @@ export class Node {
 		this.pictureUrl = data.picture;
 		this.treeId = data.tree;
 		this.gender = data.gender;
+		this.note = data.note ?? "";
+		this.userId = data.user || null;
 
 		if (data.expand) {
 			if (data.expand.tree) {
@@ -94,6 +102,8 @@ export class Node {
 			picture: this.pictureUrl,
 			tree: this.treeId,
 			gender: this.gender,
+			note: this.note,
+			user: this.userId ?? "",
 
 			expand: {
 				tree: this.tree?.serialize(),

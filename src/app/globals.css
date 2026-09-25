@@ -797,3 +797,83 @@ p {
 		right: 380px;
 	}
 }
+
+/* Language and theme switches */
+.prefs {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	flex: none;
+}
+
+.seg {
+	display: inline-flex;
+	align-items: center;
+	gap: 2px;
+	padding: 2px;
+	border: 1px solid var(--border);
+	border-radius: var(--radius-sm);
+	background: var(--surface);
+}
+
+.seg-btn {
+	min-width: 30px;
+	height: 28px;
+	padding: 0 6px;
+	border: 0;
+	border-radius: 6px;
+	background: transparent;
+	color: var(--ink3);
+	font-size: 12px;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	cursor: pointer;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	transition: background 0.15s, color 0.15s;
+}
+
+.seg-btn:hover {
+	background: var(--surface2);
+	color: var(--ink);
+}
+
+.seg-btn[aria-pressed="true"] {
+	background: var(--primary-soft);
+	color: var(--on-primary-soft);
+}
+
+.seg-cycle {
+	width: 34px;
+	height: 34px;
+	justify-content: center;
+	color: var(--ink2);
+	cursor: pointer;
+}
+
+.seg-cycle:hover {
+	background: var(--surface2);
+	color: var(--ink);
+}
+
+.prefs-narrow {
+	display: none;
+}
+
+@media (max-width: 640px) {
+	.prefs-wide {
+		display: none;
+	}
+
+	.prefs-narrow {
+		display: inline-flex;
+	}
+}
+
+/* The brand keeps only its mark on very narrow screens (its link has an aria-label). */
+@media (max-width: 480px) {
+	.brand-collapsible .brand-name {
+		display: none;
+	}
+}

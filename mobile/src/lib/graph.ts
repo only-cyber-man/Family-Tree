@@ -9,6 +9,8 @@ export function toPerson(n: FullTree["nodes"][number]): Person {
 		birth: parseDate(n.birthDate),
 		death: parseDate(n.deathDate),
 		picture: n.picture || undefined,
+		note: n.note || undefined,
+		userId: n.user || undefined,
 	};
 }
 

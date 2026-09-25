@@ -18,6 +18,7 @@ import {
 	RenameTreeDialog,
 } from "./TreeDialogs";
 import { EmailAvatar, TreeSummary } from "./shared";
+import { useT } from "@/i18n/client";
 import s from "./dashboard.module.css";
 
 export type { TreeSummary } from "./shared";
@@ -69,6 +70,8 @@ const TreeCard = ({
 	onToggleMenu: () => void;
 	onAction: (kind: "rename" | "invited" | "delete") => void;
 }) => {
+	const t = useT();
+	const d = t.dashboard;
 	const menuRef = useRef<HTMLDivElement>(null);
 	const moreRef = useRef<HTMLButtonElement>(null);
 	// The menu item disappears when a dialog opens, so hand focus back to the
@@ -98,20 +101,18 @@ const TreeCard = ({
 
 	const shareText = tree.isOwner
 		? tree.invited.length === 0
-			? "Only you"
-			: `${tree.invited.length} viewer${tree.invited.length === 1 ? "" : "s"}`
+			? d.onlyYou
+			: d.viewers(tree.invited.length)
 		: tree.creatorEmail
-		? `by ${tree.creatorEmail.split("@")[0]}`
-		: "Shared with you";
-	const people =
-		tree.people === null ? "" : `${tree.people} ${tree.people === 1 ? "person" : "people"} · `;
+		? d.byCreator(tree.creatorEmail.split("@")[0])
+		: t.common.sharedWithYou;
 
 	return (
 		<article className={`card ${s.card} ${menuOpen ? s.cardOpen : ""}`}>
 			<div className={s.art}>
 				<TreeArt />
 				<span className={`badge ${tree.isOwner ? "badge-owner" : "badge-shared"} ${s.badge}`}>
-					{tree.isOwner ? "Owner" : "Shared with you"}
+					{tree.isOwner ? t.common.owner : t.common.sharedWithYou}
 				</span>
 			</div>
 			<div className={s.body}>
@@ -122,7 +123,7 @@ const TreeCard = ({
 						</h3>
 						{/* Relative time can tick between server render and hydration. */}
 						<div className={s.stats} suppressHydrationWarning>
-							{people}updated {timeAgo(tree.updated)}
+							{d.stats(tree.people, timeAgo(tree.updated, t))}
 						</div>
 					</div>
 					{tree.isOwner ? (
@@ -130,7 +131,7 @@ const TreeCard = ({
 							<button
 								ref={moreRef}
 								className={`${s.more} ${menuOpen ? s.moreOpen : ""}`}
-								aria-label={`More actions for ${tree.name}`}
+								aria-label={d.moreActions(tree.name)}
 								aria-haspopup="menu"
 								aria-expanded={menuOpen}
 								onClick={onToggleMenu}
@@ -142,11 +143,11 @@ const TreeCard = ({
 									<div className="menu-title">{tree.name}</div>
 									<button className="menu-item" role="menuitem" onClick={() => act("invited")}>
 										<UserPlusIcon />
-										Manage invited
+										{t.common.manageInvited}
 									</button>
 									<button className="menu-item" role="menuitem" onClick={() => act("rename")}>
 										<PencilIcon />
-										Rename
+										{d.rename}
 									</button>
 									<div className="menu-sep" />
 									<button
@@ -155,7 +156,7 @@ const TreeCard = ({
 										onClick={() => act("delete")}
 									>
 										<TrashIcon />
-										Delete tree…
+										{d.deleteTree}
 									</button>
 								</div>
 							) : null}
@@ -174,7 +175,7 @@ const TreeCard = ({
 						<span className={s.shareText}>{shareText}</span>
 					</div>
 					<Link href={`/trees/${tree.id}`} className={`btn btn-primary ${s.open}`}>
-						Open
+						{d.open}
 						<ChevronRightIcon />
 					</Link>
 				</div>
@@ -190,6 +191,8 @@ export const TreesDashboard = ({
 	trees: TreeSummary[];
 	userName: string;
 }) => {
+	const t = useT();
+	const d = t.dashboard;
 	const [dialog, setDialog] = useState<DialogState>(null);
 	const [openMenu, setOpenMenu] = useState<string | null>(null);
 	const closeDialog = () => setDialog(null);
@@ -230,21 +233,14 @@ export const TreesDashboard = ({
 						<rect x="116" y="34" width="20" height="3" rx="1.5" style={{ fill: "var(--surface2)" }} />
 					</svg>
 					<div>
-						<h1 className={s.emptyTitle}>No trees yet</h1>
-						<p className={s.emptyBody}>
-							Start with the people you know best: yourself, your parents, your
-							grandparents. You can invite the rest of the family once there is
-							something to look at.
-						</p>
+						<h1 className={s.emptyTitle}>{d.emptyTitle}</h1>
+						<p className={s.emptyBody}>{d.emptyBody}</p>
 					</div>
 					<button className="btn btn-primary btn-lg" onClick={() => setDialog({ kind: "create" })}>
 						<PlusIcon />
-						Create your first tree
+						{d.createFirst}
 					</button>
-					<div className={s.emptyNote}>
-						Waiting on an invitation? Trees shared with you appear here
-						automatically.
-					</div>
+					<div className={s.emptyNote}>{d.emptyNote}</div>
 				</div>
 				{dialogs}
 			</main>
@@ -255,19 +251,16 @@ export const TreesDashboard = ({
 		<main className={s.main}>
 			<div className={s.head}>
 				<div>
-					<h1 className={s.title}>Your trees</h1>
-					<div className={s.meta}>
-						{trees.length} {trees.length === 1 ? "tree" : "trees"}
-						{shared > 0 ? ` · ${owned} yours, ${shared} shared with you` : ""}
-					</div>
+					<h1 className={s.title}>{d.title}</h1>
+					<div className={s.meta}>{d.count(trees.length, owned, shared)}</div>
 				</div>
 				<button
 					className={`btn btn-primary ${s.newButton}`}
-					aria-label="New tree"
+					aria-label={d.newTree}
 					onClick={() => setDialog({ kind: "create" })}
 				>
 					<PlusIcon />
-					<span className={s.newLabel}>New tree</span>
+					<span className={s.newLabel}>{d.newTree}</span>
 				</button>
 			</div>
 			<div className={s.grid}>

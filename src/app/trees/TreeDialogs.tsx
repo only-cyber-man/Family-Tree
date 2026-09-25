@@ -8,9 +8,12 @@ import { AlertIcon } from "@/components/Icons";
 import { useToast } from "@/components/Toast";
 import { UserAvatar } from "@/components/AppNav";
 import { EmailAvatar, InvitedUser, TreeSummary } from "./shared";
+import { useT } from "@/i18n/client";
 import s from "./dashboard.module.css";
 
 export const CreateTreeDialog = ({ onClose }: { onClose: () => void }) => {
+	const t = useT();
+	const d = t.treeDialogs;
 	const router = useRouter();
 	const toast = useToast();
 	const [name, setName] = useState("");
@@ -20,7 +23,7 @@ export const CreateTreeDialog = ({ onClose }: { onClose: () => void }) => {
 	const submit = async (e: FormEvent) => {
 		e.preventDefault();
 		if (!name.trim()) {
-			setError("Give the tree a name.");
+			setError(d.nameRequired);
 			return;
 		}
 		setBusy(true);
@@ -30,7 +33,7 @@ export const CreateTreeDialog = ({ onClose }: { onClose: () => void }) => {
 				creator: pb.authStore.record?.id ?? "",
 				invited: [],
 			});
-			toast("Tree created");
+			toast(d.created);
 			router.push(`/trees/${record.id}`);
 		} catch (err: any) {
 			setError(getPocketbaseError(err));
@@ -39,13 +42,13 @@ export const CreateTreeDialog = ({ onClose }: { onClose: () => void }) => {
 	};
 
 	return (
-		<Dialog title="New tree" subtitle="Give it a name you'd say out loud." onClose={onClose}>
+		<Dialog title={d.newTitle} subtitle={d.newSubtitle} onClose={onClose}>
 			<form onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: 20 }}>
 				<label className="field">
-					<span className="field-label">Tree name</span>
+					<span className="field-label">{d.treeName}</span>
 					<input
 						className={`input ${error ? "is-invalid" : ""}`}
-						placeholder="My family tree"
+						placeholder={d.namePlaceholder}
 						value={name}
 						onChange={(e) => {
 							setName(e.target.value);
@@ -59,18 +62,16 @@ export const CreateTreeDialog = ({ onClose }: { onClose: () => void }) => {
 							{error}
 						</span>
 					) : (
-						<span className="field-hint">
-							For example &ldquo;Kowalski family&rdquo; or &ldquo;Mum&apos;s side&rdquo;.
-						</span>
+						<span className="field-hint">{d.nameHint}</span>
 					)}
 				</label>
 				<div className="dialog-actions">
 					<button type="button" className="btn btn-outline" onClick={onClose}>
-						Cancel
+						{t.common.cancel}
 					</button>
 					<button type="submit" className="btn btn-primary" disabled={busy}>
 						{busy ? <span className="spinner" /> : null}
-						Create and open
+						{d.createAndOpen}
 					</button>
 				</div>
 			</form>
@@ -85,6 +86,8 @@ export const RenameTreeDialog = ({
 	tree: TreeSummary;
 	onClose: () => void;
 }) => {
+	const t = useT();
+	const d = t.treeDialogs;
 	const router = useRouter();
 	const toast = useToast();
 	const [name, setName] = useState(tree.name);
@@ -94,13 +97,13 @@ export const RenameTreeDialog = ({
 	const submit = async (e: FormEvent) => {
 		e.preventDefault();
 		if (!name.trim()) {
-			setError("The name can't be empty.");
+			setError(d.nameEmpty);
 			return;
 		}
 		setBusy(true);
 		try {
 			await pb.collection("ft_trees").update(tree.id, { name: name.trim() });
-			toast("Tree renamed");
+			toast(d.renamed);
 			router.refresh();
 			onClose();
 		} catch (err: any) {
@@ -110,10 +113,10 @@ export const RenameTreeDialog = ({
 	};
 
 	return (
-		<Dialog title="Rename tree" onClose={onClose}>
+		<Dialog title={d.renameTitle} onClose={onClose}>
 			<form onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: 20 }}>
 				<label className="field">
-					<span className="field-label">Tree name</span>
+					<span className="field-label">{d.treeName}</span>
 					<input
 						className={`input ${error ? "is-invalid" : ""}`}
 						value={name}
@@ -132,11 +135,11 @@ export const RenameTreeDialog = ({
 				</label>
 				<div className="dialog-actions">
 					<button type="button" className="btn btn-outline" onClick={onClose}>
-						Cancel
+						{t.common.cancel}
 					</button>
 					<button type="submit" className="btn btn-primary" disabled={busy}>
 						{busy ? <span className="spinner" /> : null}
-						Save
+						{t.common.save}
 					</button>
 				</div>
 			</form>
@@ -156,6 +159,8 @@ export const ManageInvitedDialog = ({
 	/** Called after every successful write, including an Undo after closing. */
 	onChanged?: () => void;
 }) => {
+	const t = useT();
+	const d = t.treeDialogs;
 	const router = useRouter();
 	const toast = useToast();
 	const [invited, setInvited] = useState<InvitedUser[]>(tree.invited);
@@ -194,11 +199,11 @@ export const ManageInvitedDialog = ({
 		e.preventDefault();
 		const address = email.trim();
 		if (!isValidEmail(address)) {
-			setError("That doesn't look like a full email address.");
+			setError(t.common.emailInvalid);
 			return;
 		}
 		if (invited.some((u) => u.email.toLowerCase() === address.toLowerCase())) {
-			setError("That person already has access.");
+			setError(d.alreadyHasAccess);
 			return;
 		}
 		setBusy(true);
@@ -210,14 +215,14 @@ export const ManageInvitedDialog = ({
 		} catch (err: any) {
 			setError(
 				err?.status === 404
-					? "That email has no Family Tree account yet."
+					? d.noAccount
 					: getPocketbaseError(err)
 			);
 			setBusy(false);
 			return;
 		}
 		if (userId === pb.authStore.record?.id) {
-			setError("That's you. You already own this tree.");
+			setError(d.thatsYou);
 			setBusy(false);
 			return;
 		}
@@ -227,7 +232,7 @@ export const ManageInvitedDialog = ({
 				list.some((u) => u.id === userId) ? list : [...list, { id: userId, email: address }]
 			);
 			setEmail("");
-			toast(`${address} can now view ${tree.name}`);
+			toast(d.invited(address, tree.name));
 		} catch (err: any) {
 			setError(getPocketbaseError(err));
 		} finally {
@@ -239,8 +244,8 @@ export const ManageInvitedDialog = ({
 		try {
 			await change("remove", user.id);
 			setInvited((list) => list.filter((u) => u.id !== user.id));
-			toast("Access revoked", "success", {
-				label: "Undo",
+			toast(d.revoked, "success", {
+				label: t.common.undo,
 				fn: () => {
 					change("add", user.id)
 						.then(() =>
@@ -258,8 +263,8 @@ export const ManageInvitedDialog = ({
 
 	return (
 		<Dialog
-			title={`Who can see ${tree.name}`}
-			subtitle="Invited people can look, not edit. They need a Family Tree account with this email."
+			title={d.whoCanSee(tree.name)}
+			subtitle={d.whoCanSeeSubtitle}
 			onClose={onClose}
 			width={480}
 		>
@@ -268,8 +273,8 @@ export const ManageInvitedDialog = ({
 					<input
 						className={`input ${error ? "is-invalid" : ""}`}
 						type="email"
-						placeholder="name@example.com"
-						aria-label="Email to invite"
+						placeholder={d.emailPlaceholder}
+						aria-label={d.emailToInvite}
 						value={email}
 						onChange={(e) => {
 							setEmail(e.target.value);
@@ -286,24 +291,24 @@ export const ManageInvitedDialog = ({
 				</div>
 				<button type="submit" className="btn btn-primary" disabled={busy || writing}>
 					{busy ? <span className="spinner" /> : null}
-					Invite
+					{d.invite}
 				</button>
 			</form>
 			<div className={s.people}>
 				<div className={s.person}>
 					<UserAvatar name={userName} size={36} />
 					<div style={{ flex: 1, minWidth: 0 }}>
-						<div className={s.personName}>{userName} (you)</div>
-						<div className={s.personRole}>Creator</div>
+						<div className={s.personName}>{t.common.withYou(userName)}</div>
+						<div className={s.personRole}>{t.common.creator}</div>
 					</div>
-					<span className="badge badge-owner">Owner</span>
+					<span className="badge badge-owner">{t.common.owner}</span>
 				</div>
 				{invited.map((user) => (
 					<div key={user.id} className={s.person}>
 						<EmailAvatar email={user.email} size={36} />
 						<div style={{ flex: 1, minWidth: 0 }}>
 							<div className={s.personName}>{user.email}</div>
-							<div className={s.personRole}>Viewer · read-only</div>
+							<div className={s.personRole}>{t.common.viewerReadOnly}</div>
 						</div>
 						<button
 							className="btn btn-danger-outline btn-sm"
@@ -311,14 +316,14 @@ export const ManageInvitedDialog = ({
 							disabled={writing}
 							onClick={() => revoke(user)}
 						>
-							Revoke
+							{d.revoke}
 						</button>
 					</div>
 				))}
 			</div>
 			<div className="dialog-actions">
 				<button className="btn btn-outline" onClick={onClose}>
-					Done
+					{t.common.done}
 				</button>
 			</div>
 		</Dialog>
@@ -334,24 +339,16 @@ export const DeleteTreeDialog = ({
 }) => {
 	const router = useRouter();
 	const toast = useToast();
+	const t = useT();
+	const d = t.treeDialogs;
 	const [typed, setTyped] = useState("");
 	const [busy, setBusy] = useState(false);
-	const people =
-		tree.people === null
-			? "everyone in it"
-			: `${tree.people} ${tree.people === 1 ? "person" : "people"}`;
-	const viewers =
-		tree.invited.length > 0
-			? ` for you and ${tree.invited.length} invited viewer${
-					tree.invited.length === 1 ? "" : "s"
-			  }`
-			: "";
 
 	const remove = async () => {
 		setBusy(true);
 		try {
 			await pb.collection("ft_trees").delete(tree.id);
-			toast(`${tree.name} deleted`);
+			toast(d.deleted(tree.name));
 			router.refresh();
 			onClose();
 		} catch (err: any) {
@@ -362,17 +359,17 @@ export const DeleteTreeDialog = ({
 
 	return (
 		<ConfirmDialog
-			title={`Delete “${tree.name}”?`}
-			body={`This removes ${people} and all their relationships${viewers}. There is no undo.`}
-			confirmLabel="Delete tree"
-			cancelLabel="Keep it"
+			title={d.deleteTitle(tree.name)}
+			body={d.deleteBody(tree.people, tree.invited.length)}
+			confirmLabel={d.deleteConfirm}
+			cancelLabel={d.keep}
 			onConfirm={remove}
 			onClose={onClose}
 			busy={busy}
 			disabled={typed.trim() !== tree.name.trim()}
 		>
 			<label className="field">
-				<span className="field-label">Type the tree name to confirm</span>
+				<span className="field-label">{d.typeName}</span>
 				<input
 					className="input"
 					placeholder={tree.name}

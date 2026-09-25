@@ -17,6 +17,9 @@ export interface Point {
 
 export interface Band {
 	label: string;
+	/** First year of the band; the UI formats its label per language. */
+	year: number;
+	span: number;
 	y: number;
 	h: number;
 	shaded: boolean;
@@ -85,6 +88,8 @@ export const layoutTree = (nodes: Node[], relationships: Relationship[] = []): L
 	for (let year = firstBand, i = 0; year <= lastYear; year += BAND_YEARS, i++) {
 		bands.push({
 			label: `${year}s`,
+			year,
+			span: BAND_YEARS,
 			y: (year - baseYear) * LEVEL_PX + TOP - 12,
 			h: BAND_YEARS * LEVEL_PX,
 			shaded: i % 2 === 0,

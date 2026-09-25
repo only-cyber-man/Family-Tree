@@ -5,6 +5,7 @@ import { FormEvent, useState } from "react";
 import { pb } from "@/lib";
 import { AlertIcon } from "@/components/Icons";
 import { PasswordInput } from "@/components/PasswordInput";
+import { useT } from "@/i18n/client";
 import styles from "@/components/auth.module.css";
 
 const saveSession = () => {
@@ -13,6 +14,8 @@ const saveSession = () => {
 };
 
 export const LoginForm = () => {
+	const t = useT();
+	const a = t.auth;
 	const [mode, setMode] = useState<"sign-in" | "reset">("sign-in");
 	const [login, setLogin] = useState("");
 	const [password, setPassword] = useState("");
@@ -23,7 +26,7 @@ export const LoginForm = () => {
 	const signIn = async (e: FormEvent) => {
 		e.preventDefault();
 		if (!login.trim() || !password) {
-			setError("Enter your username or email and your password.");
+			setError(a.missingCredentials);
 			return;
 		}
 		setIsLoading(true);
@@ -35,7 +38,7 @@ export const LoginForm = () => {
 		} catch (userError: any) {
 			// 400 is PocketBase's "wrong credentials"; anything else is a real failure.
 			if (userError?.status !== 400) {
-				setError(userError?.message ?? "Could not reach the server. Try again.");
+				setError(userError?.message ?? a.unreachable);
 				setIsLoading(false);
 				return;
 			}
@@ -46,8 +49,8 @@ export const LoginForm = () => {
 		} catch (adminError: any) {
 			setError(
 				adminError?.status === 400 || adminError?.status === 404
-					? "Wrong username or password. Check both and try again."
-					: adminError?.message ?? "Could not reach the server. Try again."
+					? a.wrongCredentials
+					: adminError?.message ?? a.unreachable
 			);
 			setIsLoading(false);
 		}
@@ -57,18 +60,16 @@ export const LoginForm = () => {
 		e.preventDefault();
 		const email = login.trim();
 		if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-			setError("Enter the email address of your account.");
+			setError(a.resetEmailMissing);
 			return;
 		}
 		setIsLoading(true);
 		setError(null);
 		try {
 			await pb.collection("ft_users").requestPasswordReset(email);
-			setNotice(
-				`If ${email} has an account, a reset link is on its way. Check your inbox.`
-			);
+			setNotice(a.resetSent(email));
 		} catch (err: any) {
-			setError(err?.message ?? "Could not send the reset email. Try again.");
+			setError(err?.message ?? a.resetFailed);
 		} finally {
 			setIsLoading(false);
 		}
@@ -79,11 +80,9 @@ export const LoginForm = () => {
 	return (
 		<form className={styles.card} onSubmit={isReset ? requestReset : signIn} noValidate>
 			<div>
-				<h1 className={styles.title}>{isReset ? "Reset password" : "Welcome back"}</h1>
+				<h1 className={styles.title}>{isReset ? a.resetTitle : a.welcomeTitle}</h1>
 				<p className={styles.subtitle}>
-					{isReset
-						? "We'll email you a link to choose a new one."
-						: "Sign in to open your trees."}
+					{isReset ? a.resetSubtitle : a.welcomeSubtitle}
 				</p>
 			</div>
 			{error ? (
@@ -99,7 +98,7 @@ export const LoginForm = () => {
 				</div>
 			) : null}
 			<label className="field">
-				<span className="field-label">{isReset ? "Email" : "Username or email"}</span>
+				<span className="field-label">{isReset ? a.email : a.usernameOrEmail}</span>
 				<input
 					className="input"
 					type={isReset ? "email" : "text"}
@@ -112,7 +111,7 @@ export const LoginForm = () => {
 			{isReset ? null : (
 				<div className="field">
 					<span className="field-label">
-						<label htmlFor="password">Password</label>
+						<label htmlFor="password">{a.password}</label>
 						<button
 							type="button"
 							className={styles.linkButton}
@@ -121,7 +120,7 @@ export const LoginForm = () => {
 								setError(null);
 							}}
 						>
-							Forgot?
+							{a.forgot}
 						</button>
 					</span>
 					<PasswordInput
@@ -137,11 +136,11 @@ export const LoginForm = () => {
 				{isLoading ? <span className="spinner" /> : null}
 				{isReset
 					? isLoading
-						? "Sending…"
-						: "Send reset link"
+						? a.sending
+						: a.sendReset
 					: isLoading
-					? "Signing in…"
-					: "Sign in"}
+					? a.signingIn
+					: a.signIn}
 			</button>
 			<div className={styles.foot}>
 				{isReset ? (
@@ -155,13 +154,13 @@ export const LoginForm = () => {
 							setNotice(null);
 						}}
 					>
-						Back to sign in
+						{a.backToSignIn}
 					</button>
 				) : (
 					<>
-						Don&apos;t have an account?{" "}
+						{a.noAccount}{" "}
 						<Link href="/sign-up" style={{ fontWeight: 600 }}>
-							Sign up
+							{a.signUp}
 						</Link>
 					</>
 				)}

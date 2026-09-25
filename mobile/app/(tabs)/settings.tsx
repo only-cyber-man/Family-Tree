@@ -8,7 +8,6 @@ import { Avatar } from "../../src/components/Avatar";
 import { Button } from "../../src/components/Button";
 import { Card, Row, SectionHeader, SwitchRow, ValueRow } from "../../src/components/List";
 import { Screen } from "../../src/components/Screen";
-import { Segmented } from "../../src/components/Segmented";
 import { Text } from "../../src/components/Text";
 import { useEnableReminders } from "../../src/hooks/useReminders";
 import { useIsOwner, useMe, useVisibility } from "../../src/hooks/useTreeData";
@@ -19,16 +18,17 @@ import { useSession } from "../../src/store/session";
 import { useSettings, type ReminderSettings } from "../../src/store/settings";
 import { toast } from "../../src/store/toast";
 import { useTree } from "../../src/store/tree";
-import type { ThemePreference } from "../../src/theme/theme";
 import { useTheme } from "../../src/theme/useTheme";
+import { useT } from "../../src/i18n";
+import { PreferencesCard } from "../../src/components/Preferences";
+import { READING_MAX } from "../../src/lib/responsive";
 
 export default function Settings() {
 	const t = useTheme();
+	const T = useT();
 	const router = useRouter();
 	const user = useSession((s) => s.user);
 	const signOut = useSession((s) => s.signOut);
-	const theme = useSettings((s) => s.theme);
-	const setTheme = useSettings((s) => s.setTheme);
 	const reminders = useSettings((s) => s.reminders);
 	const setReminders = useSettings((s) => s.setReminders);
 	const enableReminders = useEnableReminders();
@@ -52,7 +52,7 @@ export default function Settings() {
 		try {
 			await shareIcs(full.tree.id, full.tree.name, visible.persons);
 		} catch (e) {
-			toast(errorMessage(e), "error");
+			toast(errorMessage(e, T), "error");
 		} finally {
 			setExporting(false);
 		}
@@ -60,12 +60,12 @@ export default function Settings() {
 
 	const confirmSignOut = () =>
 		Alert.alert(
-			"Sign out?",
-			"Reminders are removed and the copies of your trees are deleted from this phone.",
+			T.settings.signOutTitle,
+			T.settings.signOutBody,
 			[
-			{ text: "Cancel", style: "cancel" },
+			{ text: T.common.cancel, style: "cancel" },
 			{
-				text: "Sign out",
+				text: T.settings.signOut,
 				style: "destructive",
 				onPress: () => {
 					signOut();
@@ -75,15 +75,15 @@ export default function Settings() {
 		);
 
 	const account = () =>
-		Alert.alert(user?.name || user?.username || "Account", "Password changes and account deletion are done on the website.", [
-			{ text: "Open website", onPress: () => WebBrowser.openBrowserAsync(WEB_ORIGIN) },
-			{ text: "Close", style: "cancel" },
+		Alert.alert(user?.name || user?.username || T.settings.account, T.settings.accountBody, [
+			{ text: T.settings.openWebsite, onPress: () => WebBrowser.openBrowserAsync(WEB_ORIGIN) },
+			{ text: T.common.close, style: "cancel" },
 		]);
 
 	return (
-		<Screen tabs contentStyle={{ gap: 18 }}>
+		<Screen tabs maxWidth={READING_MAX} contentStyle={{ gap: 18 }}>
 			<Text variant="display" accessibilityRole="header">
-				Settings
+				{T.settings.title}
 			</Text>
 			<Card>
 				<Row
@@ -100,31 +100,18 @@ export default function Settings() {
 			</Card>
 
 			<View style={{ gap: 8 }}>
-				<SectionHeader title="Appearance" />
-				<Card padded>
-					<Text size={15} weight={600}>
-						Theme
-					</Text>
-					<Segmented<ThemePreference>
-						value={theme}
-						onChange={setTheme}
-						options={[
-							{ value: "system", label: "System" },
-							{ value: "light", label: "Light" },
-							{ value: "dark", label: "Dark" },
-						]}
-					/>
-				</Card>
+				<SectionHeader title={T.prefs.appearance} />
+				<PreferencesCard />
 			</View>
 
 			<View style={{ gap: 8 }}>
-				<SectionHeader title="Reminders" />
+				<SectionHeader title={T.settings.reminders} />
 				<Card>
-					<SwitchRow title="Birthdays" subtitle="Day before, 9:00" value={reminders.enabled && reminders.birthdays} onChange={toggle("birthdays")} />
-					<SwitchRow title="Remembrance days" subtitle="On the day, 9:00" value={reminders.enabled && reminders.remembrance} onChange={toggle("remembrance")} />
-					<SwitchRow title="Round birthdays a week early" subtitle="18, 50, 55, 60, 65, 70…" value={reminders.enabled && reminders.roundEarly} onChange={toggle("roundEarly")} />
+					<SwitchRow title={T.settings.birthdays} subtitle={T.settings.dayBefore} value={reminders.enabled && reminders.birthdays} onChange={toggle("birthdays")} />
+					<SwitchRow title={T.settings.remembranceDays} subtitle={T.settings.onTheDay} value={reminders.enabled && reminders.remembrance} onChange={toggle("remembrance")} />
+					<SwitchRow title={T.settings.roundEarly} subtitle={T.settings.roundAges} value={reminders.enabled && reminders.roundEarly} onChange={toggle("roundEarly")} />
 				</Card>
-				<Text variant="small">Scheduled on this phone for the active tree. Nothing is sent to a server.</Text>
+				<Text variant="small">{T.settings.remindersNote}</Text>
 			</View>
 
 			{full ? (
@@ -133,25 +120,48 @@ export default function Settings() {
 					<Card>
 						{owner ? (
 							<ValueRow
-								title="Who can see this tree"
-								value={full.tree.invited.length ? `${full.tree.invited.length} viewer${full.tree.invited.length === 1 ? "" : "s"}` : "Only you"}
+								title={T.settings.whoCanSee}
+								value={full.tree.invited.length ? T.settings.viewers(full.tree.invited.length) : T.settings.onlyYou}
 								onPress={() => router.push("/invited")}
 							/>
 						) : null}
 						<ValueRow
-							title={exporting ? "Preparing…" : "Export to calendar (.ics)"}
+							title={exporting ? T.settings.preparing : T.settings.exportIcs}
 							onPress={exportIcs}
 							icon={<Share size={18} color={t.c.ink3} strokeWidth={1.75} />}
 						/>
-						<ValueRow title="This is me" value={me?.name ?? "Not set"} onPress={() => router.push("/pick-me")} />
-						<ValueRow title="Switch tree" onPress={() => router.push("/trees")} />
+						<ValueRow title={T.settings.thisIsMe} value={me?.name ?? T.settings.notSet} onPress={() => router.push("/pick-me")} />
+						<ValueRow title={T.settings.switchTree} onPress={() => router.push("/trees")} />
 					</Card>
 				</View>
 			) : null}
 
-			<Button kind="destructive" size="md" label="Sign out" onPress={confirmSignOut} style={{ height: 50 }} />
+			<View style={{ gap: 8 }}>
+				<SectionHeader title={T.settings.about} />
+				<Card>
+					<ValueRow title={T.settings.privacy} onPress={() => WebBrowser.openBrowserAsync(`${WEB_ORIGIN}/privacy`)} />
+				</Card>
+			</View>
+
+			<Button kind="destructive" size="md" label={T.settings.signOut} onPress={confirmSignOut} style={{ height: 50 }} />
+			<Button
+				kind="destructive"
+				size="md"
+				label={T.settings.deleteAccount}
+				style={{ height: 50, borderColor: "transparent" }}
+				onPress={() =>
+					Alert.alert(
+						T.settings.deleteTitle,
+						T.settings.deleteBody,
+						[
+							{ text: T.common.cancel, style: "cancel" },
+							{ text: T.common.continue, style: "destructive", onPress: () => router.push("/delete-account") },
+						],
+					)
+				}
+			/>
 			<Text variant="small" center>
-				Family Tree {Constants.expoConfig?.version ?? "1.0"} · Created by tomek7667 · family-tree@cyber-man.pl
+				{T.settings.footer(Constants.expoConfig?.version ?? "1.0")}
 			</Text>
 		</Screen>
 	);

@@ -86,25 +86,46 @@
 	z-index: 10;
 }
 
-.mobileMenu a {
+.mobileMenu .menuLink {
 	padding: 12px;
 	border-radius: 8px;
 	font-weight: 600;
 	color: var(--ink);
 }
 
-.mobileMenu a:hover {
+.mobileMenu .menuLink:hover {
 	background: var(--surface2);
 }
 
-@container (max-width: 820px) {
-	.navLinks,
-	.hideNarrow {
+.menuPrefs {
+	display: flex;
+	justify-content: flex-start;
+	padding: 10px 12px 6px;
+	margin-top: 4px;
+	border-top: 1px solid var(--surface2);
+}
+
+/* Section links move into the menu first; buttons and switches follow on phones. */
+@container (max-width: 1100px) {
+	.navLinks {
 		display: none;
 	}
 
 	.menuBtn {
 		display: flex;
+	}
+}
+
+@container (max-width: 820px) {
+	.hideNarrow {
+		display: none;
+	}
+}
+
+@container (min-width: 821px) {
+	.menuSignUp,
+	.menuPrefs {
+		display: none;
 	}
 }
 

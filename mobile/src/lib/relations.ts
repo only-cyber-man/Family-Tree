@@ -1,3 +1,4 @@
+import { en, type Dict } from "../i18n/en";
 import { tokens } from "../theme/tokens";
 import { firstName } from "./format";
 import type { Edge, Gender, Graph, Person, RelationshipGroup, RelationshipNameRecord, RelationshipRecord } from "./types";
@@ -30,9 +31,19 @@ export function humanizeName(name: string): string {
 	return s.length ? s[0].toUpperCase() + s.slice(1) : name;
 }
 
+/** Localised label of a relationship type; unknown types fall back to the humanised name. */
+export function typeLabel(name: string, L: Dict = en): string {
+	return L.rel.types[name]?.label ?? humanizeName(name);
+}
+
+/** Verb for "<A> <verb> <B>" by A's gender; unknown types: the lower-cased humanised name. */
+export function typeSentence(name: string, gender: Gender, L: Dict = en): string {
+	return L.rel.types[name]?.sentence(gender) ?? humanizeName(name).toLowerCase();
+}
+
 /** Chip label with direction: "Mother of →", "Married to ↔". */
-export function relationChipLabel(name: string, bidirectional: boolean): string {
-	return `${humanizeName(name)} ${bidirectional ? "↔" : "→"}`;
+export function relationChipLabel(name: string, bidirectional: boolean, L: Dict = en): string {
+	return `${typeLabel(name, L)} ${bidirectional ? "↔" : "→"}`;
 }
 
 export type Emphasis = "strong" | "normal" | "weak";
@@ -45,8 +56,8 @@ export function emphasisFor(name: string): Emphasis {
 
 export const GROUP_ORDER: RelationshipGroup[] = ["BIOLOGICAL", "IN-LAW", "CHURCH", "IRRELEVANT"];
 
-export function groupLabel(group: RelationshipGroup): string {
-	return tokens.relationship[group].label;
+export function groupLabel(group: RelationshipGroup, L: Dict = en): string {
+	return L.rel.groups[group] ?? tokens.relationship[group].label;
 }
 
 export function groupGlyph(group: RelationshipGroup): string {
@@ -106,21 +117,24 @@ function genderWord(gender: Gender, male: string, female: string): string {
 }
 
 /** How `other` relates to the viewed person, for a row in the person sheet. */
-export function roleLabel(e: Edge, viewed: Person, other: Person): string {
+export function roleLabel(e: Edge, viewed: Person, other: Person, L: Dict = en): string {
+	const R = L.rel.roles;
 	const m = classifyName(e.name);
 	if (m.kind === "parent") {
 		const pc = parentChild(e)!;
 		if (pc.parent === other.id) {
-			if (/MOTHER/.test(e.name)) return "Mother";
-			if (/FATHER/.test(e.name)) return "Father";
-			return genderWord(other.gender, "Father", "Mother");
+			if (/MOTHER/.test(e.name)) return R.mother;
+			if (/FATHER/.test(e.name)) return R.father;
+			return genderWord(other.gender, R.father, R.mother);
 		}
-		return "Child";
+		return R.child;
 	}
-	if (m.kind === "sibling") return genderWord(other.gender, "Brother", "Sister");
-	if (e.bidirectional || m.kind === "spouse" || m.kind === "partner") return humanizeName(e.name);
-	if (e.source === other.id) return humanizeName(e.name).replace(/ (of|to)$/, "");
-	return `${firstName(viewed.name)} is ${humanizeName(e.name).toLowerCase()}`;
+	if (m.kind === "sibling") return R.sibling(other.gender);
+	if (e.bidirectional || m.kind === "spouse" || m.kind === "partner") return typeLabel(e.name, L);
+	const t = L.rel.types[e.name];
+	if (e.source === other.id) return t?.role?.(other.gender) ?? humanizeName(e.name).replace(/ (of|to)$/, "");
+	if (t?.inverseRole) return t.inverseRole(other.gender);
+	return R.isSourceOf(firstName(viewed.name), typeLabel(e.name, L).toLowerCase());
 }
 
 export interface SheetRow {
@@ -135,7 +149,7 @@ export interface SheetGroup {
 }
 
 /** Direct relationships of a person grouped as in the person sheet. */
-export function sheetGroups(g: Graph, id: string, edges: Edge[] = g.edges): SheetGroup[] {
+export function sheetGroups(g: Graph, id: string, edges: Edge[] = g.edges, L: Dict = en): SheetGroup[] {
 	const viewed = g.byId[id];
 	if (!viewed) return [];
 	const byGroup = new Map<RelationshipGroup, SheetRow[]>();
@@ -144,7 +158,7 @@ export function sheetGroups(g: Graph, id: string, edges: Edge[] = g.edges): Shee
 		const other = g.byId[e.source === id ? e.target : e.source];
 		if (!other) continue;
 		const rows = byGroup.get(e.group) ?? [];
-		rows.push({ edge: e, person: other, role: roleLabel(e, viewed, other) });
+		rows.push({ edge: e, person: other, role: roleLabel(e, viewed, other, L) });
 		byGroup.set(e.group, rows);
 	}
 	return GROUP_ORDER.filter((grp) => byGroup.has(grp)).map((grp) => ({

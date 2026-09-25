@@ -1,3 +1,4 @@
+import { en, type Dict } from "../i18n/en";
 import type { Person } from "./types";
 
 // Mirrors the web ExportVisibleButton + calendar route (which use the `ics`
@@ -12,6 +13,8 @@ export interface IcsOptions {
 	now?: Date;
 	/** Same as the web: the tree page URL. */
 	url?: string;
+	/** Event texts; English matches the web export exactly. */
+	L?: Dict;
 }
 
 const pad = (n: number, w = 2) => String(n).padStart(w, "0");
@@ -65,21 +68,21 @@ interface IcsEvent {
 	start: { year: number; month: number; day: number };
 }
 
-export function buildEvents(persons: Person[]): IcsEvent[] {
+export function buildEvents(persons: Person[], L: Dict = en): IcsEvent[] {
 	const birthdays: IcsEvent[] = persons
 		.filter((p) => p.birth)
 		.map((p) => ({
 			uid: `${p.id}-birthday@family-tree.cyber-man.pl`,
-			title: p.name + " birthday",
-			description: "Birthday of " + p.name + " occurs on this day",
+			title: L.ics.birthdayTitle(p.name),
+			description: L.ics.birthdayDesc(p.name),
 			start: p.birth!,
 		}));
 	const deaths: IcsEvent[] = persons
 		.filter((p) => p.death)
 		.map((p) => ({
 			uid: `${p.id}-passing@family-tree.cyber-man.pl`,
-			title: p.name + " Passing Away Anniversary",
-			description: "Anniversary of " + p.name + "'s passing away occurs on this day",
+			title: L.ics.deathTitle(p.name),
+			description: L.ics.deathDesc(p.name),
 			start: p.death!,
 		}));
 	return [...birthdays, ...deaths];
@@ -94,10 +97,10 @@ export function buildIcs(persons: Person[], opts: IcsOptions): string {
 		"CALSCALE:GREGORIAN",
 		"PRODID:-//cyber-man.pl//Family Tree mobile//EN",
 		"METHOD:PUBLISH",
-		"X-WR-CALNAME:Birthdays",
+		`X-WR-CALNAME:${escapeText((opts.L ?? en).ics.calName)}`,
 		"X-PUBLISHED-TTL:PT1H",
 	];
-	for (const e of buildEvents(persons)) {
+	for (const e of buildEvents(persons, opts.L ?? en)) {
 		lines.push(
 			"BEGIN:VEVENT",
 			`UID:${e.uid}`,
@@ -116,12 +119,12 @@ export function buildIcs(persons: Person[], opts: IcsOptions): string {
 	return lines.map(foldLine).join("\r\n") + "\r\n";
 }
 
-export function icsFileName(treeName: string): string {
+export function icsFileName(treeName: string, L: Dict = en): string {
 	const base = treeName
 		.normalize("NFD")
 		.replace(/[\u0300-\u036f]/g, "")
 		.replace(/[^a-zA-Z0-9]+/g, "-")
 		.replace(/^-+|-+$/g, "")
 		.toLowerCase();
-	return `${base || "family-tree"}-dates.ics`;
+	return `${base || "family-tree"}-${L.ics.fileSuffix}.ics`;
 }

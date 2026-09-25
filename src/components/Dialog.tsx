@@ -3,6 +3,7 @@
 import { ReactNode, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { CloseIcon, TrashIcon } from "./Icons";
+import { useT } from "@/i18n/client";
 
 interface DialogProps {
 	title?: ReactNode;
@@ -28,6 +29,7 @@ export const Dialog = ({
 	bare = false,
 	className = "",
 }: DialogProps) => {
+	const t = useT();
 	const panel = useRef<HTMLDivElement>(null);
 	const onCloseRef = useRef(onClose);
 	onCloseRef.current = onClose;
@@ -68,7 +70,7 @@ export const Dialog = ({
 		// React has already applied autoFocus by now; only fall back when it did not.
 		if (!panel.current?.contains(document.activeElement)) {
 			panel.current
-				?.querySelector<HTMLElement>("input, select, textarea, button:not([aria-label='Close'])")
+				?.querySelector<HTMLElement>("input, select, textarea, button:not([data-dialog-close])")
 				?.focus();
 		}
 		return () => {
@@ -104,7 +106,7 @@ export const Dialog = ({
 							{title ? <h2 className="dialog-title">{title}</h2> : null}
 							{subtitle ? <p className="dialog-sub">{subtitle}</p> : null}
 						</div>
-						<button className="icon-btn" aria-label="Close" onClick={onClose}>
+						<button className="icon-btn" aria-label={t.common.close} data-dialog-close onClick={onClose}>
 							<CloseIcon />
 						</button>
 					</div>
@@ -133,13 +135,15 @@ export const ConfirmDialog = ({
 	title,
 	body,
 	confirmLabel,
-	cancelLabel = "Cancel",
+	cancelLabel,
 	onConfirm,
 	onClose,
 	busy = false,
 	disabled = false,
 	children,
-}: ConfirmDialogProps) => (
+}: ConfirmDialogProps) => {
+	const t = useT();
+	return (
 	<Dialog onClose={onClose} role="alertdialog" bare title={title}>
 		<div className="dialog-icon">
 			<TrashIcon size={22} />
@@ -153,7 +157,7 @@ export const ConfirmDialog = ({
 		{children}
 		<div className="dialog-actions">
 			<button className="btn btn-outline" onClick={onClose}>
-				{cancelLabel}
+				{cancelLabel ?? t.common.cancel}
 			</button>
 			<button
 				className="btn btn-danger"
@@ -165,4 +169,5 @@ export const ConfirmDialog = ({
 			</button>
 		</div>
 	</Dialog>
-);
+	);
+};

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo } from "react";
 import { Linking } from "react-native";
 import { cancelReminders, planFor, requestPermission, scheduleReminders } from "../services/notifications";
+import { getT } from "../i18n";
 import { epochGuard } from "../store/epoch";
 import { useSession } from "../store/session";
 import { useSettings } from "../store/settings";
@@ -12,12 +13,13 @@ export function useEnableReminders() {
 	const setReminders = useSettings((s) => s.setReminders);
 	return useCallback(async (): Promise<boolean> => {
 		const ok = await requestPermission().catch(() => false);
+		const T = getT().toastsReminders;
 		if (ok) {
 			setReminders({ enabled: true });
-			toast("Reminders are on. They stay on this phone.", "success");
+			toast(T.on, "success");
 		} else {
 			setReminders({ enabled: false });
-			toast("Notifications are off for Family Tree.", "error", { label: "Settings", onPress: () => Linking.openSettings() });
+			toast(T.off, "error", { label: T.settings, onPress: () => Linking.openSettings() });
 		}
 		return ok;
 	}, [setReminders]);
@@ -28,6 +30,8 @@ export function useReminderSync() {
 	const full = useTree((s) => s.full);
 	const reminders = useSettings((s) => s.reminders);
 	const userId = useSession((s) => s.user?.id);
+	// Reminder texts are in the app language: re-schedule when it changes.
+	const language = useSettings((s) => s.language);
 	useEffect(() => {
 		const valid = epochGuard();
 		const id = setTimeout(() => {
@@ -40,7 +44,7 @@ export function useReminderSync() {
 			scheduleReminders(full, reminders, userId, valid).catch(() => undefined);
 		}, 800);
 		return () => clearTimeout(id);
-	}, [full, reminders, userId]);
+	}, [full, reminders, userId, language]);
 }
 
 /** Event keys that have a reminder in the current (capped) plan. */

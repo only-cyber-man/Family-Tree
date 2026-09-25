@@ -13,9 +13,19 @@ import { haptics } from "../../src/services/haptics";
 import { useSession } from "../../src/store/session";
 import { useSettings } from "../../src/store/settings";
 import { useTheme } from "../../src/theme/useTheme";
+import { useT } from "../../src/i18n";
+import { en } from "../../src/i18n/en";
+import { QuickPrefs } from "../../src/components/Preferences";
+import { AuthFrame } from "../../src/components/AuthFrame";
+import { useLayout } from "../../src/hooks/useLayout";
+import { FORM_MAX } from "../../src/lib/responsive";
 
 export default function SignIn() {
 	const t = useTheme();
+	const T = useT();
+	const layout = useLayout();
+	// Tablets: a centred form, never edge to edge.
+	const formCap = layout.isTablet ? ({ width: "100%", maxWidth: FORM_MAX, alignSelf: "center" } as const) : null;
 	const insets = useSafeAreaInsets();
 	const router = useRouter();
 	const expired = useSession((s) => s.expired);
@@ -31,7 +41,7 @@ export default function SignIn() {
 
 	const submit = async () => {
 		const who = reauth ? lastLogin! : login;
-		if (!who.trim() || !password) return setError("Enter your username or email and your password.");
+		if (!who.trim() || !password) return setError(T.auth.enterBoth);
 		setBusy(true);
 		setError(null);
 		try {
@@ -39,7 +49,7 @@ export default function SignIn() {
 			haptics.success();
 		} catch (e) {
 			haptics.error();
-			setError(errorMessage(e).includes("authenticate") ? "That username or password is not right." : errorMessage(e));
+			setError(errorMessage(e, T).includes("authenticate") || errorMessage(e, en).includes("authenticate") ? T.auth.wrongCredentials : errorMessage(e, T));
 		} finally {
 			setBusy(false);
 		}
@@ -48,19 +58,19 @@ export default function SignIn() {
 	const forgot = () => {
 		const email = login.includes("@") ? login.trim() : "";
 		if (!email) {
-			Alert.alert("Forgot password?", "Type your email address in the first field, then tap “Forgot password?” again.");
+			Alert.alert(T.auth.forgot, T.auth.forgotHowTo);
 			return;
 		}
-		Alert.alert("Reset password", `Send a reset link to ${email}?`, [
-			{ text: "Cancel", style: "cancel" },
+		Alert.alert(T.auth.resetTitle, T.auth.resetConfirm(email), [
+			{ text: T.common.cancel, style: "cancel" },
 			{
-				text: "Send",
+				text: T.auth.send,
 				onPress: async () => {
 					try {
 						await requestPasswordReset(email);
-						Alert.alert("Check your inbox", "If that email has an account, a reset link is on its way.");
+						Alert.alert(T.auth.checkInbox, T.auth.checkInboxBody);
 					} catch (e) {
-						Alert.alert("Couldn't send", errorMessage(e));
+						Alert.alert(T.auth.couldntSend, errorMessage(e, T));
 					}
 				},
 			},
@@ -69,24 +79,28 @@ export default function SignIn() {
 
 	if (reauth) {
 		return (
-			<KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={[styles.fill, { backgroundColor: t.c.bg }]}>
-				<View style={[styles.center, { paddingTop: insets.top + 40, paddingBottom: insets.bottom + 24 }]}>
+			<AuthFrame>
+		<KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={[styles.fill, { backgroundColor: t.c.bg }]}>
+				<View style={[styles.center, formCap, { paddingTop: insets.top + 40, paddingBottom: insets.bottom + 24 }]}>
+					<View style={{ position: "absolute", top: insets.top + 8, right: 24 }}>
+						<QuickPrefs />
+					</View>
 					<View style={[styles.lock, { backgroundColor: t.c.surface2 }]}>
 						<Lock size={28} color={t.c.ink2} strokeWidth={1.75} />
 					</View>
 					<View style={{ gap: 8 }}>
 						<Text variant="title" center accessibilityRole="header">
-							Please sign in again
+							{T.auth.signInAgain}
 						</Text>
 						<Text variant="body" color={t.c.ink2} center>
-							Your session ended. Nothing was lost; the tree is still here.
+							{T.auth.sessionEnded}
 						</Text>
 					</View>
 					<View style={{ alignSelf: "stretch", gap: 12, paddingTop: 8 }}>
 						<TextField
 							value={password}
 							onChangeText={setPassword}
-							placeholder={`Password for ${lastLogin}`}
+							placeholder={T.auth.passwordFor(lastLogin ?? "")}
 							secret
 							autoFocus
 							textContentType="password"
@@ -95,39 +109,44 @@ export default function SignIn() {
 							onSubmitEditing={submit}
 							error={error}
 						/>
-						<Button label="Sign in" loading={busy} onPress={submit} />
+						<Button label={T.common.signIn} loading={busy} onPress={submit} />
 						<Button
 							kind="ghost"
-							label="Use a different account"
+							label={T.auth.differentAccount}
 							style={{ borderWidth: 0 }}
 							onPress={() => forgetExpired()}
 						/>
 					</View>
 				</View>
 			</KeyboardAvoidingView>
+		</AuthFrame>
 		);
 	}
 
 	return (
+		<AuthFrame>
 		<KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={[styles.fill, { backgroundColor: t.c.bg }]}>
-			<ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={[styles.form, { paddingTop: insets.top + 40, paddingBottom: insets.bottom + 24 }]}>
-				<View style={styles.brand}>
-					<Mark size={32} />
-					<Text serif size={22} weight={600}>
-						Family Tree
-					</Text>
+			<ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={[styles.form, formCap, { paddingTop: insets.top + 40, paddingBottom: insets.bottom + 24 }]}>
+				<View style={[styles.brand, { justifyContent: "space-between" }]}>
+					<View style={styles.brand}>
+						<Mark size={32} />
+						<Text serif size={22} weight={600}>
+							{T.common.familyTree}
+						</Text>
+					</View>
+					<QuickPrefs />
 				</View>
 				<View style={{ gap: 6 }}>
 					<Text variant="display" accessibilityRole="header">
-						Welcome back
+						{T.auth.welcomeBack}
 					</Text>
 					<Text variant="bodyLg" color={t.c.ink2}>
-						Sign in with your Family Tree account.
+						{T.auth.signInSubtitle}
 					</Text>
 				</View>
 				<View style={{ gap: 14 }}>
 					<TextField
-						label="Username or email"
+						label={T.auth.usernameOrEmail}
 						value={login}
 						onChangeText={setLogin}
 						autoCapitalize="none"
@@ -139,7 +158,7 @@ export default function SignIn() {
 					/>
 					<TextField
 						ref={passwordRef}
-						label="Password"
+						label={T.auth.password}
 						value={password}
 						onChangeText={setPassword}
 						secret
@@ -151,24 +170,25 @@ export default function SignIn() {
 					/>
 					<Pressable onPress={forgot} hitSlop={10} style={{ alignSelf: "flex-end" }} accessibilityRole="button">
 						<Text size={14} weight={600} color={t.c.accent}>
-							Forgot password?
+							{T.auth.forgot}
 						</Text>
 					</Pressable>
 				</View>
 				<View style={{ flex: 1, minHeight: 24 }} />
 				<View style={{ gap: 10 }}>
-					<Button label="Sign in" loading={busy} onPress={submit} />
+					<Button label={T.common.signIn} loading={busy} onPress={submit} />
 					<Pressable onPress={() => router.push("/sign-up")} style={{ padding: 8 }} accessibilityRole="button">
 						<Text size={14} color={t.c.ink2} center>
-							New here?{" "}
+							{T.auth.newHere}{" "}
 							<Text size={14} weight={700} color={t.c.accent}>
-								Create an account
+								{T.auth.createAccount}
 							</Text>
 						</Text>
 					</Pressable>
 				</View>
 			</ScrollView>
 		</KeyboardAvoidingView>
+		</AuthFrame>
 	);
 }
 

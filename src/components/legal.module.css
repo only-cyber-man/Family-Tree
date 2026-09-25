@@ -15,6 +15,13 @@
 	background: var(--surface);
 }
 
+.navEnd {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	min-width: 0;
+}
+
 .main {
 	flex: 1;
 	width: 100%;

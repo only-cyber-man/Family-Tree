@@ -7,6 +7,7 @@ import { errorMessage, isNetworkError } from "../lib/errors";
 import { useNetwork } from "../store/network";
 import { useTheme } from "../theme/useTheme";
 import { Text } from "./Text";
+import { getT, useT } from "../i18n";
 
 /** Inline notice: permission denied, proposal, hint. */
 export function Notice({ children, title, tone = "accent", icon, actions }: { children?: ReactNode; title?: string; tone?: "accent" | "neutral"; icon?: ReactNode; actions?: ReactNode }) {
@@ -56,8 +57,9 @@ export function Skeleton({ width, height, radius = 4, style }: { width?: Dimensi
 }
 
 /** "You're offline" strip under the status bar. */
-export function OfflineBanner({ message = "You're offline. Showing the last copy of this tree." }: { message?: string }) {
+export function OfflineBanner({ message }: { message?: string }) {
 	const t = useTheme();
+	const T = useT();
 	const insets = useSafeAreaInsets();
 	const online = useNetwork((s) => s.online);
 	if (online) return null;
@@ -65,7 +67,7 @@ export function OfflineBanner({ message = "You're offline. Showing the last copy
 		<View accessibilityRole="alert" style={[styles.offline, { top: insets.top, backgroundColor: t.c.ink }]}>
 			<WifiOff size={14} color={t.c.bg} strokeWidth={2} />
 			<Text size={13} weight={600} color={t.c.bg} numberOfLines={1}>
-				{message}
+				{message ?? T.offline.banner}
 			</Text>
 		</View>
 	);
@@ -79,13 +81,14 @@ const styles = StyleSheet.create({
 /** Inline hint shown next to disabled write controls while offline. */
 export function OfflineWriteHint() {
 	const t = useTheme();
+	const T = useT();
 	const online = useNetwork((s) => s.online);
 	if (online) return null;
 	return (
 		<View accessibilityRole="alert" style={[styles.notice, { backgroundColor: t.c.surface2, alignItems: "center", padding: 12 }]}>
 			<WifiOff size={16} color={t.c.ink2} strokeWidth={2} />
 			<Text size={13} color={t.c.ink2} style={{ flex: 1 }}>
-				You're offline — changes can't be saved.
+				{T.offline.write}
 			</Text>
 		</View>
 	);
@@ -94,6 +97,7 @@ export function OfflineWriteHint() {
 /** The design's "save failed" state: inline error with "Try again"; the form keeps its input. */
 export function SaveFailed({ message, onRetry, busy }: { message: string; onRetry: () => void; busy?: boolean }) {
 	const t = useTheme();
+	const T = useT();
 	return (
 		<View accessibilityRole="alert" style={[styles.notice, { backgroundColor: t.c.dangerSoft }]}>
 			<View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: t.c.danger, marginTop: 6 }} />
@@ -107,7 +111,7 @@ export function SaveFailed({ message, onRetry, busy }: { message: string; onRetr
 					style={{ alignSelf: "flex-start", height: 34, paddingHorizontal: 12, borderRadius: 999, backgroundColor: t.c.ink, justifyContent: "center", opacity: busy ? 0.45 : 1 }}
 				>
 					<Text size={13} weight={600} color={t.c.bg}>
-						{busy ? "Saving…" : "Try again"}
+						{busy ? T.common.saving : T.common.tryAgain}
 					</Text>
 				</Pressable>
 			</View>
@@ -117,5 +121,6 @@ export function SaveFailed({ message, onRetry, busy }: { message: string; onRetr
 
 /** Message for a failed write: offline vs. the server's reason. */
 export function saveErrorMessage(e: unknown, what: string): string {
-	return isNetworkError(e) ? `Couldn't save ${what}: you're offline or the server can't be reached. Nothing was lost; try again.` : `Couldn't save ${what}. ${errorMessage(e)}`;
+	const T = getT();
+	return isNetworkError(e) ? T.save.failedOffline(what) : T.save.failed(what, errorMessage(e, T));
 }

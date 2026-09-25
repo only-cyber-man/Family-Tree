@@ -9,6 +9,7 @@ import { Avatar } from "./Avatar";
 import { Row } from "./List";
 import { Text } from "./Text";
 import { TextField } from "./TextField";
+import { useT } from "../i18n";
 
 /** Search field with a short result list; selection is highlighted in copper. */
 export function PersonPicker({
@@ -18,7 +19,7 @@ export function PersonPicker({
 	today,
 	pictures,
 	exclude,
-	placeholder = "Search by name",
+	placeholder,
 	inSheet,
 	limit = 6,
 	label,
@@ -35,6 +36,7 @@ export function PersonPicker({
 	label?: string;
 }) {
 	const t = useTheme();
+	const T = useT();
 	const [q, setQ] = useState("");
 	const pool = useMemo(() => persons.filter((p) => !exclude?.includes(p.id)), [persons, exclude]);
 	const results = useMemo(() => {
@@ -50,7 +52,7 @@ export function PersonPicker({
 				inSheet={inSheet}
 				value={q}
 				onChangeText={setQ}
-				placeholder={placeholder}
+				placeholder={placeholder ?? T.common.searchByName}
 				autoCorrect={false}
 				autoCapitalize="words"
 				returnKeyType="search"
@@ -59,7 +61,7 @@ export function PersonPicker({
 			<View style={{ borderWidth: 1, borderColor: t.c.border, borderRadius: 12, overflow: "hidden" }}>
 				{results.length === 0 ? (
 					<View style={{ padding: 14 }}>
-						<Text variant="caption">{pool.length ? `No one called "${q.trim()}".` : "No one to choose yet."}</Text>
+						<Text variant="caption">{pool.length ? T.common.noOneCalled(q.trim()) : T.common.noOneToChoose}</Text>
 					</View>
 				) : (
 					results.map((p, i) => {
@@ -70,7 +72,7 @@ export function PersonPicker({
 								minHeight={48}
 								onPress={() => onChange(p.id)}
 								highlighted={on}
-								accessibilityLabel={`${p.name}${on ? ", selected" : ""}`}
+								accessibilityLabel={`${p.name}${on ? `, ${T.common.selected}` : ""}`}
 								style={i > 0 ? { borderTopWidth: 1, borderTopColor: t.c.border } : undefined}
 								leading={<Avatar name={p.name} gender={p.gender} size={32} uri={pictures?.[p.id]} deceased={!!p.death} />}
 								title={p.name}

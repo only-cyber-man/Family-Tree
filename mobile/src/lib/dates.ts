@@ -1,3 +1,4 @@
+import { en, type Dict } from "../i18n/en";
 import type { CalendarDate } from "./types";
 
 // Dates in ft_nodes are calendar dates ("1950-02-04 00:00:00.000Z"). They are
@@ -94,19 +95,23 @@ export function ageInfo(birth: CalendarDate | null, death: CalendarDate | null, 
 	return { age: yearsBetween(birth, today), deceased: false };
 }
 
-/** "4 February 1950" */
-export function formatLong(d: CalendarDate): string {
-	return `${d.day} ${MONTHS[d.month - 1]} ${d.year}`;
+// Month / weekday names come from the dictionary (Polish needs the genitive
+// inside a date: "4 lutego 1950"), not from Intl, whose data differs between
+// Hermes builds.
+
+/** "4 February 1950" / "4 lutego 1950" */
+export function formatLong(d: CalendarDate, L: Dict = en): string {
+	return `${d.day} ${L.dateNames.monthsInDate[d.month - 1]} ${d.year}`;
 }
 
-/** "12 Mar 1921" */
-export function formatShort(d: CalendarDate): string {
-	return `${d.day} ${MONTHS_SHORT[d.month - 1]} ${d.year}`;
+/** "12 Mar 1921" / "12 mar 1921" */
+export function formatShort(d: CalendarDate, L: Dict = en): string {
+	return `${d.day} ${L.dateNames.monthsShort[d.month - 1]} ${d.year}`;
 }
 
-/** "15 Oct" */
-export function formatDayMonth(d: CalendarDate): string {
-	return `${d.day} ${MONTHS_SHORT[d.month - 1]}`;
+/** "15 Oct" / "15 paź" */
+export function formatDayMonth(d: CalendarDate, L: Dict = en): string {
+	return `${d.day} ${L.dateNames.monthsShort[d.month - 1]}`;
 }
 
 export function todayDate(now: Date = new Date()): CalendarDate {

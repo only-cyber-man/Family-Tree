@@ -1,4 +1,5 @@
 import { addDays, daysBetween, formatDayMonth, nextOccurrence, toJsDate } from "./dates";
+import { en, type Dict } from "../i18n/en";
 import { firstName } from "./format";
 import type { CalendarDate, Gender, Person } from "./types";
 
@@ -50,16 +51,17 @@ export function upcomingEvents(persons: Person[], today: CalendarDate, horizonDa
 }
 
 /** "Maria turns 75", "† Stanisław, 28 years" */
-export function eventTitle(e: DateEvent): string {
+export function eventTitle(e: DateEvent, L: Dict = en): string {
 	const first = firstName(e.name);
-	return e.kind === "birthday" ? `${first} turns ${e.years}` : `† ${first}, ${e.years} years`;
+	return e.kind === "birthday" ? L.events.birthdayTitle(first, e.years) : L.events.remembranceTitle(first, e.years);
 }
 
 /** "Birthday · in 8 days · round age", "Remembrance · 15 Oct" */
-export function eventSubtitle(e: DateEvent): string {
-	const label = e.kind === "birthday" ? "Birthday" : "Remembrance";
-	const when = e.daysUntil === 0 ? "today" : e.daysUntil === 1 ? "tomorrow" : e.daysUntil <= 14 ? `in ${e.daysUntil} days` : formatDayMonth(e.date);
-	return [label, when, e.isRound ? "round age" : null].filter(Boolean).join(" · ");
+export function eventSubtitle(e: DateEvent, L: Dict = en): string {
+	const label = e.kind === "birthday" ? L.events.birthday : L.events.remembrance;
+	const when =
+		e.daysUntil === 0 ? L.time.today : e.daysUntil === 1 ? L.time.tomorrow : e.daysUntil <= 14 ? L.time.inDays(e.daysUntil) : formatDayMonth(e.date, L);
+	return [label, when, e.isRound ? L.events.roundAge : null].filter(Boolean).join(" · ");
 }
 
 export interface MonthGroup {
@@ -68,15 +70,13 @@ export interface MonthGroup {
 	events: DateEvent[];
 }
 
-const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-
-export function groupByMonth(events: DateEvent[], today: CalendarDate): MonthGroup[] {
+export function groupByMonth(events: DateEvent[], today: CalendarDate, L: Dict = en): MonthGroup[] {
 	const groups: MonthGroup[] = [];
 	for (const e of events) {
 		const key = `${e.date.year}-${e.date.month}`;
 		let g = groups[groups.length - 1];
 		if (!g || g.key !== key) {
-			const label = MONTH_NAMES[e.date.month - 1] + (e.date.year !== today.year ? ` ${e.date.year}` : "");
+			const label = L.dateNames.monthsNom[e.date.month - 1] + (e.date.year !== today.year ? ` ${e.date.year}` : "");
 			g = { key, label, events: [] };
 			groups.push(g);
 		}
@@ -109,7 +109,8 @@ export const MAX_SCHEDULED = 60;
  * remembrance 09:00 on the day, round ages a second reminder 7 days before.
  * Nearest first, capped at 60 (iOS keeps at most 64).
  */
-export function planReminders(events: DateEvent[], prefs: ReminderPrefs, now: Date, cap = MAX_SCHEDULED): PlannedReminder[] {
+export function planReminders(events: DateEvent[], prefs: ReminderPrefs, now: Date, cap = MAX_SCHEDULED, L: Dict = en): PlannedReminder[] {
+	const E = L.events;
 	const out: PlannedReminder[] = [];
 	for (const e of events) {
 		const first = firstName(e.name);
@@ -119,8 +120,8 @@ export function planReminders(events: DateEvent[], prefs: ReminderPrefs, now: Da
 				eventKey: e.key,
 				personId: e.personId,
 				fireAt: toJsDate(addDays(e.date, -1), REMINDER_HOUR),
-				title: `${first} turns ${e.years} tomorrow`,
-				body: e.isRound ? `A round birthday. Give ${first} a call?` : `${e.name} · ${formatDayMonth(e.date)}`,
+				title: E.reminderEve(first, e.years),
+				body: e.isRound ? E.reminderEveRoundBody(first) : `${e.name} · ${formatDayMonth(e.date, L)}`,
 			});
 			if (e.isRound && prefs.roundEarly) {
 				out.push({
@@ -128,8 +129,8 @@ export function planReminders(events: DateEvent[], prefs: ReminderPrefs, now: Da
 					eventKey: e.key,
 					personId: e.personId,
 					fireAt: toJsDate(addDays(e.date, -7), REMINDER_HOUR),
-					title: `${first} turns ${e.years} in a week`,
-					body: `A round birthday on ${formatDayMonth(e.date)}.`,
+					title: E.reminderWeek(first, e.years),
+					body: E.reminderWeekBody(formatDayMonth(e.date, L)),
 				});
 			}
 		}
@@ -139,8 +140,8 @@ export function planReminders(events: DateEvent[], prefs: ReminderPrefs, now: Da
 				eventKey: e.key,
 				personId: e.personId,
 				fireAt: toJsDate(e.date, REMINDER_HOUR),
-				title: `† ${e.name}, ${e.years} years`,
-				body: `Remembrance day · ${formatDayMonth(e.date)}`,
+				title: E.reminderRemembrance(e.name, e.years),
+				body: E.reminderRemembranceBody(formatDayMonth(e.date, L)),
 			});
 		}
 	}

@@ -38,12 +38,19 @@ export const Brand = ({
 	href = "/",
 	size = 28,
 	variant,
+	collapsible = false,
 }: {
 	href?: string;
 	size?: number;
 	variant?: "color" | "white";
+	/** Hide the name on very narrow screens, keeping the mark. */
+	collapsible?: boolean;
 }) => (
-	<Link href={href} className="brand">
+	<Link
+		href={href}
+		className={`brand ${collapsible ? "brand-collapsible" : ""}`}
+		aria-label={collapsible ? "Family Tree" : undefined}
+	>
 		<LogoMark size={size} variant={variant} />
 		<span className="brand-name">Family Tree</span>
 	</Link>

@@ -9,10 +9,18 @@ import { Text } from "../src/components/Text";
 import { requestPermission } from "../src/services/notifications";
 import { useSettings } from "../src/store/settings";
 import { useTheme } from "../src/theme/useTheme";
+import { useT } from "../src/i18n";
+import { QuickPrefs } from "../src/components/Preferences";
+import { useLayout } from "../src/hooks/useLayout";
+import { FORM_MAX, sideBySideHero } from "../src/lib/responsive";
 
 /** Two screens: the value, then the one permission that matters. */
 export default function Onboarding() {
 	const t = useTheme();
+	const T = useT();
+	const layout = useLayout();
+	const hero = sideBySideHero(layout.width, layout.height);
+	const cap = layout.isTablet ? ({ width: "100%", maxWidth: FORM_MAX, alignSelf: "center" } as const) : null;
 	const insets = useSafeAreaInsets();
 	const router = useRouter();
 	const [page, setPage] = useState(0);
@@ -27,30 +35,35 @@ export default function Onboarding() {
 
 	return (
 		<View style={[styles.fill, { backgroundColor: t.c.bg, paddingTop: insets.top, paddingBottom: insets.bottom + 24 }]}>
-			<Animated.View key={page} entering={FadeIn.duration(220)} style={styles.art}>
-				{page === 0 ? <GraphIllustration width={300} /> : <NotificationPreview />}
+			<View style={{ paddingTop: 8 }}>
+				<QuickPrefs />
+			</View>
+			{/* Tablets: centred content; roomy landscape puts the art beside the text. */}
+			<View style={hero ? styles.heroRow : { flex: 1 }}>
+			<Animated.View key={page} entering={FadeIn.duration(220)} style={hero ? styles.heroArt : styles.art}>
+				{page === 0 ? <GraphIllustration width={layout.isTablet ? 380 : 300} /> : <NotificationPreview />}
 			</Animated.View>
-			<View style={styles.bottom}>
+			<View style={[styles.bottom, cap, hero && { flex: 1, justifyContent: "center" }]}>
 				<View style={{ gap: 10 }}>
 					<Text variant="display" accessibilityRole="header">
-						{page === 0 ? "Your family, drawn as a graph." : "Never miss a birthday or a remembrance day."}
+						{page === 0 ? T.onboarding.title1 : T.onboarding.title2}
 					</Text>
 					<Text variant="bodyLg" color={t.c.ink2}>
 						{page === 0
-							? "People are cards, relationships are lines, generations line up by birth year. Private, shared only by invitation."
-							: "A quiet reminder the day before. Everything stays on your phone; nothing is sent to us."}
+							? T.onboarding.body1
+							: T.onboarding.body2}
 					</Text>
 				</View>
-				<View style={styles.dots} accessibilityLabel={`Page ${page + 1} of 2`}>
+				<View style={styles.dots} accessibilityLabel={T.onboarding.page(page + 1, 2)}>
 					<View style={[styles.dot, { width: page === 0 ? 20 : 6, backgroundColor: page === 0 ? t.c.primary : t.c.borderStrong }]} />
 					<View style={[styles.dot, { width: page === 1 ? 20 : 6, backgroundColor: page === 1 ? t.c.primary : t.c.borderStrong }]} />
 				</View>
 				{page === 0 ? (
 					<>
-						<Button label="Continue" onPress={() => setPage(1)} />
+						<Button label={T.common.continue} onPress={() => setPage(1)} />
 						<Button
 							kind="text"
-							label="I already have an account"
+							label={T.onboarding.haveAccount}
 							style={{ alignSelf: "center" }}
 							onPress={() => {
 								finish();
@@ -61,7 +74,7 @@ export default function Onboarding() {
 				) : (
 					<>
 						<Button
-							label="Turn on reminders"
+							label={T.onboarding.turnOnReminders}
 							loading={busy}
 							onPress={async () => {
 								setBusy(true);
@@ -71,9 +84,10 @@ export default function Onboarding() {
 								toSignUp();
 							}}
 						/>
-						<Button kind="text" label="Not now" style={{ alignSelf: "center" }} onPress={toSignUp} />
+						<Button kind="text" label={T.onboarding.notNow} style={{ alignSelf: "center" }} onPress={toSignUp} />
 					</>
 				)}
+			</View>
 			</View>
 		</View>
 	);
@@ -81,6 +95,7 @@ export default function Onboarding() {
 
 function NotificationPreview() {
 	const t = useTheme();
+	const T = useT();
 	const card = (title: string, when: string, body?: string, dim?: boolean) => (
 		<View style={[styles.note, { backgroundColor: t.c.surface, borderColor: t.c.border, opacity: dim ? 0.7 : 1 }, !dim && t.shadow("md")]}>
 			<View style={[styles.appIcon, { backgroundColor: t.c.primary }]}>
@@ -89,7 +104,7 @@ function NotificationPreview() {
 			<View style={{ flex: 1 }}>
 				<View style={{ flexDirection: "row", justifyContent: "space-between", gap: 8 }}>
 					<Text size={12} weight={700}>
-						Family Tree
+						{T.common.familyTree}
 					</Text>
 					<Text size={12} color={t.c.ink3}>
 						{when}
@@ -108,8 +123,8 @@ function NotificationPreview() {
 	);
 	return (
 		<View style={{ width: 300, gap: 10 }}>
-			{card("Grandma Maria turns 75 tomorrow", "Tomorrow", "A round birthday. Give Maria a call?")}
-			{card("† Stanisław Kowalski, 28 years", "15 Oct", undefined, true)}
+			{card(T.onboarding.previewTitle1, T.onboarding.previewWhen1, T.onboarding.previewBody1)}
+			{card(T.onboarding.previewTitle2, T.onboarding.previewWhen2, undefined, true)}
 		</View>
 	);
 }
@@ -117,6 +132,8 @@ function NotificationPreview() {
 
 const styles = StyleSheet.create({
 	fill: { flex: 1, paddingHorizontal: 24 },
+	heroRow: { flex: 1, flexDirection: "row", alignItems: "center", gap: 48 },
+	heroArt: { flex: 1, alignItems: "center", justifyContent: "center" },
 	art: { flex: 1, alignItems: "center", justifyContent: "center", paddingTop: 40 },
 	bottom: { gap: 20 },
 	dots: { flexDirection: "row", gap: 6, justifyContent: "center" },

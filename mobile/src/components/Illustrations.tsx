@@ -1,12 +1,14 @@
 import Svg, { Circle, G, Path, Rect } from "react-native-svg";
 import { useTheme } from "../theme/useTheme";
+import { useT } from "../i18n";
 
 /** The brand mark (logo/mark-color.svg). */
 export function Mark({ size = 32, color, bottom }: { size?: number; color?: string; bottom?: string }) {
 	const t = useTheme();
+	const T = useT();
 	const c = color ?? t.c.primary;
 	return (
-		<Svg width={size} height={size} viewBox="0 0 64 64" accessibilityLabel="Family Tree">
+		<Svg width={size} height={size} viewBox="0 0 64 64" accessibilityLabel={T.common.familyTree}>
 			<G fill="none" stroke={c} strokeWidth={6} strokeLinecap="round" strokeLinejoin="round">
 				<Path d="M32 46V33M32 33L16 17M32 33L48 17" />
 			</G>

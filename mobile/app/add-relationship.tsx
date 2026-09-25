@@ -9,19 +9,21 @@ import { RouteSheet, SheetHeader } from "../src/components/Sheet";
 import { Text } from "../src/components/Text";
 import { useCanWrite, useGraph, useIsOwner, usePictures, useToday } from "../src/hooks/useTreeData";
 import { yearsLabel } from "../src/lib/format";
-import { GROUP_ORDER, groupGlyph, humanizeName, isDuplicateRelationship } from "../src/lib/relations";
+import { GROUP_ORDER, groupGlyph, isDuplicateRelationship, relationChipLabel, typeSentence } from "../src/lib/relations";
 import { haptics } from "../src/services/haptics";
 import { newRecordId } from "../src/lib/ids";
 import { toast } from "../src/store/toast";
 import { useTree } from "../src/store/tree";
 import { tokens } from "../src/theme/tokens";
 import { useTheme } from "../src/theme/useTheme";
+import { useT } from "../src/i18n";
 
 const COMMON = ["IS_MOTHER_OF", "IS_FATHER_OF", "IS_MARRIED_TO", "LIVES_WITH", "IS_GODPARENT_OF"];
 
 /** Searchable From / To pickers and the relationship type as chips. */
 export default function AddRelationship() {
 	const t = useTheme();
+	const T = useT();
 	const router = useRouter();
 	const params = useLocalSearchParams<{ from?: string; to?: string }>();
 	const full = useTree((s) => s.full);
@@ -63,16 +65,16 @@ export default function AddRelationship() {
 	}, [full]);
 
 	const save = async () => {
-		if (!from || !to || !type) return setError("Choose both people and how they are related.");
-		if (from === to) return setError("Choose two different people.");
+		if (!from || !to || !type) return setError(T.addRel.chooseBoth);
+		if (from === to) return setError(T.addRel.different);
 		const id = idFor(`${from}|${to}|${type}`);
 		// A retry of an attempt that did reach the server finds its own record here, not a duplicate.
 		if (full && isDuplicateRelationship(full.relationships.filter((r) => r.id !== id), full.relationshipNames, { sourceNode: from, targetNode: to, relationshipName: type }))
-			return setError("This relationship is already in the tree.");
+			return setError(T.addRel.duplicate);
 		const treeId = boundTree.current ?? useTree.getState().full?.tree.id ?? null;
 		if (!treeId) {
 			haptics.error();
-			setSaveError("No tree is open, so nothing was saved. Choose a tree and try again.");
+			setSaveError(T.save.noTree);
 			return;
 		}
 		setError(null);
@@ -81,12 +83,12 @@ export default function AddRelationship() {
 		try {
 			await addRelationship({ id, sourceNode: from, targetNode: to, relationshipName: type, tree: treeId });
 			haptics.success();
-			toast("Relationship added", "success");
+			toast(T.addRel.added, "success");
 			close();
 		} catch (e) {
 			// Save failed: the form stays open with the choices intact.
 			haptics.error();
-			setSaveError(saveErrorMessage(e, "the relationship"));
+			setSaveError(saveErrorMessage(e, T.save.theRelationship));
 		} finally {
 			setBusy(false);
 		}
@@ -94,8 +96,8 @@ export default function AddRelationship() {
 
 	if (!full || !graph || !owner) {
 		return (
-			<RouteSheet snapPoints={["92%"]} header={<SheetHeader title="Add relationship" onCancel={close} />}>
-				<Notice tone="neutral">Only the owner of this tree can add relationships.</Notice>
+			<RouteSheet snapPoints={["92%"]} header={<SheetHeader title={T.addRel.title} onCancel={close} />}>
+				<Notice tone="neutral">{T.addRel.viewerOnly}</Notice>
 			</RouteSheet>
 		);
 	}
@@ -109,7 +111,7 @@ export default function AddRelationship() {
 	return (
 		<RouteSheet
 			snapPoints={tokens.mobile.sheetSnapPoints.addPerson as unknown as string[]}
-			header={<SheetHeader title="Add relationship" onCancel={close} action="Add" onAction={save} busy={busy} actionDisabled={!from || !to || !type || !canWrite} />}
+			header={<SheetHeader title={T.addRel.title} onCancel={close} action={T.common.add} onAction={save} busy={busy} actionDisabled={!from || !to || !type || !canWrite} />}
 		>
 			<OfflineWriteHint />
 			{saveError ? <SaveFailed message={saveError} onRetry={save} busy={busy || !canWrite} /> : null}
@@ -118,7 +120,8 @@ export default function AddRelationship() {
 					<Text serif size={17} weight={600}>
 						{fromP?.name ?? "…"}
 					</Text>{" "}
-					{typeRec ? humanizeName(typeRec.name).toLowerCase() : "is related to"}{" "}
+					{typeRec ? typeSentence(typeRec.name, fromP?.gender ?? "female", T) : T.addRel.isRelatedTo}
+					{T.lang === "pl" ? ": " : " "}
 					<Text serif size={17} weight={600}>
 						{toP?.name ?? "…"}
 					</Text>
@@ -127,7 +130,7 @@ export default function AddRelationship() {
 			</View>
 
 			<View style={{ gap: 6 }}>
-				<Text variant="label">From</Text>
+				<Text variant="label">{T.addRel.from}</Text>
 				{fromP && !pickFrom ? (
 					<View style={[styles.selected, { borderColor: t.c.border, backgroundColor: t.c.bg }]}>
 						<Avatar name={fromP.name} gender={fromP.gender} size={36} uri={pictures[fromP.id]} deceased={!!fromP.death} />
@@ -139,9 +142,9 @@ export default function AddRelationship() {
 								{yearsLabel(fromP, today)}
 							</Text>
 						</View>
-						<Pressable onPress={() => setPickFrom(true)} hitSlop={10} accessibilityRole="button" accessibilityLabel="Change who the relationship is from">
+						<Pressable onPress={() => setPickFrom(true)} hitSlop={10} accessibilityRole="button" accessibilityLabel={T.addRel.changeFrom}>
 							<Text size={13} weight={600} color={t.c.accent}>
-								Change
+								{T.common.change}
 							</Text>
 						</Pressable>
 					</View>
@@ -163,7 +166,7 @@ export default function AddRelationship() {
 			</View>
 
 			<View style={{ gap: 8 }}>
-				<Text variant="label">Relation</Text>
+				<Text variant="label">{T.addRel.relation}</Text>
 				<View style={styles.chips}>
 					{shown.map((rt) => (
 						<Chip
@@ -172,16 +175,16 @@ export default function AddRelationship() {
 							selected={type === rt.id}
 							glyph={groupGlyph(rt.group)}
 							glyphColor={glyphColor(rt.group)}
-							label={`${humanizeName(rt.name)} ${rt.isBidirectional ? "↔" : "→"}`}
+							label={relationChipLabel(rt.name, rt.isBidirectional, T)}
 							onPress={() => setType(rt.id)}
 						/>
 					))}
-					{types.all.length > types.top.length ? <Chip height={38} label={more ? "Fewer" : "More…"} onPress={() => setMore((m) => !m)} /> : null}
+					{types.all.length > types.top.length ? <Chip height={38} label={more ? T.addRel.fewer : T.addRel.more} onPress={() => setMore((m) => !m)} /> : null}
 				</View>
 			</View>
 
 			<View style={{ gap: 6 }}>
-				<Text variant="label">To</Text>
+				<Text variant="label">{T.addRel.to}</Text>
 				<PersonPicker inSheet persons={graph.persons} value={to} onChange={setTo} today={today} pictures={pictures} exclude={from ? [from] : undefined} limit={5} />
 			</View>
 

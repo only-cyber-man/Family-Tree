@@ -14,6 +14,8 @@ export interface ReminderSettings {
 interface SettingsState {
 	hydrated: boolean;
 	theme: ThemePreference;
+	/** "system" follows the device language (Polish or English). Device-wide, kept across accounts. */
+	language: "system" | "en" | "pl";
 	onboardingDone: boolean;
 	activeTreeId: string | null;
 	/**
@@ -30,6 +32,7 @@ interface SettingsState {
 	/** Forget per-account choices: reminders opt-in, "This is me", last login. */
 	clearAccount: () => void;
 	setTheme: (t: ThemePreference) => void;
+	setLanguage: (l: "system" | "en" | "pl") => void;
 	finishOnboarding: () => void;
 	setActiveTree: (id: string | null) => void;
 	setMe: (treeId: string, nodeId: string | null) => void;
@@ -42,6 +45,7 @@ export const useSettings = create<SettingsState>()(
 		(set) => ({
 			hydrated: false,
 			theme: "system",
+			language: "system",
 			onboardingDone: false,
 			activeTreeId: null,
 			meByTree: {},
@@ -57,6 +61,7 @@ export const useSettings = create<SettingsState>()(
 					reminders: { ...s.reminders, enabled: false },
 				})),
 			setTheme: (theme) => set({ theme }),
+			setLanguage: (language) => set({ language }),
 			finishOnboarding: () => set({ onboardingDone: true }),
 			setActiveTree: (activeTreeId) => set({ activeTreeId }),
 			setMe: (treeId, nodeId) =>

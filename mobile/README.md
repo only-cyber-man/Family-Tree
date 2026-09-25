@@ -67,6 +67,30 @@ Theme values in `src/theme/tokens.ts` are generated from the handoff `tokens.jso
 node scripts/gen-tokens.js [path/to/tokens.json]
 ```
 
+## Backend URL (screenshots / demo backend)
+
+The PocketBase URL defaults to `https://pocketbase.cyber-man.pl`. Set `EXPO_PUBLIC_POCKETBASE_URL` to point a build at a different backend. Expo copies the value into the bundle at build time:
+
+```sh
+EXPO_PUBLIC_POCKETBASE_URL=http://10.0.2.2:8090 yarn start     # Android emulator → host machine
+```
+
+Cleartext HTTP is **not** enabled in `app.json`. For a screenshot build against an `http://` backend, set `FT_SCREENSHOT_BUILD=1` when running `expo prebuild`: `app.config.js` then turns on cleartext through `expo-build-properties`. Store builds never set it, so they stay HTTPS-only.
+
+## Account deletion and privacy
+
+- Settings → **Delete account** asks for confirmation, then opens a screen where the user types `DELETE`. It works exactly like the web (`../src/lib/account.ts`): each tree the account created is deleted with its relationships and people, then the `ft_users` record is deleted, then the device is signed out and wiped. It needs a connection. If a server step fails, the screen shows the error and an **Email a deletion request** button (mailto `family-tree@cyber-man.pl` with the account email).
+- Settings → **Privacy policy** and the sign-up screen link to `https://family-tree.cyber-man.pl/privacy`.
+
+## Language and theme
+
+- **Language:** English or Polish. It follows the device (`expo-localization`) unless you pick one in Settings → Appearance or with the switch on the onboarding and sign-in screens. The strings live in `src/i18n/en.ts`, the source of truth. `src/i18n/pl.ts` is typed as the same `Dict`, so a missing Polish key is a compile error. Polish plurals use `Intl.PluralRules` when the engine provides it, with the same CLDR rules built in as a fallback. Month names come from the dictionaries, not from Intl, because Hermes' Intl coverage varies.
+- **Theme:** System / Light / Dark, in the same places. The choice applies app-wide at once, status bar included.
+
+## People linked to accounts
+
+`ft_nodes.note` (free text) and `ft_nodes.user` (the account this person is) can be edited in Add/Edit person. The account list shows the tree's creator and invitees. "This is me" uses the server link when one exists; the on-device pick is only a fallback. On trees you own, picking yourself offers to save the link on the tree.
+
 ## Deep links
 
 - `familytree://tree/<treeId>` makes that tree active and opens the Tree tab.

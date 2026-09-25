@@ -3,18 +3,20 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { initPocketBase } from "@/lib/ssr";
 import { AppNav } from "@/components/AppNav";
+import { getT } from "@/i18n/server";
 import styles from "@/components/legal.module.css";
 import { DeleteAccount } from "./DeleteAccount";
 
-export const metadata: Metadata = { title: "Account" };
+export const generateMetadata = (): Metadata => ({ title: getT().meta.account });
 
 export default async function AccountPage() {
 	const pb = await initPocketBase();
 	if (!pb.authStore.isValid) {
 		return redirect("/sign-in");
 	}
+	const t = getT();
 	const me = pb.authStore.record;
-	const userName: string = me?.username || me?.name || me?.email || "you";
+	const userName: string = me?.username || me?.name || me?.email || t.common.you;
 	const email: string = me?.email ?? "";
 
 	return (
@@ -22,30 +24,29 @@ export default async function AccountPage() {
 			<AppNav userName={userName} />
 			<main className={styles.main}>
 				<header>
-					<h1 className={styles.title}>Your account</h1>
+					<h1 className={styles.title}>{t.account.title}</h1>
 				</header>
 				<section className={styles.card}>
 					<div className={styles.section}>
 						<p>
-							<strong>Username:</strong> {me?.username ?? "—"}
+							<strong>{t.account.username}</strong> {me?.username ?? "—"}
 						</p>
 						{me?.name ? (
 							<p>
-								<strong>Display name:</strong> {me.name}
+								<strong>{t.account.displayName}</strong> {me.name}
 							</p>
 						) : null}
 						<p>
-							<strong>Email:</strong> {email || "—"}
+							<strong>{t.account.email}</strong> {email || "—"}
 						</p>
 					</div>
 				</section>
 				<section className={styles.section}>
-					<h2>Delete account</h2>
+					<h2>{t.account.deleteHeading}</h2>
 					<p>
-						Deletes your account and every tree you created, with all the
-						people, photos and relationships in them. Trees other people shared
-						with you are not affected. See the{" "}
-						<Link href="/privacy">privacy policy</Link>.
+						{t.account.deleteBodyBefore}
+						<Link href="/privacy">{t.account.deleteBodyLink}</Link>
+						{t.account.deleteBodyAfter}
 					</p>
 					<DeleteAccount email={email} />
 				</section>

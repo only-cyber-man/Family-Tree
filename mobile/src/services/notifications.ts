@@ -1,6 +1,7 @@
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
 import { todayDate } from "../lib/dates";
+import { getT } from "../i18n";
 import { buildGraph } from "../lib/graph";
 import { createLatestRunner } from "../lib/serial";
 import type { FullTree } from "../lib/types";
@@ -24,7 +25,7 @@ Notifications.setNotificationHandler({
 export async function ensureChannel() {
 	if (Platform.OS !== "android") return;
 	await Notifications.setNotificationChannelAsync(CHANNEL_ID, {
-		name: "Birthdays and remembrance days",
+		name: getT().toastsReminders.channel,
 		importance: Notifications.AndroidImportance.DEFAULT,
 		lightColor: "#2F5D46",
 	});
@@ -45,7 +46,9 @@ export async function requestPermission(): Promise<boolean> {
 
 export function planFor(full: FullTree, prefs: ReminderPrefs, now = new Date()): PlannedReminder[] {
 	const g = buildGraph(full);
-	return planReminders(upcomingEvents(g.persons, todayDate(now)), prefs, now);
+	// Reminder texts are written in the app language at scheduling time; a
+	// language change re-schedules (see useReminderSync).
+	return planReminders(upcomingEvents(g.persons, todayDate(now)), prefs, now, undefined, getT());
 }
 
 export function deepLink(treeId: string, personId: string) {

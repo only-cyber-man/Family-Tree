@@ -1,3 +1,4 @@
+import { getT } from "../i18n";
 import { toISODate } from "./dates";
 import { changedFields, createOnce, isIdTaken } from "./idempotent";
 import { pb } from "./pb";
@@ -32,7 +33,7 @@ export interface SignUpInput {
 
 export async function signUp(input: SignUpInput): Promise<UserRecord> {
 	const name = input.name.trim().length > 0 ? input.name.trim() : input.username;
-	if (input.password !== input.passwordConfirm) throw new Error("Passwords do not match.");
+	if (input.password !== input.passwordConfirm) throw new Error(getT().errors.passwordsDontMatch);
 	await pb.collection("ft_users").create({ ...input, name });
 	try {
 		await pb.collection("ft_users").requestVerification(input.email);
@@ -133,6 +134,10 @@ export interface NodeInput {
 	birthDate: CalendarDate;
 	deathDate: CalendarDate | null;
 	photo?: PhotoInput | null;
+	/** Free-text note; "" clears it. */
+	note?: string;
+	/** Linked ft_users id; null / "" clears it. Undefined leaves it untouched. */
+	userId?: string | null;
 }
 
 function nodeForm(input: NodeInput, extra: { tree?: string; clearDeath?: boolean; id?: string }): FormData {
@@ -143,6 +148,8 @@ function nodeForm(input: NodeInput, extra: { tree?: string; clearDeath?: boolean
 	if (input.deathDate) data.append("deathDate", toISODate(input.deathDate));
 	else if (extra.clearDeath) data.append("deathDate", "");
 	data.append("gender", input.gender);
+	if (input.note !== undefined) data.append("note", input.note.trim());
+	if (input.userId !== undefined) data.append("user", input.userId ?? "");
 	if (input.photo) {
 		const type = input.photo.mimeType ?? "image/jpeg";
 		const ext = type.split("/")[1] ?? "jpg";
@@ -161,6 +168,8 @@ export function nodeFields(input: NodeInput, treeId: string) {
 		birthDate: toISODate(input.birthDate),
 		deathDate: input.deathDate ? toISODate(input.deathDate) : "",
 		tree: treeId,
+		...(input.note !== undefined ? { note: input.note.trim() } : {}),
+		...(input.userId !== undefined ? { user: input.userId ?? "" } : {}),
 	};
 }
 
@@ -180,6 +189,11 @@ export async function createNode(treeId: string, input: NodeInput, id: string): 
 
 export async function updateNode(id: string, input: NodeInput): Promise<NodeRecord> {
 	return pb.collection("ft_nodes").update<NodeRecord>(id, nodeForm(input, { clearDeath: true }));
+}
+
+/** Sets or clears ("") the account a person is linked to. */
+export async function setNodeUser(id: string, userId: string): Promise<NodeRecord> {
+	return pb.collection("ft_nodes").update<NodeRecord>(id, { user: userId });
 }
 
 export async function deleteNode(id: string): Promise<void> {

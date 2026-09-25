@@ -7,12 +7,16 @@ import { useTree } from "@/lib/hooks/useTree";
 import { activeFilterCount, AGE_MAX, AGE_MIN, EMPTY_FILTERS, TreeFilters, visibleGraph } from "@/lib/filters";
 import { buildCalendar, downloadText, slugify } from "@/lib/calendar";
 import { layoutTree, NODE_H, NODE_W } from "@/lib/treeLayout";
-import { relationshipsOf, sentence } from "@/lib/relationshipStyle";
+import { groupLabel, relationshipsOf, sentence, typeLabel } from "@/lib/relationshipStyle";
 import { LogoMark } from "@/components/Logo";
 import { UserAvatar } from "@/components/AppNav";
 import { ConfirmDialog } from "@/components/Dialog";
+import { PreferenceControls } from "@/components/PreferenceControls";
+import type { Dict } from "@/i18n";
+import { useT } from "@/i18n/client";
 import { useToast } from "@/components/Toast";
 import {
+	AccountIcon,
 	CalendarIcon,
 	ChevronLeftIcon,
 	CloseIcon,
@@ -30,7 +34,7 @@ import { EmailAvatar, InvitedUser } from "../shared";
 import { ManageInvitedDialog } from "../TreeDialogs";
 import { clampScale, TreeCanvas, View, zoomAt } from "./TreeCanvas";
 import { EdgePanel, PersonPanel } from "./PersonPanel";
-import { FiltersDrawer, typeLabel } from "./FiltersDrawer";
+import { FiltersDrawer } from "./FiltersDrawer";
 import { ExportDialog, FindDialog, PersonDialog, RelationshipDialog } from "./TreeViewDialogs";
 import s from "./treeView.module.css";
 
@@ -44,15 +48,15 @@ type Modal =
 	| { kind: "invited" }
 	| null;
 
-const Legend = () => (
-	<div className={s.legend} aria-label="Legend">
+const Legend = ({ t }: { t: Dict }) => (
+	<div className={s.legend} aria-label={t.tree.legend}>
 		{[
-			{ label: "● Biological", color: "var(--bio)", width: 2.5 },
-			{ label: "◆ Married", color: "var(--inlaw)", width: 4, cap: true },
-			{ label: "◆ Lives with", color: "var(--inlaw)", width: 1.25, dash: "2 6", cap: true },
-			{ label: "◆ In-law", color: "var(--inlaw)", width: 2, dash: "8 5" },
-			{ label: "✝ Church", color: "var(--church)", width: 2, dash: "2 5", cap: true },
-			{ label: "○ Other", color: "var(--other)", width: 1, dash: "3 7", muted: true },
+			{ label: `● ${groupLabel(t, "BIOLOGICAL")}`, color: "var(--bio)", width: 2.5 },
+			{ label: `◆ ${t.rel.legend.married}`, color: "var(--inlaw)", width: 4, cap: true },
+			{ label: `◆ ${t.rel.legend.livesWith}`, color: "var(--inlaw)", width: 1.25, dash: "2 6", cap: true },
+			{ label: `◆ ${groupLabel(t, "IN-LAW")}`, color: "var(--inlaw)", width: 2, dash: "8 5" },
+			{ label: `✝ ${groupLabel(t, "CHURCH")}`, color: "var(--church)", width: 2, dash: "2 5", cap: true },
+			{ label: `○ ${groupLabel(t, "IRRELEVANT")}`, color: "var(--other)", width: 1, dash: "3 7", muted: true },
 		].map((row) => (
 			<div key={row.label} className={s.legendRow}>
 				<svg width="34" height="8" aria-hidden>
@@ -74,18 +78,37 @@ const Legend = () => (
 		<div className={s.legendRow} style={{ gap: 12, fontWeight: 500 }}>
 			<span style={{ display: "flex", alignItems: "center", gap: 6 }}>
 				<span className={s.swatch} style={{ background: "var(--male-fill)", border: "2px solid var(--male-border)" }} />
-				Male
+				{t.common.male}
 			</span>
 			<span style={{ display: "flex", alignItems: "center", gap: 6 }}>
 				<span className={s.swatch} style={{ background: "var(--female-fill)", border: "2px solid var(--female-border)" }} />
-				Female
+				{t.common.female}
 			</span>
-			<span style={{ color: "var(--ink3)" }}>† deceased</span>
+			<span style={{ color: "var(--ink3)" }}>{t.tree.deceased}</span>
+		</div>
+		<div className={s.legendRow} style={{ gap: 12, fontWeight: 500 }}>
+			<span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+				<span className={`${s.swatch} ${s.swatchYou}`} />
+				{t.tree.legendYou}
+			</span>
+			<span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+				<AccountIcon size={13} style={{ color: "var(--ink2)" }} />
+				{t.tree.legendLinked}
+			</span>
 		</div>
 	</div>
 );
 
-export const TreeView = ({ treeId, userName }: { treeId: string; userName: string }) => {
+export const TreeView = ({
+	treeId,
+	userName,
+	userId,
+}: {
+	treeId: string;
+	userName: string;
+	/** The signed-in account, to mark "you" in the tree. */
+	userId: string;
+}) => {
 	const {
 		tree,
 		fetchTree,
@@ -98,6 +121,8 @@ export const TreeView = ({ treeId, userName }: { treeId: string; userName: strin
 		error,
 	} = useTree();
 	const toast = useToast();
+	const t = useT();
+	const tv = t.tree;
 	const viewportRef = useRef<HTMLDivElement>(null);
 	const [view, setViewState] = useState<View>({ tx: 40, ty: 80, scale: 0.8 });
 	const setView = useCallback((update: (v: View) => View) => setViewState(update), []);
@@ -107,10 +132,23 @@ export const TreeView = ({ treeId, userName }: { treeId: string; userName: strin
 	const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
 	const [modal, setModal] = useState<Modal>(null);
 	const [busy, setBusy] = useState(false);
-	// Viewer emails, tagged with the tree they belong to. A reload of the same
-	// tree keeps showing the previous list until the new one arrives.
-	const [viewers, setViewers] = useState<{ treeId: string; users: InvitedUser[] } | null>(null);
-	const invited = viewers?.treeId === treeId ? viewers.users : null;
+	// Account emails (viewers, the creator, linked people), tagged with the tree
+	// they belong to. A reload of the same tree keeps showing the previous list
+	// until the new one arrives.
+	const [accounts, setAccounts] = useState<{
+		treeId: string;
+		invitedIds: string[];
+		emails: Record<string, string | null>;
+	} | null>(null);
+	const loadedAccounts = accounts?.treeId === treeId ? accounts : null;
+	const emailOf = useCallback(
+		(id: string) => loadedAccounts?.emails[id] ?? t.common.unknownAccount,
+		[loadedAccounts, t]
+	);
+	const invited: InvitedUser[] | null = useMemo(
+		() => loadedAccounts?.invitedIds.map((id) => ({ id, email: emailOf(id) })) ?? null,
+		[loadedAccounts, emailOf]
+	);
 	const fitted = useRef<string | null>(null);
 	// The tree this view is showing right now; null once it unmounts. A toast's
 	// Undo can fire after the user moved on, and must not reload a tree that is
@@ -133,32 +171,47 @@ export const TreeView = ({ treeId, userName }: { treeId: string; userName: strin
 	}, [treeId, fetchTree]);
 
 	const loadedTree = tree?.object.id === treeId ? tree : null;
-	const invitedKey = loadedTree ? `${treeId}:${loadedTree.object.invitedIds.join(",")}` : "";
+	const accountsKey = loadedTree
+		? [
+				treeId,
+				loadedTree.object.invitedIds.join(","),
+				Array.from(
+					new Set([
+						loadedTree.object.creatorId,
+						...loadedTree.nodes.map((n) => n.userId ?? ""),
+					])
+				)
+					.filter(Boolean)
+					.sort()
+					.join(","),
+		  ].join("|")
+		: "";
 	useEffect(() => {
-		if (!invitedKey) {
+		if (!accountsKey) {
 			return;
 		}
-		const [forTree, list] = invitedKey.split(":");
-		const ids = list ? list.split(",") : [];
+		const [forTree, invitedList, otherList] = accountsKey.split("|");
+		const invitedIds = invitedList ? invitedList.split(",") : [];
+		const ids = Array.from(new Set([...invitedIds, ...(otherList ? otherList.split(",") : [])]));
 		let cancelled = false;
 		Promise.all(
 			ids.map(async (id) => {
 				try {
 					const record = await pb.collection("ft_gettable_users_id_email").getOne(id);
-					return { id, email: record.email as string };
+					return [id, (record.email as string) || null] as const;
 				} catch {
-					return { id, email: "unknown account" };
+					return [id, null] as const;
 				}
 			})
-		).then((users) => {
+		).then((pairs) => {
 			if (!cancelled) {
-				setViewers({ treeId: forTree, users });
+				setAccounts({ treeId: forTree, invitedIds, emails: Object.fromEntries(pairs) });
 			}
 		});
 		return () => {
 			cancelled = true;
 		};
-	}, [invitedKey]);
+	}, [accountsKey]);
 
 	const current = tree && tree.object.id === treeId ? tree : null;
 	const nodes = useMemo(() => current?.nodes ?? [], [current]);
@@ -220,7 +273,7 @@ export const TreeView = ({ treeId, userName }: { treeId: string; userName: strin
 	const revealIfHidden = (node: Node) => {
 		if (!visibleNodes.some((n) => n.id === node.id)) {
 			setFilters(EMPTY_FILTERS);
-			toast("Filters cleared to show them");
+			toast(tv.filtersCleared);
 		}
 	};
 
@@ -273,18 +326,18 @@ export const TreeView = ({ treeId, userName }: { treeId: string; userName: strin
 
 	const typeName = (id: string) => {
 		const name = current?.relationshipNames.find((n) => n.id === id);
-		return name ? typeLabel(name) : "Unknown";
+		return name ? typeLabel(t, name) : tv.unknownType;
 	};
 
 	const chips: { text: string; remove: () => void }[] = [
 		...filters.hiddenTypes.map((id) => ({
-			text: `Hide: ${typeName(id)}`,
+			text: tv.chipHide(typeName(id)),
 			remove: () => setFilters((f) => ({ ...f, hiddenTypes: f.hiddenTypes.filter((t) => t !== id) })),
 		})),
 		...(filters.minAge > AGE_MIN || filters.maxAge < AGE_MAX
 			? [
 					{
-						text: `Age ${filters.minAge}–${filters.maxAge}${filters.maxAge >= AGE_MAX ? "+" : ""}`,
+						text: tv.chipAge(filters.minAge, filters.maxAge, filters.maxAge >= AGE_MAX),
 						remove: () => setFilters((f) => ({ ...f, minAge: AGE_MIN, maxAge: AGE_MAX })),
 					},
 			  ]
@@ -292,15 +345,23 @@ export const TreeView = ({ treeId, userName }: { treeId: string; userName: strin
 		...(filters.gender !== "both"
 			? [
 					{
-						text: filters.gender === "male" ? "Men only" : "Women only",
+						text: filters.gender === "male" ? tv.chipMen : tv.chipWomen,
 						remove: () => setFilters((f) => ({ ...f, gender: "both" as const })),
+					},
+			  ]
+			: []),
+		...(filters.includeFilter.trim()
+			? [
+					{
+						text: tv.chipOnly(filters.includeFilter.trim()),
+						remove: () => setFilters((f) => ({ ...f, includeFilter: "" })),
 					},
 			  ]
 			: []),
 		...(filters.nameFilter.trim()
 			? [
 					{
-						text: `Not: ${filters.nameFilter.trim()}`,
+						text: tv.chipNot(filters.nameFilter.trim()),
 						remove: () => setFilters((f) => ({ ...f, nameFilter: "" })),
 					},
 			  ]
@@ -321,15 +382,13 @@ export const TreeView = ({ treeId, userName }: { treeId: string; userName: strin
 
 	const exportCalendar = () => {
 		try {
-			const ics = buildCalendar(visibleNodes, window.location.href);
-			const filename = `${slugify(current?.object.name ?? "family-tree")}.ics`;
+			const ics = buildCalendar(visibleNodes, window.location.href, t);
+			const filename = `${slugify(current?.object.name ?? t.calendar.fileFallback)}.ics`;
 			downloadText(filename, ics, "text/calendar;charset=utf-8");
 			setModal(null);
-			toast(
-				`${filename} downloaded · ${visibleNodes.length} ${visibleNodes.length === 1 ? "person" : "people"}`
-			);
+			toast(tv.exported(filename, visibleNodes.length));
 		} catch (err: any) {
-			toast(err?.message ?? "Could not build the calendar", "error");
+			toast(err?.message ?? tv.calendarFailed, "error");
 		}
 	};
 
@@ -338,25 +397,28 @@ export const TreeView = ({ treeId, userName }: { treeId: string; userName: strin
 			<div className={s.shell}>
 				<header className={s.header}>
 					<div className={s.headerLeft}>
-						<Link href="/trees" className={s.back} aria-label="Back to trees">
+						<Link href="/trees" className={s.back} aria-label={tv.back}>
 							<ChevronLeftIcon />
 						</Link>
 						<LogoMark size={26} />
+					</div>
+					<div className={s.headerRight}>
+						<PreferenceControls />
 					</div>
 				</header>
 				<div className="page-center">
 					{error && !isLoading ? (
 						<>
-							<h1 style={{ fontSize: 24, color: "var(--ink)" }}>This tree could not be opened</h1>
+							<h1 style={{ fontSize: 24, color: "var(--ink)" }}>{tv.openFailed}</h1>
 							<p style={{ whiteSpace: "pre-line" }}>{error}</p>
 							<Link href="/trees" className="btn btn-primary">
-								Back to your trees
+								{tv.backToTrees}
 							</Link>
 						</>
 					) : (
 						<>
 							<span className="spinner" style={{ width: 28, height: 28, color: "var(--primary)" }} />
-							<p>Loading the tree…</p>
+							<p>{tv.loadingTree}</p>
 						</>
 					)}
 				</div>
@@ -368,7 +430,7 @@ export const TreeView = ({ treeId, userName }: { treeId: string; userName: strin
 		<div className={s.shell}>
 			<header className={s.header}>
 				<div className={s.headerLeft}>
-					<Link href="/trees" className={s.back} aria-label="Back to trees">
+					<Link href="/trees" className={s.back} aria-label={tv.back}>
 						<ChevronLeftIcon />
 					</Link>
 					<span className="hide-sm" style={{ display: "flex" }}>
@@ -376,11 +438,10 @@ export const TreeView = ({ treeId, userName }: { treeId: string; userName: strin
 					</span>
 					<h1 className={s.treeName}>{current.object.name}</h1>
 					<span className={`badge ${isOwner ? "badge-owner" : "badge-shared"} ${s.hideNarrow}`} style={{ padding: "3px 9px" }}>
-						{isOwner ? "Owner" : "Viewer · read-only"}
+						{isOwner ? t.common.owner : t.common.viewerReadOnly}
 					</span>
 					<span className={`${s.count} ${s.hideNarrow}`}>
-						{nodes.length} {nodes.length === 1 ? "person" : "people"} · {relationships.length}{" "}
-						{relationships.length === 1 ? "relationship" : "relationships"}
+						{tv.counts(nodes.length, relationships.length)}
 					</span>
 				</div>
 				<div className={s.headerRight}>
@@ -397,9 +458,10 @@ export const TreeView = ({ treeId, userName }: { treeId: string; userName: strin
 							disabled={!invited}
 							onClick={() => setModal({ kind: "invited" })}
 						>
-							Manage invited
+							{t.common.manageInvited}
 						</button>
 					) : null}
+					<PreferenceControls />
 					<UserAvatar name={userName} size={32} />
 				</div>
 			</header>
@@ -417,6 +479,7 @@ export const TreeView = ({ treeId, userName }: { treeId: string; userName: strin
 					view={view}
 					setView={setView}
 					viewportRef={viewportRef}
+					currentUserId={userId}
 					onFocusNode={(id) => {
 						const node = nodes.find((n) => n.id === id);
 						const position = layout.positions.get(id);
@@ -437,16 +500,14 @@ export const TreeView = ({ treeId, userName }: { treeId: string; userName: strin
 				{nodes.length === 0 ? (
 					<div className={s.emptyCanvas}>
 						<div className={s.emptyCard}>
-							<h2 style={{ fontSize: 24 }}>No one here yet</h2>
+							<h2 style={{ fontSize: 24 }}>{tv.emptyTitle}</h2>
 							<p>
-								{isOwner
-									? "Add the first person, yourself is a good start. Everyone you add lines up by birth year."
-									: "The creator hasn't added anyone to this tree yet."}
+								{isOwner ? tv.emptyOwner : tv.emptyViewer}
 							</p>
 							{isOwner ? (
 								<button className="btn btn-primary" onClick={() => setModal({ kind: "person", node: null })}>
 									<PersonAddIcon />
-									Add the first person
+									{tv.addFirst}
 								</button>
 							) : null}
 						</div>
@@ -455,10 +516,10 @@ export const TreeView = ({ treeId, userName }: { treeId: string; userName: strin
 
 				<div className={s.toolbars}>
 					{isOwner ? (
-						<div className={s.toolbar} role="toolbar" aria-label="Edit tree">
+						<div className={s.toolbar} role="toolbar" aria-label={tv.editToolbar}>
 							<button className={s.tool} onClick={() => setModal({ kind: "person", node: null })}>
 								<PersonAddIcon />
-								<span className={s.toolLabel}>Add person</span>
+								<span className={s.toolLabel}>{tv.addPerson}</span>
 							</button>
 							<button
 								className={s.tool}
@@ -466,7 +527,7 @@ export const TreeView = ({ treeId, userName }: { treeId: string; userName: strin
 								onClick={() => setModal({ kind: "relationship", from: selectedNode })}
 							>
 								<LinkIcon />
-								<span className={s.toolLabel}>Add relationship</span>
+								<span className={s.toolLabel}>{t.common.addRelationship}</span>
 							</button>
 							<div className={`${s.toolSep} ${s.hideNarrow}`} />
 							<button
@@ -475,7 +536,7 @@ export const TreeView = ({ treeId, userName }: { treeId: string; userName: strin
 								onClick={() => selectedNode && setModal({ kind: "person", node: selectedNode })}
 							>
 								<PencilIcon />
-								<span className={s.toolLabel}>Edit</span>
+								<span className={s.toolLabel}>{t.common.edit}</span>
 							</button>
 							<button
 								className={`${s.tool} ${s.toolDanger} ${s.hideNarrow}`}
@@ -483,14 +544,14 @@ export const TreeView = ({ treeId, userName }: { treeId: string; userName: strin
 								onClick={() => selectedNode && setModal({ kind: "delete-person", node: selectedNode })}
 							>
 								<TrashIcon />
-								<span className={s.toolLabel}>Remove</span>
+								<span className={s.toolLabel}>{t.common.remove}</span>
 							</button>
 						</div>
 					) : null}
-					<div className={s.toolbar} role="toolbar" aria-label="View">
+					<div className={s.toolbar} role="toolbar" aria-label={tv.viewToolbar}>
 						<button className={s.tool} onClick={() => setModal({ kind: "find" })} disabled={nodes.length === 0}>
 							<SearchIcon />
-							<span className={s.toolLabel}>Find person</span>
+							<span className={s.toolLabel}>{tv.findPerson}</span>
 						</button>
 						<button
 							className={`${s.tool} ${filtersOpen ? s.toolActive : ""}`}
@@ -501,18 +562,18 @@ export const TreeView = ({ treeId, userName }: { treeId: string; userName: strin
 							}}
 						>
 							<FilterIcon />
-							<span className={s.toolLabel}>Filters</span>
+							<span className={s.toolLabel}>{tv.filters}</span>
 							{filterCount > 0 ? <span className={s.countBadge}>{filterCount}</span> : null}
 						</button>
 						<button className={s.tool} onClick={() => setModal({ kind: "export" })} disabled={nodes.length === 0}>
 							<CalendarIcon />
-							<span className={s.toolLabel}>Export to calendar</span>
+							<span className={s.toolLabel}>{tv.exportCalendar}</span>
 						</button>
 					</div>
 					{chips.length > 0 ? (
 						<div className={s.chips}>
 							{chips.map((chip) => (
-								<button key={chip.text} className={s.chip} onClick={chip.remove} aria-label={`Remove filter ${chip.text}`}>
+								<button key={chip.text} className={s.chip} onClick={chip.remove} aria-label={tv.removeFilter(chip.text)}>
 									{chip.text}
 									<span className={s.chipX}>
 										<CloseIcon size={10} />
@@ -520,24 +581,24 @@ export const TreeView = ({ treeId, userName }: { treeId: string; userName: strin
 								</button>
 							))}
 							<button className={s.clearAll} onClick={() => setFilters(EMPTY_FILTERS)}>
-								Clear all
+								{t.common.clearAll}
 							</button>
 						</div>
 					) : null}
 				</div>
 
-				<Legend />
+				<Legend t={t} />
 
 				<div className={s.zoom}>
-					<button className={s.zoomBtn} aria-label="Zoom in" onClick={() => zoomBy(1.25)}>
+					<button className={s.zoomBtn} aria-label={tv.zoomIn} onClick={() => zoomBy(1.25)}>
 						<PlusIcon />
 					</button>
 					<div className={s.zoomSep} />
-					<button className={s.zoomBtn} aria-label="Zoom out" onClick={() => zoomBy(1 / 1.25)}>
+					<button className={s.zoomBtn} aria-label={tv.zoomOut} onClick={() => zoomBy(1 / 1.25)}>
 						<MinusIcon />
 					</button>
 					<div className={s.zoomSep} />
-					<button className={s.zoomBtn} aria-label="Fit to screen" onClick={fit}>
+					<button className={s.zoomBtn} aria-label={tv.fit} onClick={fit}>
 						<FitIcon />
 					</button>
 					<div className={s.zoomSep} />
@@ -553,6 +614,14 @@ export const TreeView = ({ treeId, userName }: { treeId: string; userName: strin
 						nodes={nodes}
 						relationships={relationships}
 						isOwner={isOwner}
+						linkText={
+							selectedNode.userId
+								? selectedNode.userId === userId
+									? t.panel.thisIsYou
+									: t.panel.linkedTo(emailOf(selectedNode.userId))
+								: null
+						}
+						isYou={!!selectedNode.userId && selectedNode.userId === userId}
 						onClose={() => setSelectedNodeId(null)}
 						onSelectNode={(id) => {
 							const node = nodes.find((n) => n.id === id);
@@ -585,7 +654,7 @@ export const TreeView = ({ treeId, userName }: { treeId: string; userName: strin
 						filters={filters}
 						setFilters={(update) => setFilters(update)}
 						relationshipNames={current.relationshipNames}
-						visibleText={`${visibleNodes.length} of ${nodes.length} people visible`}
+						visibleText={tv.visible(visibleNodes.length, nodes.length)}
 						onClear={() => setFilters(EMPTY_FILTERS)}
 						onClose={() => setFiltersOpen(false)}
 					/>
@@ -608,16 +677,25 @@ export const TreeView = ({ treeId, userName }: { treeId: string; userName: strin
 			{modal?.kind === "person" ? (
 				<PersonDialog
 					node={modal.node}
+					nodes={nodes}
 					treeId={treeId}
+					accounts={(() => {
+						const others = [current.object.creatorId, ...current.object.invitedIds, modal.node?.userId ?? ""]
+							.filter((id) => id && id !== userId);
+						return [
+							{ id: userId, label: t.dialogs.linkedMe(userName), name: userName },
+							...Array.from(new Set(others)).map((id) => ({ id, label: emailOf(id), name: emailOf(id) })),
+						];
+					})()}
 					onClose={() => setModal(null)}
 					onSave={async (data) => {
 						if (modal.node) {
 							await editNode(modal.node.id, data);
-							toast("Changes saved");
+							toast(tv.saved);
 						} else {
 							const node = await createNode(data);
 							if (node) {
-								toast(`${node.name} added to the tree`);
+								toast(tv.added(node.name));
 								setSelectedNodeId(node.id);
 								setSelectedEdgeId(null);
 							}
@@ -643,8 +721,8 @@ export const TreeView = ({ treeId, userName }: { treeId: string; userName: strin
 						});
 						setModal(null);
 						if (created) {
-							toast("Relationship added", "success", {
-								label: "Undo",
+							toast(tv.relationshipAdded, "success", {
+								label: t.common.undo,
 								fn: () => {
 									deleteRelationship(created.id).catch((err) =>
 										toast(getPocketbaseError(err), "error")
@@ -658,12 +736,9 @@ export const TreeView = ({ treeId, userName }: { treeId: string; userName: strin
 
 			{modal?.kind === "delete-person" ? (
 				<ConfirmDialog
-					title={`Remove ${modal.node.name}?`}
-					body={(() => {
-						const count = relationshipsOf(relationships, modal.node.id).length;
-						return `This also removes ${count} ${count === 1 ? "relationship" : "relationships"} connected to them. There is no undo.`;
-					})()}
-					confirmLabel="Remove person"
+					title={tv.removePersonTitle(modal.node.name)}
+					body={tv.removePersonBody(relationshipsOf(relationships, modal.node.id).length)}
+					confirmLabel={tv.removePerson}
 					busy={busy}
 					onClose={() => setModal(null)}
 					onConfirm={() =>
@@ -672,7 +747,7 @@ export const TreeView = ({ treeId, userName }: { treeId: string; userName: strin
 							await deleteNode(id);
 							setModal(null);
 							setSelectedNodeId(null);
-							toast(`${name} removed`);
+							toast(tv.personRemoved(name));
 							// Their panel (and its buttons) are gone; land keyboard focus on the canvas.
 							requestAnimationFrame(() => viewportRef.current?.focus());
 						})
@@ -686,13 +761,14 @@ export const TreeView = ({ treeId, userName }: { treeId: string; userName: strin
 						if (!edge) {
 							return null;
 						}
-						const from = nodes.find((n) => n.id === edge.sourceNodeId)?.name ?? "Someone";
-						const to = nodes.find((n) => n.id === edge.targetNodeId)?.name ?? "someone";
+						const fromNode = nodes.find((n) => n.id === edge.sourceNodeId);
+						const from = fromNode?.name ?? t.common.someone;
+						const to = nodes.find((n) => n.id === edge.targetNodeId)?.name ?? t.common.someoneLower;
 						return (
 							<ConfirmDialog
-								title="Remove this relationship?"
-								body={`${sentence(from, edge.relationshipName, to)}. The two people stay in the tree.`}
-								confirmLabel="Remove relationship"
+								title={tv.removeEdgeTitle}
+								body={tv.removeEdgeBody(sentence(t, from, edge.relationshipName, to, fromNode?.gender))}
+								confirmLabel={t.common.removeRelationship}
 								busy={busy}
 								onClose={() => setModal(null)}
 								onConfirm={() =>
@@ -701,7 +777,7 @@ export const TreeView = ({ treeId, userName }: { treeId: string; userName: strin
 										setModal(null);
 										setSelectedEdgeId(null);
 										requestAnimationFrame(() => viewportRef.current?.focus());
-										toast("Relationship removed");
+										toast(tv.relationshipRemoved);
 									})
 								}
 							/>

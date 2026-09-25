@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Literata, Manrope } from "next/font/google";
+import { THEME_COLORS } from "@/i18n/config";
+import { getLocale, getT, getTheme } from "@/i18n/server";
 import { Providers } from "./providers";
 import "./globals.css";
 
@@ -18,27 +20,45 @@ const manrope = Manrope({
 	display: "swap",
 });
 
-export const metadata: Metadata = {
-	title: {
-		default: "Family Tree",
-		template: "%s · Family Tree",
-	},
-	description:
-		"A private family tree, drawn as a graph. Add the people you know, link how they are related, and see the generations line up by birth year.",
-};
+export function generateMetadata(): Metadata {
+	const t = getT();
+	return {
+		title: {
+			default: t.common.appName,
+			template: `%s · ${t.common.appName}`,
+		},
+		description: t.meta.description,
+	};
+}
 
-export const viewport: Viewport = {
-	themeColor: [
-		{ media: "(prefers-color-scheme: light)", color: "#F5F0E6" },
-		{ media: "(prefers-color-scheme: dark)", color: "#121714" },
-	],
-};
+/** Browser chrome follows the chosen theme, or the system one. */
+export function generateViewport(): Viewport {
+	const theme = getTheme();
+	if (theme !== "system") {
+		return { themeColor: THEME_COLORS[theme], colorScheme: theme };
+	}
+	return {
+		themeColor: [
+			{ media: "(prefers-color-scheme: light)", color: THEME_COLORS.light },
+			{ media: "(prefers-color-scheme: dark)", color: THEME_COLORS.dark },
+		],
+		colorScheme: "light dark",
+	};
+}
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+	const locale = getLocale();
+	const theme = getTheme();
 	return (
-		<html lang="en" className={`${literata.variable} ${manrope.variable}`}>
+		<html
+			lang={locale}
+			data-theme={theme === "system" ? undefined : theme}
+			className={`${literata.variable} ${manrope.variable}`}
+		>
 			<body>
-				<Providers>{children}</Providers>
+				<Providers locale={locale} theme={theme}>
+					{children}
+				</Providers>
 			</body>
 		</html>
 	);

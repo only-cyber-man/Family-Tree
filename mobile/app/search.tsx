@@ -13,10 +13,14 @@ import { yearsLabel } from "../src/lib/format";
 import { describeKinship, relationshipPath } from "../src/lib/path";
 import { searchPersons } from "../src/lib/search";
 import { useTheme } from "../src/theme/useTheme";
+import { useT } from "../src/i18n";
+import { useLayout } from "../src/hooks/useLayout";
+import { LIST_MAX } from "../src/lib/responsive";
 
 /** Place a face: search a name, see how you are related. */
 export default function Search() {
 	const t = useTheme();
+	const T = useT();
 	const router = useRouter();
 	const insets = useSafeAreaInsets();
 	const graph = useGraph();
@@ -24,49 +28,52 @@ export default function Search() {
 	const pictures = usePictures();
 	const today = useToday();
 	const [q, setQ] = useState("");
+	const layout = useLayout();
+	// Tablets: a centred list, not edge-to-edge rows.
+	const capped = layout.isTablet ? ({ width: "100%", maxWidth: LIST_MAX, alignSelf: "center" } as const) : null;
 	const results = useMemo(() => (graph ? searchPersons(graph.persons, q) : []), [graph, q]);
 
 	const relation = (id: string): string => {
 		if (!graph || !me) return "";
-		if (id === me.id) return "you";
+		if (id === me.id) return T.kin.you;
 		const p = relationshipPath(graph, me.id, id);
-		return p ? describeKinship(graph, p.steps).phrase : "not connected to you yet";
+		return p ? describeKinship(graph, p.steps, T).phrase : T.path.notConnectedShort;
 	};
 
 	return (
 		<KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1, backgroundColor: t.c.bg }}>
-			<View style={[styles.top, { paddingTop: insets.top + 12 }]}>
+			<View style={[styles.top, { paddingTop: insets.top + 12 }, capped]}>
 				<TextField
 					round={false}
 					containerStyle={{ flex: 1 }}
 					autoFocus
 					value={q}
 					onChangeText={setQ}
-					placeholder="Who are you looking for?"
+					placeholder={T.search.placeholder}
 					autoCorrect={false}
 					autoCapitalize="words"
 					returnKeyType="search"
-					accessibilityLabel="Search people"
+					accessibilityLabel={T.search.a11y}
 					leading={<SearchIcon size={20} color={t.c.ink3} strokeWidth={1.75} />}
 				/>
 				<Pressable onPress={() => router.back()} hitSlop={10} accessibilityRole="button" style={{ minHeight: 44, justifyContent: "center" }}>
 					<Text size={16} weight={600} color={t.c.accent}>
-						Cancel
+						{T.common.cancel}
 					</Text>
 				</Pressable>
 			</View>
-			<ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: insets.bottom + 24, gap: 14 }}>
+			<ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={[{ paddingHorizontal: 20, paddingBottom: insets.bottom + 24, gap: 14 }, capped]}>
 				{!me && graph && graph.persons.length ? (
 					<Notice
 						actions={
 							<Pressable onPress={() => router.push("/pick-me")} accessibilityRole="button">
 								<Text size={13} weight={700} color={t.c.accent}>
-									Choose who you are
+									{T.search.chooseWho}
 								</Text>
 							</Pressable>
 						}
 					>
-						Tell the app which person is you to see how everyone is related to you. The choice stays on this phone.
+						{T.search.chooseWhoBody}
 					</Notice>
 				) : null}
 				{results.length ? (
@@ -78,14 +85,14 @@ export default function Search() {
 								today={today}
 								uri={pictures[item.person.id]}
 								highlight={item.range}
-								subtitle={[yearsLabel(item.person, today), relation(item.person.id)].filter(Boolean).join(" · ")}
+								subtitle={[yearsLabel(item.person, today), relation(item.person.id), item.noteSnippet].filter(Boolean).join(" · ")}
 								onPress={() => router.push({ pathname: "/person/[id]", params: { id: item.person.id } })}
 							/>
 						))}
 					</Card>
 				) : q.trim() ? (
 					<Text variant="caption" center style={{ paddingTop: 24 }}>
-						No one called “{q.trim()}” in this tree.
+						{T.search.noOne(q.trim())}
 					</Text>
 				) : null}
 			</ScrollView>

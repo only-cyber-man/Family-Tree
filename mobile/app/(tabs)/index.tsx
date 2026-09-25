@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import { ChevronDown, Link2, Search, UserPlus } from "lucide-react-native";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { Avatar } from "../../src/components/Avatar";
 import { Button } from "../../src/components/Button";
@@ -17,10 +17,15 @@ import { useSettings } from "../../src/store/settings";
 import { useTree } from "../../src/store/tree";
 import { useTrees } from "../../src/store/trees";
 import { useTheme } from "../../src/theme/useTheme";
+import { useT } from "../../src/i18n";
+import { useLayout } from "../../src/hooks/useLayout";
+import { FORM_MAX, LIST_MAX } from "../../src/lib/responsive";
+import { PersonSheetContent } from "../../src/components/PersonSheetContent";
 
 /** Home opens on search and the upcoming list, not on a list of trees. */
 export default function Home() {
 	const t = useTheme();
+	const T = useT();
 	const router = useRouter();
 	const user = useSession((s) => s.user);
 	const treesStatus = useTrees((s) => s.status);
@@ -33,12 +38,14 @@ export default function Home() {
 	const pictures = usePictures();
 	const today = useToday();
 	const owner = useIsOwner();
-	const upcoming = useMemo(() => (graph ? upcomingEvents(graph.persons, today).slice(0, 3) : []), [graph, today]);
+	const layout = useLayout();
+	const [detailId, setDetailId] = useState<string | null>(null);
+	const upcoming = useMemo(() => (graph ? upcomingEvents(graph.persons, today).slice(0, layout.isWide ? 8 : 3) : []), [graph, today, layout.isWide]);
 	const loading = ((treesStatus === "loading" || treesStatus === "idle") && !trees.length) || (status === "loading" && !full);
 	const showSkeleton = useDelayed(loading);
 
 	const accountAvatar = (
-		<Pressable onPress={() => router.navigate("/settings")} accessibilityRole="button" accessibilityLabel="Settings">
+		<Pressable onPress={() => router.navigate("/settings")} accessibilityRole="button" accessibilityLabel={T.common.settings}>
 			<Avatar name={user?.name || user?.username || "?"} color={t.c.primary} size={36} />
 		</Pressable>
 	);
@@ -49,118 +56,126 @@ export default function Home() {
 
 	if (treesStatus === "error" && trees.length === 0) {
 		return (
-			<Screen tabs scroll={false} contentStyle={{ alignItems: "center", justifyContent: "center", gap: 16 }}>
+			<Screen tabs scroll={false} maxWidth={FORM_MAX} contentStyle={{ alignItems: "center", justifyContent: "center", gap: 16 }}>
 				<Text variant="title" center>
-					{treesOffline ? "You're offline" : "Couldn't load your trees"}
+					{treesOffline ? T.home.offline : T.home.couldntLoadTrees}
 				</Text>
 				<Text variant="body" color={t.c.ink2} center>
-					{treesOffline ? "Connect to the internet to see your trees for the first time." : treesError}
+					{treesOffline ? T.home.connectFirstTime : treesError}
 				</Text>
-				<Button label="Try again" onPress={() => useTrees.getState().refresh()} />
+				<Button label={T.common.tryAgain} onPress={() => useTrees.getState().refresh()} />
 			</Screen>
 		);
 	}
 
 	if (treesStatus === "ready" && trees.length === 0 && !activeTreeId) {
 		return (
-			<Screen tabs scroll={false} contentStyle={{ alignItems: "center", justifyContent: "center", gap: 20 }}>
+			<Screen tabs scroll={false} maxWidth={FORM_MAX} contentStyle={{ alignItems: "center", justifyContent: "center", gap: 20 }}>
 				<EmptyTreeIllustration width={200} />
 				<View style={{ gap: 8 }}>
 					<Text variant="title" center accessibilityRole="header">
-						No trees yet
+						{T.home.noTrees}
 					</Text>
 					<Text variant="body" color={t.c.ink2} center style={{ lineHeight: 22 }}>
-						Start with yourself and your parents. Invitations from relatives show up here on their own.
+						{T.home.noTreesBody}
 					</Text>
 				</View>
-				<Button label="Create your first tree" onPress={() => router.push({ pathname: "/trees", params: { create: "1" } })} />
+				<Button label={T.home.createFirst} onPress={() => router.push({ pathname: "/trees", params: { create: "1" } })} />
 			</Screen>
 		);
 	}
 
 	if (status === "error" && !full) {
 		return (
-			<Screen tabs scroll={false} contentStyle={{ alignItems: "center", justifyContent: "center", gap: 16 }}>
+			<Screen tabs scroll={false} maxWidth={FORM_MAX} contentStyle={{ alignItems: "center", justifyContent: "center", gap: 16 }}>
 				<Text variant="title" center>
-					{errorKind === "notFound" ? "This tree is not available" : errorKind === "network" ? "You're offline" : "Couldn't open this tree"}
+					{errorKind === "notFound" ? T.home.treeUnavailable : errorKind === "network" ? T.home.offline : T.home.couldntOpen}
 				</Text>
 				<Text variant="body" color={t.c.ink2} center>
 					{errorKind === "notFound"
-						? "It may have been deleted, or its owner stopped sharing it with you."
+						? T.home.treeUnavailableBody
 						: errorKind === "network"
-							? "There is no copy of this tree on this phone yet. Connect and try again."
+							? T.home.noCopy
 							: error}
 				</Text>
 				<View style={{ flexDirection: "row", gap: 8 }}>
-					<Button kind="secondary" label="Choose a tree" onPress={() => router.push("/trees")} />
-					{activeTreeId && errorKind !== "notFound" ? <Button label="Try again" onPress={() => load(activeTreeId)} /> : null}
+					<Button kind="secondary" label={T.home.chooseTree} onPress={() => router.push("/trees")} />
+					{activeTreeId && errorKind !== "notFound" ? <Button label={T.common.tryAgain} onPress={() => load(activeTreeId)} /> : null}
 				</View>
 			</Screen>
 		);
 	}
 
 	const empty = !!full && full.nodes.length === 0;
-	return (
-		<Screen tabs onRefresh={activeTreeId ? () => load(activeTreeId, { silent: true }) : undefined}>
+	const split = layout.isWide;
+	// Wide tablets: tapping a date opens the person beside the list (master–detail).
+	const openPerson = (id: string) => (split ? setDetailId(id) : router.push({ pathname: "/person/[id]", params: { id } }));
+
+	const header = (
 			<View style={styles.header}>
-				<Pressable onPress={() => router.push("/trees")} style={styles.title} accessibilityRole="button" accessibilityHint="Switch tree">
+				<Pressable onPress={() => router.push("/trees")} style={styles.title} accessibilityRole="button" accessibilityHint={T.home.switchTree}>
 					<Text variant="display" numberOfLines={1} style={{ flexShrink: 1 }} color={stale ? t.c.ink2 : t.c.ink}>
-						{full?.tree.name ?? "Family Tree"}
+						{full?.tree.name ?? T.common.familyTree}
 					</Text>
 					<ChevronDown size={20} color={t.c.ink3} strokeWidth={2.5} style={{ marginTop: 6 }} />
 				</Pressable>
 				{accountAvatar}
 			</View>
+	);
 
+	const searchField = (
 			<Pressable
 				onPress={() => router.push("/search")}
 				disabled={empty}
 				accessibilityRole="search"
-				accessibilityLabel="Who are you looking for?"
+				accessibilityLabel={T.home.lookingFor}
 				style={[styles.search, { backgroundColor: t.c.surface, borderColor: t.c.border, opacity: empty ? 0.6 : 1 }]}
 			>
 				<Search size={20} color={t.c.ink3} strokeWidth={1.75} />
 				<Text size={16} color={t.c.ink3}>
-					Who are you looking for?
+					{T.home.lookingFor}
 				</Text>
 			</Pressable>
+	);
 
+	const upcomingList = (
 			<View style={{ gap: 10 }}>
-				<SectionHeader title="Upcoming" action={upcoming.length ? "See all" : undefined} onAction={() => router.navigate("/dates")} />
+				<SectionHeader title={T.home.upcoming} action={upcoming.length ? T.home.seeAll : undefined} onAction={() => router.navigate("/dates")} />
 				{upcoming.length ? (
 					upcoming.map((e) => (
 						<View key={e.key} style={{ opacity: stale ? 0.6 : 1 }}>
-							<EventRow card event={e} person={graph?.byId[e.personId]} uri={pictures[e.personId]} onPress={() => router.push({ pathname: "/person/[id]", params: { id: e.personId } })} />
+							<EventRow card event={e} person={graph?.byId[e.personId]} uri={pictures[e.personId]} onPress={() => openPerson(e.personId)} />
 						</View>
 					))
 				) : (
 					<View style={[styles.emptyBox, { borderColor: t.c.borderStrong }]}>
 						<Text size={15} weight={600} center>
-							No upcoming dates
+							{T.home.noUpcoming}
 						</Text>
 						<Text variant="caption" center>
-							{empty ? "Birthdays and remembrance days appear here once there are people in the tree." : "Nothing in the next twelve months."}
+							{empty ? T.home.noUpcomingEmpty : T.home.noUpcomingYear}
 						</Text>
 					</View>
 				)}
 			</View>
+	);
 
-			{empty ? (
+	const bottom = empty ? (
 				<View style={styles.emptyTree}>
 					<EmptyTreeIllustration width={160} />
 					<View style={{ gap: 6 }}>
 						<Text serif size={22} weight={600} center>
-							No one here yet
+							{T.home.noOne}
 						</Text>
 						<Text size={14} color={t.c.ink2} center style={{ lineHeight: 21 }}>
-							{owner ? "Add yourself first. Everyone else connects to someone already in the tree." : "The owner has not added anyone yet."}
+							{owner ? T.home.addYourself : T.home.ownerAddedNoOne}
 						</Text>
 					</View>
-					{owner ? <Button size="md" label="Add the first person" onPress={() => router.push("/add-person")} /> : null}
+					{owner ? <Button size="md" label={T.home.addFirst} onPress={() => router.push("/add-person")} /> : null}
 				</View>
 			) : owner ? (
 				<View style={{ gap: 10 }}>
-					<SectionHeader title="Quick" />
+					<SectionHeader title={T.home.quick} />
 					<View style={styles.quick}>
 						<Pressable
 							onPress={() => router.push("/add-person")}
@@ -169,7 +184,7 @@ export default function Home() {
 						>
 							<UserPlus size={22} color={t.c.onPrimary} strokeWidth={1.75} />
 							<Text size={15} weight={700} color={t.c.onPrimary}>
-								Add person
+								{T.home.addPerson}
 							</Text>
 						</Pressable>
 						<Pressable
@@ -179,20 +194,68 @@ export default function Home() {
 						>
 							<Link2 size={22} color={t.c.ink} strokeWidth={1.75} />
 							<Text size={15} weight={700}>
-								Link two people
+								{T.home.linkTwo}
 							</Text>
 						</Pressable>
 					</View>
 				</View>
-			) : null}
+			) : null;
+
+	if (split) {
+		const detail = detailId && graph?.byId[detailId] ? (
+			<View style={[styles.pane, { backgroundColor: t.c.surface, borderColor: t.c.border }]}>
+				<PersonSheetContent
+					personId={detailId}
+					focusLabel={T.person.focusOnTree}
+					onClose={() => setDetailId(null)}
+					onSelect={setDetailId}
+					onFocus={(pid) => router.navigate({ pathname: "/tree", params: { focus: pid } })}
+				/>
+			</View>
+		) : (
+			<View style={{ gap: 20 }}>
+				<View style={[styles.pane, { backgroundColor: t.c.surface, borderColor: t.c.border, gap: 6 }]}>
+					<Text variant="overline">{T.home.aboutTree}</Text>
+					<Text variant="heading">{full?.tree.name}</Text>
+					<Text variant="caption">
+						{[graph ? T.trees.people(graph.persons.length) : null, owner ? T.common.owner : T.common.sharedWithYou].filter(Boolean).join(" · ")}
+					</Text>
+					<Text variant="small" style={{ marginTop: 6 }}>
+						{T.home.detailHint}
+					</Text>
+				</View>
+				{bottom}
+			</View>
+		);
+		return (
+			<Screen tabs onRefresh={activeTreeId ? () => load(activeTreeId, { silent: true }) : undefined}>
+				{header}
+				<View style={styles.split}>
+					<View style={[styles.col, { maxWidth: 560 }]}>
+						{searchField}
+						{upcomingList}
+					</View>
+					<View style={styles.col}>{detail}</View>
+				</View>
+			</Screen>
+		);
+	}
+
+	return (
+		<Screen tabs maxWidth={LIST_MAX} onRefresh={activeTreeId ? () => load(activeTreeId, { silent: true }) : undefined}>
+			{header}
+			{searchField}
+			{upcomingList}
+			{bottom}
 		</Screen>
 	);
 }
 
 function HomeSkeleton() {
 	const t = useTheme();
+	const T = useT();
 	return (
-		<View style={{ gap: 20 }} accessibilityLabel="Loading">
+		<View style={{ gap: 20 }} accessibilityLabel={T.common.loading}>
 			<View style={styles.header}>
 				<Skeleton width={200} height={32} radius={8} />
 				<Skeleton width={36} height={36} radius={18} />
@@ -221,5 +284,8 @@ const styles = StyleSheet.create({
 	emptyTree: { alignItems: "center", gap: 16, paddingVertical: 20 },
 	quick: { flexDirection: "row", gap: 10 },
 	quickBtn: { flex: 1, height: 64, borderRadius: 14, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10 },
+	split: { flexDirection: "row", gap: 24, alignItems: "flex-start" },
+	col: { flex: 1, gap: 20, minWidth: 0 },
+	pane: { borderWidth: 1, borderRadius: 16, padding: 20 },
 	skelRow: { height: 68, borderRadius: 14, borderWidth: 1, flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 14 },
 });

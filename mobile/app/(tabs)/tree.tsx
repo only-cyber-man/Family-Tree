@@ -2,7 +2,7 @@ import BottomSheet, { BottomSheetScrollView, type BottomSheetBackdropProps } fro
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ArrowUp, ChevronDown, Crosshair, Funnel, Maximize, Search, X } from "lucide-react-native";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ActionSheetIOS, Alert, BackHandler, Platform, Pressable, StyleSheet, View } from "react-native";
+import { ActionSheetIOS, Alert, BackHandler, Platform, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import Animated, { FadeIn, FadeInUp, FadeOutUp } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Legend } from "../../src/canvas/Legend";
@@ -14,7 +14,7 @@ import { EmptyTreeIllustration } from "../../src/components/Illustrations";
 import { PersonSheetContent } from "../../src/components/PersonSheetContent";
 import { Backdrop, sheetOpenConfig, useSheetStyles } from "../../src/components/Sheet";
 import { Text } from "../../src/components/Text";
-import { useCanWrite, useIsOwner, usePictures, useToday, useVisibility } from "../../src/hooks/useTreeData";
+import { useCanWrite, useIsOwner, useMeInfo, usePictures, useToday, useVisibility } from "../../src/hooks/useTreeData";
 import { errorMessage } from "../../src/lib/errors";
 import { clearChip, DEFAULT_FILTERS, filterChips } from "../../src/lib/filters";
 import { firstName } from "../../src/lib/format";
@@ -23,11 +23,17 @@ import { useNetwork } from "../../src/store/network";
 import { toast } from "../../src/store/toast";
 import { useTree } from "../../src/store/tree";
 import { tokens } from "../../src/theme/tokens";
-import { TAB_BAR_HEIGHT } from "../../src/theme/theme";
 import { useTheme } from "../../src/theme/useTheme";
+import { useT } from "../../src/i18n";
+import { useSession } from "../../src/store/session";
+import { pickHomePerson } from "../../src/lib/bands";
+import { useLayout } from "../../src/hooks/useLayout";
+import { PathView } from "../../src/components/PathView";
+import { personPanelMode } from "../../src/lib/responsive";
 
 export default function TreeTab() {
 	const t = useTheme();
+	const T = useT();
 	const router = useRouter();
 	const insets = useSafeAreaInsets();
 	const params = useLocalSearchParams<{ person?: string; focus?: string }>();
@@ -36,6 +42,9 @@ export default function TreeTab() {
 	const { graph, visible } = useVisibility();
 	const pictures = usePictures();
 	const canWrite = useCanWrite();
+	const meInfo = useMeInfo();
+	const homeId = useMemo(() => (visible ? pickHomePerson(visible.persons, visible.edges, meInfo.person?.id)?.id ?? null : null), [visible, meInfo.person?.id]);
+	const myUserId = useSession((s) => s.user?.id);
 	const today = useToday();
 	const owner = useIsOwner();
 	const canvas = useRef<CanvasHandle>(null);
@@ -46,8 +55,13 @@ export default function TreeTab() {
 	const [sheetIndex, setSheetIndex] = useState(-1);
 	const [away, setAway] = useState(false);
 	const showSpinner = useDelayed(status === "loading" && !full);
-	const chips = filterChips(filters);
-	const bottomInset = TAB_BAR_HEIGHT + insets.bottom;
+	const chips = filterChips(filters, T);
+	const layout = useLayout();
+	const showPanel = personPanelMode(layout.width) === "panel";
+	// Bottom tab bar on phones; nothing at the bottom with the tablet rail.
+	const bottomInset = layout.bottomBar || insets.bottom;
+	const [panelMode, setPanelMode] = useState<"person" | "path">("person");
+	useEffect(() => setPanelMode("person"), [selectedId]);
 	const topOffset = insets.top + (online ? 8 : 40);
 
 	// Deep links / other screens: ?person=<id> selects, ?focus=<id> focuses.
@@ -100,42 +114,42 @@ export default function TreeTab() {
 			const p = graph?.byId[id];
 			if (!p || !owner || !full) return;
 			if (!canWrite) {
-				toast("You're offline — changes can't be saved.", "info");
+				toast(T.offline.write, "info");
 				return;
 			}
 			const treeId = full.tree.id;
 			const edit = () => router.push({ pathname: "/add-person", params: { id } });
 			const link = () => router.push({ pathname: "/add-relationship", params: { from: id } });
 			const remove = () =>
-				Alert.alert(`Remove ${p.name}?`, "Their relationships are removed too. This cannot be undone.", [
-					{ text: "Cancel", style: "cancel" },
+				Alert.alert(T.tree.removeTitle(p.name), T.tree.removeBody, [
+					{ text: T.common.cancel, style: "cancel" },
 					{
-						text: "Remove",
+						text: T.common.remove,
 						style: "destructive",
-						onPress: () => removeNode(id, treeId).then(() => toast(`${p.name} removed`, "success"), (e) => toast(errorMessage(e), "error")),
+						onPress: () => removeNode(id, treeId).then(() => toast(T.tree.removed(p.name), "success"), (e) => toast(errorMessage(e, T), "error")),
 					},
 				]);
 			if (Platform.OS === "ios") {
 				ActionSheetIOS.showActionSheetWithOptions(
-					{ title: p.name, options: ["Edit", "Add relationship", "Remove", "Cancel"], destructiveButtonIndex: 2, cancelButtonIndex: 3, tintColor: t.c.accent },
+					{ title: p.name, options: [T.common.edit, T.tree.addRelationship, T.common.remove, T.common.cancel], destructiveButtonIndex: 2, cancelButtonIndex: 3, tintColor: t.c.accent },
 					(i) => [edit, link, remove][i]?.(),
 				);
 			} else {
 				Alert.alert(p.name, undefined, [
-					{ text: "Edit", onPress: edit },
-					{ text: "Add relationship", onPress: link },
-					{ text: "Remove", style: "destructive", onPress: remove },
+					{ text: T.common.edit, onPress: edit },
+					{ text: T.tree.addRelationship, onPress: link },
+					{ text: T.common.remove, style: "destructive", onPress: remove },
 				]);
 			}
 		},
-		[graph, owner, full, canWrite, router, removeNode, t.c.accent],
+		[graph, owner, full, canWrite, router, removeNode, t.c.accent, T],
 	);
 
 	const focusPerson = focusId ? graph?.byId[focusId] : null;
 	const focusRel = useMemo(() => (graph && focusId && visible ? relativesOf(graph, focusId, visible.edges) : null), [graph, focusId, visible]);
 	const upTo = focusRel?.parents.filter((p) => visible?.personIds.has(p.id)).sort((a, b) => (a.gender === b.gender ? 0 : a.gender === "male" ? -1 : 1))[0];
 	const focusParts = focusRel
-		? [focusRel.parents.length ? "parents" : null, focusRel.partners.length ? (focusRel.partners.length > 1 ? "partners" : "partner") : null, focusRel.children.length ? "children" : null].filter(Boolean).join(", ")
+		? [focusRel.parents.length ? T.tree.parents : null, focusRel.partners.length ? (focusRel.partners.length > 1 ? T.tree.partners : T.tree.partner) : null, focusRel.children.length ? T.tree.children : null].filter(Boolean).join(", ")
 		: "";
 
 	const renderBackdrop = useCallback((p: BottomSheetBackdropProps) => <Backdrop {...p} appearsOnIndex={1} disappearsOnIndex={0} onPress={() => sheet.current?.snapToIndex(0)} />, []);
@@ -143,8 +157,8 @@ export default function TreeTab() {
 	if (!full || !graph || !visible) {
 		return (
 			<View style={[styles.center, { backgroundColor: t.c.canvasBg, paddingBottom: bottomInset }]}>
-				{showSpinner ? <Text variant="caption">Loading the tree…</Text> : null}
-				{status === "error" ? <Button kind="secondary" label="Choose a tree" onPress={() => router.push("/trees")} /> : null}
+				{showSpinner ? <Text variant="caption">{T.tree.loading}</Text> : null}
+				{status === "error" ? <Button kind="secondary" label={T.home.chooseTree} onPress={() => router.push("/trees")} /> : null}
 			</View>
 		);
 	}
@@ -154,18 +168,25 @@ export default function TreeTab() {
 			<View style={[styles.center, { backgroundColor: t.c.canvasBg, paddingBottom: bottomInset, gap: 16, paddingHorizontal: 32 }]}>
 				<EmptyTreeIllustration width={180} />
 				<Text serif size={22} weight={600} center>
-					No one here yet
+					{T.home.noOne}
 				</Text>
 				<Text size={14} color={t.c.ink2} center>
-					{owner ? "Add yourself first. Everyone else connects to someone already in the tree." : "The owner has not added anyone yet."}
+					{owner ? T.home.addYourself : T.home.ownerAddedNoOne}
 				</Text>
-				{owner ? <Button size="md" label="Add the first person" onPress={() => router.push("/add-person")} /> : null}
+				{owner ? <Button size="md" label={T.home.addFirst} onPress={() => router.push("/add-person")} /> : null}
 			</View>
 		);
 	}
 
+	const selectInPanel = (id: string) => {
+		setPanelMode("person");
+		setSelectedId(id);
+		canvas.current?.centerOn(id);
+	};
+
 	return (
-		<View style={{ flex: 1, backgroundColor: t.c.canvasBg }}>
+		<View style={{ flex: 1, flexDirection: showPanel ? "row" : "column", backgroundColor: t.c.canvasBg }}>
+			<View style={{ flex: 1 }}>
 			<TreeCanvas
 				ref={canvas}
 				graph={graph}
@@ -183,6 +204,7 @@ export default function TreeTab() {
 				insets={{ top: topOffset + 60 + (chips.length ? 40 : 0), bottom: bottomInset + 70 }}
 				treeKey={full.tree.id}
 				onAwayChange={setAway}
+				homeId={homeId}
 			/>
 
 			{/* Header */}
@@ -192,11 +214,11 @@ export default function TreeTab() {
 						<View style={[styles.focusPill, { backgroundColor: t.c.ink }, t.shadow("md")]}>
 							<Crosshair size={16} color={t.c.bg} strokeWidth={2} />
 							<Text size={13} weight={600} color={t.c.bg} numberOfLines={1} style={{ flexShrink: 1 }}>
-								Focused on {firstName(focusPerson.name)}
+								{T.tree.focusedOn(firstName(focusPerson.name))}
 								{focusParts ? ` · ${focusParts}` : ""}
 							</Text>
 						</View>
-						<IconButton label="Exit focus" onPress={() => setFocusId(null)} icon={<X size={16} color={t.c.ink} strokeWidth={2} />} />
+						<IconButton label={T.tree.exitFocus} onPress={() => setFocusId(null)} icon={<X size={16} color={t.c.ink} strokeWidth={2} />} />
 					</Animated.View>
 				) : (
 					<>
@@ -204,7 +226,7 @@ export default function TreeTab() {
 							<Pressable
 								onPress={() => router.push("/trees")}
 								accessibilityRole="button"
-								accessibilityHint="Switch tree"
+								accessibilityHint={T.home.switchTree}
 								style={[styles.namePill, { backgroundColor: t.c.surface, borderColor: t.c.border }, t.shadow("md")]}
 							>
 								<Text size={14} weight={600} numberOfLines={1} style={{ flexShrink: 1 }}>
@@ -213,9 +235,9 @@ export default function TreeTab() {
 								<ChevronDown size={16} color={t.c.ink3} strokeWidth={2.5} />
 							</Pressable>
 							<View style={{ flexDirection: "row", gap: 8 }}>
-								<IconButton label="Search" onPress={() => router.push("/search")} icon={<Search size={18} color={t.c.ink} strokeWidth={1.75} />} />
+								<IconButton label={T.tree.search} onPress={() => router.push("/search")} icon={<Search size={18} color={t.c.ink} strokeWidth={1.75} />} />
 								<IconButton
-									label={chips.length ? `Filters, ${chips.length} active` : "Filters"}
+									label={chips.length ? T.tree.filtersActive(chips.length) : T.tree.filters}
 									variant={chips.length ? "primary" : "surface"}
 									badge={chips.length || undefined}
 									onPress={() => router.push("/filters")}
@@ -244,19 +266,19 @@ export default function TreeTab() {
 							kind="secondary"
 							style={t.shadow("md")}
 							icon={<ArrowUp size={16} color={t.c.ink} strokeWidth={2} />}
-							label={`Go up to ${firstName(upTo.name)}`}
+							label={T.tree.goUpTo(firstName(upTo.name))}
 							onPress={() => {
 								setSelectedId(upTo.id);
 								setFocusId(upTo.id);
 							}}
 						/>
 					) : null}
-					<Button flex size="sm" kind="secondary" style={t.shadow("md")} label="Exit focus" onPress={() => setFocusId(null)} />
+					<Button flex size="sm" kind="secondary" style={t.shadow("md")} label={T.tree.exitFocus} onPress={() => setFocusId(null)} />
 				</View>
 			) : (
 				<>
 					<View pointerEvents="box-none" style={[styles.legend, { bottom: bottomInset + 20 }]}>
-						<Legend edges={visible.edges} />
+						<Legend edges={visible.edges} showYou={!!myUserId && visible.persons.some((p) => p.userId === myUserId)} />
 					</View>
 					<View pointerEvents="box-none" style={[styles.reset, { bottom: bottomInset + 20 }]}>
 						{away ? (
@@ -265,11 +287,11 @@ export default function TreeTab() {
 								kind="secondary"
 								style={[{ height: 44, paddingHorizontal: 14 }, t.shadow("md")]}
 								icon={<Maximize size={16} color={t.c.ink} strokeWidth={2} />}
-								label="Reset view"
+								label={T.tree.resetView}
 								onPress={() => canvas.current?.resetView()}
 							/>
 						) : (
-							<IconButton label="Fit the whole tree" size={44} onPress={() => canvas.current?.resetView()} icon={<Maximize size={18} color={t.c.ink} strokeWidth={2} />} />
+							<IconButton label={T.tree.fitAll} size={44} onPress={() => canvas.current?.resetView()} icon={<Maximize size={18} color={t.c.ink} strokeWidth={2} />} />
 						)}
 					</View>
 				</>
@@ -279,13 +301,52 @@ export default function TreeTab() {
 				<View pointerEvents="box-none" style={[styles.center, StyleSheet.absoluteFill]}>
 					<View style={[styles.noMatch, { backgroundColor: t.c.surface, borderColor: t.c.border }, t.shadow("md")]}>
 						<Text size={15} weight={600} center>
-							Everyone is filtered out
+							{T.tree.allFiltered}
 						</Text>
-						<Button kind="text" label="Clear filters" onPress={() => setFilters(DEFAULT_FILTERS)} />
+						<Button kind="text" label={T.tree.clearFilters} onPress={() => setFilters(DEFAULT_FILTERS)} />
 					</View>
 				</View>
 			) : null}
+			</View>
 
+			{showPanel ? (
+				// Wide tablets: a persistent details panel beside the full-bleed canvas.
+				<View
+					style={[
+						styles.panel,
+						{ width: layout.panel, backgroundColor: t.c.surface, borderLeftColor: t.c.border, paddingTop: insets.top + 8, paddingRight: insets.right },
+					]}
+				>
+					<ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: insets.bottom + 32 }}>
+						{selectedId ? (
+							panelMode === "path" ? (
+								<PathView targetId={selectedId} onBack={() => setPanelMode("person")} onOpen={selectInPanel} onShowOnTree={selectInPanel} />
+							) : (
+								<Animated.View key={selectedId} entering={FadeIn.duration(150)}>
+									<PersonSheetContent
+										personId={selectedId}
+										onClose={() => setSelectedId(null)}
+										onSelect={(id) => {
+											setSelectedId(id);
+											if (focusId) setFocusId(id);
+											else canvas.current?.centerOn(id);
+										}}
+										onFocus={focus}
+										onRelate={() => setPanelMode("path")}
+									/>
+								</Animated.View>
+							)
+						) : (
+							<View style={styles.panelEmpty}>
+								<EmptyTreeIllustration width={160} />
+								<Text size={15} color={t.c.ink2} center>
+									{T.tree.panelHint}
+								</Text>
+							</View>
+						)}
+					</ScrollView>
+				</View>
+			) : (
 			<BottomSheet
 				ref={sheet}
 				index={-1}
@@ -323,12 +384,15 @@ export default function TreeTab() {
 					) : null}
 				</BottomSheetScrollView>
 			</BottomSheet>
+			)}
 		</View>
 	);
 }
 
 const styles = StyleSheet.create({
 	center: { flex: 1, alignItems: "center", justifyContent: "center" },
+	panel: { borderLeftWidth: 1 },
+	panelEmpty: { alignItems: "center", gap: 16, paddingTop: 80, paddingHorizontal: 12 },
 	top: { position: "absolute", left: 16, right: 16, gap: 10 },
 	row: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 },
 	namePill: { height: 40, paddingHorizontal: 14, borderRadius: 12, borderWidth: 1, flexDirection: "row", alignItems: "center", gap: 8, flexShrink: 1 },

@@ -1,15 +1,12 @@
 import { pb } from "./data";
+import type { Dict } from "@/i18n";
 
 export const SUPPORT_EMAIL = "family-tree@cyber-man.pl";
 
-export const deletionRequestMailto = (email?: string) =>
+export const deletionRequestMailto = (t: Dict, email?: string) =>
 	`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(
-		"Delete my Family Tree account"
-	)}&body=${encodeURIComponent(
-		`Please delete my Family Tree account${
-			email ? ` (${email})` : ""
-		} and all trees I created.`
-	)}`;
+		t.legal.deleteMailSubject
+	)}&body=${encodeURIComponent(t.legal.deleteMailBody(email))}`;
 
 /**
  * Deletes the signed-in account: every tree it created (with their people and

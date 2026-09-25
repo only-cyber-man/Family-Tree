@@ -18,10 +18,15 @@ import { useSettings } from "../../src/store/settings";
 import { toast } from "../../src/store/toast";
 import { useTree } from "../../src/store/tree";
 import { useTheme } from "../../src/theme/useTheme";
+import { useT } from "../../src/i18n";
+import { useLayout } from "../../src/hooks/useLayout";
+import { LIST_MAX } from "../../src/lib/responsive";
+import { PersonSheetContent } from "../../src/components/PersonSheetContent";
 
 /** The web's .ics export becomes a live list plus opt-in local reminders. */
 export default function Dates() {
 	const t = useTheme();
+	const T = useT();
 	const router = useRouter();
 	const full = useTree((s) => s.full);
 	const { graph, visible } = useVisibility();
@@ -32,9 +37,11 @@ export default function Dates() {
 	const scheduled = useScheduledEventKeys();
 	const [kind, setKind] = useState<"all" | DateKind>("all");
 	const [exporting, setExporting] = useState(false);
+	const layout = useLayout();
+	const [detailId, setDetailId] = useState<string | null>(null);
 
 	const events = useMemo(() => (graph ? upcomingEvents(graph.persons, today).filter((e) => kind === "all" || e.kind === kind) : []), [graph, today, kind]);
-	const months = useMemo(() => groupByMonth(events, today), [events, today]);
+	const months = useMemo(() => groupByMonth(events, today, T), [events, today, T]);
 
 	const exportIcs = async () => {
 		if (!full || !visible) return;
@@ -42,24 +49,24 @@ export default function Dates() {
 		try {
 			await shareIcs(full.tree.id, full.tree.name, visible.persons);
 		} catch (e) {
-			toast(errorMessage(e), "error");
+			toast(errorMessage(e, T), "error");
 		} finally {
 			setExporting(false);
 		}
 	};
 
-	return (
-		<Screen tabs contentStyle={{ gap: 18 }}>
+	const list = (
+		<>
 			<View style={styles.header}>
 				<Text variant="display" accessibilityRole="header">
-					Dates
+					{T.dates.title}
 				</Text>
 				<Button
 					kind="secondary"
 					size="sm"
 					style={{ height: 36, paddingHorizontal: 12, borderRadius: 10 }}
 					icon={<Download size={14} color={t.c.ink} strokeWidth={2} />}
-					label="Export .ics"
+					label={T.dates.exportIcs}
 					loading={exporting}
 					disabled={!full}
 					onPress={exportIcs}
@@ -69,27 +76,27 @@ export default function Dates() {
 				value={kind}
 				onChange={setKind}
 				options={[
-					{ value: "all", label: "All" },
-					{ value: "birthday", label: "Birthdays" },
-					{ value: "remembrance", label: "Remembrance" },
+					{ value: "all", label: T.dates.all },
+					{ value: "birthday", label: T.dates.birthdays },
+					{ value: "remembrance", label: T.dates.remembrance },
 				]}
 			/>
 			{!reminders.enabled ? (
 				<Notice
-					title="Get a quiet reminder the day before"
+					title={T.dates.quietReminder}
 					icon={<Bell size={18} color={t.c.accent} strokeWidth={1.75} />}
-					actions={<Button size="sm" label="Turn on reminders" onPress={enableReminders} style={{ height: 40 }} />}
+					actions={<Button size="sm" label={T.dates.turnOn} onPress={enableReminders} style={{ height: 40 }} />}
 				>
-					Reminders are scheduled on this phone from the dates in the tree. Nothing is sent to a server.
+					{T.dates.localOnly}
 				</Notice>
 			) : null}
 			{months.length === 0 ? (
 				<View style={[styles.empty, { borderColor: t.c.borderStrong }]}>
 					<Text size={15} weight={600} center>
-						No upcoming dates
+						{T.dates.none}
 					</Text>
 					<Text variant="caption" center>
-						Birthdays and remembrance days appear here once there are people in the tree.
+						{T.dates.noneBody}
 					</Text>
 				</View>
 			) : (
@@ -104,7 +111,8 @@ export default function Dates() {
 									person={graph?.byId[e.personId]}
 									uri={pictures[e.personId]}
 									bell={scheduled.has(e.key)}
-									onPress={() => router.push({ pathname: "/person/[id]", params: { id: e.personId } })}
+									onPress={() => (layout.isWide ? setDetailId(e.personId) : router.push({ pathname: "/person/[id]", params: { id: e.personId } }))}
+									highlighted={layout.isWide && detailId === e.personId}
 								/>
 							))}
 						</Card>
@@ -112,14 +120,50 @@ export default function Dates() {
 				))
 			)}
 			<Text variant="caption" style={{ lineHeight: 19 }}>
-				Bell = local reminder scheduled for 9:00 the day before (remembrance days: on the day). Round ages (18, 50, 55, 60…) can get a second reminder a week
-				ahead. The export includes the people currently visible on the tree.
+				{T.dates.footnote}
 			</Text>
+		</>
+	);
+
+	// Wide tablets: the list beside the selected person's details (master–detail).
+	if (layout.isWide) {
+		return (
+			<Screen tabs>
+				<View style={styles.split}>
+					<View style={[styles.col, { maxWidth: 600 }]}>{list}</View>
+					<View style={styles.col}>
+						<View style={[styles.pane, { backgroundColor: t.c.surface, borderColor: t.c.border }]}>
+							{detailId && graph?.byId[detailId] ? (
+								<PersonSheetContent
+									personId={detailId}
+									focusLabel={T.person.focusOnTree}
+									onClose={() => setDetailId(null)}
+									onSelect={setDetailId}
+									onFocus={(pid) => router.navigate({ pathname: "/tree", params: { focus: pid } })}
+								/>
+							) : (
+								<Text variant="caption" center style={{ paddingVertical: 40 }}>
+									{T.dates.detailHint}
+								</Text>
+							)}
+						</View>
+					</View>
+				</View>
+			</Screen>
+		);
+	}
+
+	return (
+		<Screen tabs maxWidth={LIST_MAX} contentStyle={{ gap: 18 }}>
+			{list}
 		</Screen>
 	);
 }
 
 const styles = StyleSheet.create({
 	header: { flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between" },
+	split: { flexDirection: "row", gap: 24, alignItems: "flex-start" },
+	col: { flex: 1, gap: 18, minWidth: 0 },
+	pane: { borderWidth: 1, borderRadius: 16, padding: 20 },
 	empty: { padding: 24, borderWidth: 1, borderStyle: "dashed", borderRadius: 14, gap: 6 },
 });

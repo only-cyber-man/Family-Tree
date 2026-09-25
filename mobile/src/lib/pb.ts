@@ -1,9 +1,14 @@
 import PocketBase, { AsyncAuthStore, ClientResponseError, getTokenPayload } from "pocketbase";
+import { getT } from "../i18n";
 import { sessionAction } from "./session";
 import { deleteSecure, getSecure, setSecure } from "./secureStorage";
 
-// Same backend as the web app (src/lib/data/index.ts).
-export const PB_URL = "https://pocketbase.cyber-man.pl";
+// Same backend as the web app (src/lib/data/index.ts). Overridable at build
+// time (e.g. a local demo backend for store screenshots):
+//   EXPO_PUBLIC_POCKETBASE_URL=http://10.0.2.2:8090 npx expo start
+// Expo inlines EXPO_PUBLIC_* variables into the bundle when it is built.
+export const DEFAULT_PB_URL = "https://pocketbase.cyber-man.pl";
+export const PB_URL = (process.env.EXPO_PUBLIC_POCKETBASE_URL || "").trim().replace(/\/+$/, "") || DEFAULT_PB_URL;
 const AUTH_KEY = "ft.pb_auth";
 
 /** Refresh the token when fewer than this many seconds remain (checked before every request). */
@@ -82,12 +87,12 @@ pb.beforeSend = async (url, options) => {
 	if (action === "none" || action === "ok") return { url, options };
 	if (action === "expired") {
 		expiredHandler?.();
-		throw new ClientResponseError({ url, status: 401, response: { code: 401, message: "Your session has expired. Please sign in again.", data: {} } });
+		throw new ClientResponseError({ url, status: 401, response: { code: 401, message: getT().errors.sessionExpired, data: {} } });
 	}
 	// Close to expiry: refresh first (one refresh shared by concurrent requests).
 	await refreshSession();
 	if (!pb.authStore.isValid) {
-		throw new ClientResponseError({ url, status: 401, response: { code: 401, message: "Your session has expired. Please sign in again.", data: {} } });
+		throw new ClientResponseError({ url, status: 401, response: { code: 401, message: getT().errors.sessionExpired, data: {} } });
 	}
 	options.headers = { ...(options.headers ?? {}), Authorization: pb.authStore.token };
 	return { url, options };

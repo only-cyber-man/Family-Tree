@@ -192,6 +192,47 @@
 	box-shadow: var(--shadow-md);
 }
 
+/* The person linked to the signed-in account: an accent ring set off from the
+   card by a page-coloured gap, so it reads apart from the selected border. */
+.isYou {
+	box-shadow: 0 0 0 3px var(--bg), 0 0 0 5px var(--accent);
+}
+
+.isYou.selected {
+	box-shadow: 0 0 0 3px var(--bg), 0 0 0 5px var(--accent), var(--shadow-md);
+}
+
+.youPill {
+	position: absolute;
+	left: 10px;
+	top: -11px;
+	padding: 2px 7px;
+	border-radius: 999px;
+	background: var(--accent);
+	color: var(--on-accent);
+	font-size: 10px;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	line-height: 1.3;
+	text-transform: uppercase;
+	pointer-events: none;
+}
+
+.linkedGlyph {
+	position: absolute;
+	right: 7px;
+	bottom: 6px;
+	display: flex;
+	color: var(--ink3);
+}
+
+.swatchYou {
+	margin: 0 3px;
+	background: var(--surface);
+	box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent);
+	border-radius: 3px;
+}
+
 .nodeText {
 	display: flex;
 	flex-direction: column;
@@ -468,6 +509,47 @@
 	font-size: 22px;
 	line-height: 1.2;
 	overflow-wrap: anywhere;
+}
+
+.linkBadge {
+	align-self: flex-start;
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	max-width: 100%;
+	padding: 3px 9px;
+	border-radius: 999px;
+	background: var(--primary-soft);
+	color: var(--on-primary-soft);
+	font-size: 12px;
+	font-weight: 700;
+}
+
+.linkBadge svg {
+	flex: none;
+}
+
+.linkBadgeText {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.linkBadgeYou {
+	background: var(--accent-soft);
+	color: var(--on-accent-soft);
+}
+
+.note {
+	font-size: 14px;
+	line-height: 1.5;
+	color: var(--ink2);
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+	padding: 10px 12px;
+	border-radius: var(--radius-sm);
+	background: var(--bg);
+	border: 1px solid var(--border);
 }
 
 .panelMeta {
@@ -963,7 +1045,9 @@
 }
 
 .typeGroupLabel {
-	width: 84px;
+	/* Fits the longest group name ("Pokrewieństwo") on one line. */
+	width: 128px;
+	white-space: nowrap;
 	font-size: 11px;
 	font-weight: 700;
 	letter-spacing: 0.06em;
@@ -1085,4 +1169,12 @@
 	.typeGroupLabel {
 		width: 100%;
 	}
+}
+
+.noteInput {
+	height: auto;
+	min-height: 84px;
+	padding: 10px 14px;
+	line-height: 1.5;
+	resize: vertical;
 }

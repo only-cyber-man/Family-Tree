@@ -35,6 +35,10 @@ export interface NodeRecord extends PbRecordBase {
 	picture?: string;
 	tree: string;
 	gender: Gender;
+	/** Free-text note (optional). */
+	note?: string;
+	/** ft_users id: "this person is that account" (optional, single). */
+	user?: string;
 }
 
 /** ft_relationships_names (read-only on mobile) */
@@ -77,6 +81,9 @@ export interface Person {
 	death: CalendarDate | null;
 	/** Picture filename on the node record, if any. */
 	picture?: string;
+	note?: string;
+	/** Linked ft_users account, if any. */
+	userId?: string;
 }
 
 /** A relationship with its type resolved. */

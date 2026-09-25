@@ -1,5 +1,7 @@
 /** The example four-generation tree in the landing hero. */
 
+import { getT } from "@/i18n/server";
+
 type Person = {
 	x: number;
 	y: number;
@@ -47,18 +49,35 @@ const ARROWS = [
 	"M396 354 L400 362 L404 354 Z",
 ];
 
-export const HeroGraph = () => (
-	<svg viewBox="0 0 640 460" role="img" aria-label="Example family tree with four generations">
+/** Rough text width at 11px, to lay the legend out for either language. */
+const textWidth = (text: string) => text.length * 6.3;
+
+export const HeroGraph = () => {
+	const t = getT();
+	const decades = t.landing.decades;
+	const legend = [
+		{ label: t.landing.lines.biological, stroke: "var(--bio)", width: 2.5 },
+		{ label: t.landing.lines.married, stroke: "var(--inlaw)", width: 4, cap: true },
+		{ label: t.landing.lines.church, stroke: "var(--church)", width: 2, dash: "2 5" },
+	];
+	let x = 0;
+	const legendItems = legend.map((item) => {
+		const at = x;
+		x += 30 + textWidth(item.label) + 16;
+		return { ...item, at };
+	});
+	return (
+	<svg viewBox="0 0 640 460" role="img" aria-label={t.landing.hero.label}>
 		<rect x="0" y="0" width="640" height="460" rx="10" style={{ fill: "var(--bg)" }} />
 		<g style={{ fill: "var(--band)" }}>
 			<rect x="0" y="10" width="640" height="100" rx="6" />
 			<rect x="0" y="230" width="640" height="100" rx="6" />
 		</g>
 		<g fontSize="12" fontWeight="700" style={{ fill: "var(--ink3)" }}>
-			<text x="14" y="30">1920s</text>
-			<text x="14" y="140">1940s</text>
-			<text x="14" y="250">1970s</text>
-			<text x="14" y="360">2000s</text>
+			<text x="14" y="30">{decades[0]}</text>
+			<text x="14" y="140">{decades[1]}</text>
+			<text x="14" y="250">{decades[2]}</text>
+			<text x="14" y="360">{decades[3]}</text>
 		</g>
 		<g strokeWidth="2.5" fill="none" strokeLinecap="round" style={{ stroke: "var(--bio)" }}>
 			{BIO_PATHS.map((d) => (
@@ -120,41 +139,31 @@ export const HeroGraph = () => (
 		})}
 		<g fontSize="10" fontWeight="600" style={{ fill: "var(--ink2)" }}>
 			<text x="326" y="45" textAnchor="middle">
-				married
+				{t.landing.hero.married}
 			</text>
 			<text x="418" y="345">
-				godparent
+				{t.landing.hero.godparent}
 			</text>
 		</g>
 		<g transform="translate(14 420)" fontSize="11" style={{ fill: "var(--ink2)" }}>
-			<line x1="0" y1="8" x2="24" y2="8" strokeWidth="2.5" style={{ stroke: "var(--bio)" }} />
-			<text x="30" y="12">
-				Biological
-			</text>
-			<line
-				x1="96"
-				y1="8"
-				x2="120"
-				y2="8"
-				strokeWidth="4"
-				strokeLinecap="round"
-				style={{ stroke: "var(--inlaw)" }}
-			/>
-			<text x="126" y="12">
-				Married
-			</text>
-			<line
-				x1="170"
-				y1="8"
-				x2="194"
-				y2="8"
-				strokeWidth="2"
-				strokeDasharray="2 5"
-				style={{ stroke: "var(--church)" }}
-			/>
-			<text x="200" y="12">
-				Church
-			</text>
+			{legendItems.map((item) => (
+				<g key={item.label}>
+					<line
+						x1={item.at}
+						y1="8"
+						x2={item.at + 24}
+						y2="8"
+						strokeWidth={item.width}
+						strokeLinecap={item.cap ? "round" : undefined}
+						strokeDasharray={item.dash}
+						style={{ stroke: item.stroke }}
+					/>
+					<text x={item.at + 30} y="12">
+						{item.label}
+					</text>
+				</g>
+			))}
 		</g>
 	</svg>
-);
+	);
+};

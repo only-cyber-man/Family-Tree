@@ -3,17 +3,19 @@ import { redirect } from "next/navigation";
 import { Tree, getPocketbaseError } from "@/lib";
 import { initPocketBase } from "@/lib/ssr";
 import { AppNav } from "@/components/AppNav";
+import { getT } from "@/i18n/server";
 import { TreesDashboard, TreeSummary } from "./TreesDashboard";
 
-export const metadata: Metadata = { title: "Your trees" };
+export const generateMetadata = (): Metadata => ({ title: getT().meta.trees });
 
 export default async function TreesPage() {
 	const pb = await initPocketBase();
 	if (!pb.authStore.isValid) {
 		return redirect("/");
 	}
+	const t = getT();
 	const me = pb.authStore.record;
-	const userName: string = me?.username || me?.name || me?.email || "you";
+	const userName: string = me?.username || me?.name || me?.email || t.common.you;
 
 	let trees: Tree[];
 	try {
@@ -54,7 +56,7 @@ export default async function TreesPage() {
 				Promise.all(
 					(tree.invitedIds ?? []).map(async (id) => ({
 						id,
-						email: (await emailOf(id)) ?? "unknown account",
+						email: (await emailOf(id)) ?? t.common.unknownAccount,
 					}))
 				),
 				isOwner ? Promise.resolve(null) : emailOf(tree.creatorId),

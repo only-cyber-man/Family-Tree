@@ -1,4 +1,5 @@
 import { ageInfo } from "./dates";
+import { en, type Dict } from "../i18n/en";
 import type { CalendarDate, Person } from "./types";
 
 /** "Anna Wiśniewska" -> "AW", "tomek" -> "T". */
@@ -24,22 +25,23 @@ export function yearsLabel(p: Pick<Person, "birth" | "death">, today: CalendarDa
 }
 
 /** "just now", "yesterday", "2 days ago", "3 weeks ago", "5 months ago", "2 years ago". */
-export function relativeTime(iso: string, now: Date = new Date()): string {
+export function relativeTime(iso: string, now: Date = new Date(), L: Dict = en): string {
 	const t = Date.parse(iso.replace(" ", "T"));
 	if (Number.isNaN(t)) return "";
 	const diff = Math.max(0, now.getTime() - t);
 	const min = 60_000;
 	const hour = 60 * min;
 	const day = 24 * hour;
-	if (diff < min) return "just now";
-	if (diff < hour) return plural(Math.floor(diff / min), "minute") + " ago";
-	if (diff < day) return plural(Math.floor(diff / hour), "hour") + " ago";
+	const T = L.time;
+	if (diff < min) return T.justNow;
+	if (diff < hour) return T.minutesAgo(Math.floor(diff / min));
+	if (diff < day) return T.hoursAgo(Math.floor(diff / hour));
 	const days = Math.floor(diff / day);
-	if (days === 1) return "yesterday";
-	if (days < 7) return `${days} days ago`;
-	if (days < 30) return plural(Math.floor(days / 7), "week") + " ago";
-	if (days < 365) return plural(Math.floor(days / 30), "month") + " ago";
-	return plural(Math.floor(days / 365), "year") + " ago";
+	if (days === 1) return T.yesterday;
+	if (days < 7) return T.daysAgo(days);
+	if (days < 30) return T.weeksAgo(Math.floor(days / 7));
+	if (days < 365) return T.monthsAgo(Math.floor(days / 30));
+	return T.yearsAgo(Math.floor(days / 365));
 }
 
 export function plural(n: number, word: string, pluralWord = word + "s"): string {
@@ -47,10 +49,10 @@ export function plural(n: number, word: string, pluralWord = word + "s"): string
 }
 
 /** "in 8 days", "tomorrow", "today" */
-export function inDays(n: number): string {
-	if (n <= 0) return "today";
-	if (n === 1) return "tomorrow";
-	return `in ${n} days`;
+export function inDays(n: number, L: Dict = en): string {
+	if (n <= 0) return L.time.today;
+	if (n === 1) return L.time.tomorrow;
+	return L.time.inDays(n);
 }
 
 export function capitalize(s: string): string {

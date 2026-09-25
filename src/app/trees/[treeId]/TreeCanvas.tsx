@@ -5,7 +5,9 @@ import { Node, Relationship } from "@/lib";
 import { isDeceased, yearsText } from "@/lib/people";
 import { edgeLabel, edgeStyle, GROUPS, GROUP_ORDER } from "@/lib/relationshipStyle";
 import { edgePath, Layout, NODE_H, NODE_W } from "@/lib/treeLayout";
+import { AccountIcon } from "@/components/Icons";
 import { PersonAvatar } from "./PersonAvatar";
+import { useT } from "@/i18n/client";
 import s from "./treeView.module.css";
 
 export interface View {
@@ -41,6 +43,8 @@ interface TreeCanvasProps {
 	viewportRef: React.RefObject<HTMLDivElement>;
 	/** A card got keyboard focus; the view should bring it on screen. */
 	onFocusNode: (id: string) => void;
+	/** The signed-in account; the person linked to it is marked "you". */
+	currentUserId: string;
 }
 
 const DRAG_THRESHOLD = 4;
@@ -58,7 +62,10 @@ export const TreeCanvas = ({
 	setView,
 	viewportRef,
 	onFocusNode,
+	currentUserId,
 }: TreeCanvasProps) => {
+	const t = useT();
+	const genderOf = new Map(nodes.map((node) => [node.id, node.gender]));
 	const pointers = useRef(new Map<number, { x: number; y: number }>());
 	const moved = useRef(0);
 	const pinchDistance = useRef<number | null>(null);
@@ -156,7 +163,7 @@ export const TreeCanvas = ({
 				e.currentTarget.scrollLeft = 0;
 			}}
 			tabIndex={-1}
-			aria-label="Family tree canvas. Drag to pan, scroll to zoom."
+			aria-label={t.tree.canvas}
 			role="application"
 		>
 			<div
@@ -177,7 +184,7 @@ export const TreeCanvas = ({
 							background: band.shaded ? "var(--band)" : "transparent",
 						}}
 					>
-						<span className={s.bandLabel}>{band.label}</span>
+						<span className={s.bandLabel}>{t.tree.band(band.year, band.span)}</span>
 					</div>
 				))}
 				<svg
@@ -271,7 +278,7 @@ export const TreeCanvas = ({
 								fontWeight: edgeStyle(r.relationshipName).labelWeight,
 							}}
 						>
-							{edgeLabel(r.relationshipName)}
+							{edgeLabel(t, r.relationshipName, genderOf.get(r.sourceNodeId))}
 						</div>
 					);
 				})}
@@ -281,13 +288,18 @@ export const TreeCanvas = ({
 						return null;
 					}
 					const selected = node.id === selectedNodeId;
+					const link = node.userId
+						? node.userId === currentUserId
+							? "you"
+							: "linked"
+						: null;
 					return (
 						<button
 							key={node.id}
 							type="button"
 							className={`${s.node} ${node.gender === "male" ? s.male : s.female} ${
 								selected ? s.selected : ""
-							}`}
+							} ${link === "you" ? s.isYou : ""}`}
 							style={{ left: position.x, top: position.y, width: NODE_W, height: NODE_H }}
 							aria-pressed={selected}
 							onFocus={(e) => {
@@ -296,9 +308,7 @@ export const TreeCanvas = ({
 									onFocusNode(node.id);
 								}
 							}}
-							aria-label={`${node.name}, ${yearsText(node)}${
-								isDeceased(node) ? ", deceased" : ""
-							}`}
+							aria-label={t.tree.nodeLabel(node.name, yearsText(node), isDeceased(node), link)}
 							onClick={(e) => {
 								e.stopPropagation();
 								if (tapped(e)) {
@@ -314,6 +324,15 @@ export const TreeCanvas = ({
 							<span className={s.glyph} aria-hidden>
 								{node.gender === "male" ? "♂" : "♀"}
 							</span>
+							{link === "you" ? (
+								<span className={s.youPill} aria-hidden>
+									{t.tree.youPill}
+								</span>
+							) : link === "linked" ? (
+								<span className={s.linkedGlyph} aria-hidden>
+									<AccountIcon size={11} />
+								</span>
+							) : null}
 						</button>
 					);
 				})}

@@ -2986,6 +2986,13 @@ expo-linking@~57.0.11:
     expo-constants "~57.0.19"
     invariant "^2.2.4"
 
+expo-localization@~57.0.2:
+  version "57.0.2"
+  resolved "https://registry.yarnpkg.com/expo-localization/-/expo-localization-57.0.2.tgz#13caf8073eb37ff1f689b345bc131c3d49b246fd"
+  integrity sha512-sIKYH3Ivddoge568WY6j+Kp2MAAZzWWqEnY2bokLkJFwX366tGL1mEnoY2WUi/qHatFFPop2yqDdurzbhnnimQ==
+  dependencies:
+    rtl-detect "^1.0.2"
+
 expo-modules-autolinking@~57.0.13:
   version "57.0.13"
   resolved "https://registry.yarnpkg.com/expo-modules-autolinking/-/expo-modules-autolinking-57.0.13.tgz#64c93c919ff6207d5b2183fcc4e954a440baf8d2"
@@ -3053,6 +3060,11 @@ expo-router@~57.0.23:
     shallowequal "^1.1.0"
     standard-navigation "^0.0.5"
     vaul "^1.1.2"
+
+expo-screen-orientation@~57.0.2:
+  version "57.0.2"
+  resolved "https://registry.yarnpkg.com/expo-screen-orientation/-/expo-screen-orientation-57.0.2.tgz#6c576475cdc5356a7345d270db023cbafb805407"
+  integrity sha512-9wIa/dU561fidHYChkg6LIDAcYr8uMBa8fOws1Km9/slaF3N/a2kgcy0TUZWvNIe7at3r4g2kVva9vRBJBkaEQ==
 
 expo-secure-store@~57.0.4:
   version "57.0.4"
@@ -5444,6 +5456,11 @@ restore-cursor@^2.0.0:
   dependencies:
     onetime "^2.0.0"
     signal-exit "^3.0.2"
+
+rtl-detect@^1.0.2:
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/rtl-detect/-/rtl-detect-1.1.2.tgz#ca7f0330af5c6bb626c15675c642ba85ad6273c6"
+  integrity sha512-PGMBq03+TTG/p/cRB7HCLKJ1MgDIi07+QU1faSjiYRfmY5UsAttV9Hs08jDAHVwcOwmVLcSJkpwyfXszVjWfIQ==
 
 safe-buffer@5.2.1:
   version "5.2.1"

@@ -24,6 +24,10 @@ import { useSettings } from "../src/store/settings";
 import { useTrees } from "../src/store/trees";
 import { shouldOpenReminder } from "../src/lib/session";
 import { ThemeProvider, useTheme } from "../src/theme/useTheme";
+import { useT } from "../src/i18n";
+import * as ScreenOrientation from "expo-screen-orientation";
+import { Dimensions } from "react-native";
+import { orientationPolicy } from "../src/lib/responsive";
 
 SplashScreen.preventAutoHideAsync().catch(() => undefined);
 SplashScreen.setOptions({ duration: 220, fade: true });
@@ -42,6 +46,13 @@ export default function RootLayout() {
 	const ready = useSession((s) => s.ready);
 
 	useEffect(() => {
+		// Phones stay portrait; tablets (smallest screen width ≥ 600 dp) rotate freely.
+		const screen = Dimensions.get("screen");
+		if (orientationPolicy(screen.width, screen.height) === "portrait") {
+			ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP).catch(() => undefined);
+		} else {
+			ScreenOrientation.unlockAsync().catch(() => undefined);
+		}
 		startNetworkWatch();
 		ensureChannel().catch(() => undefined);
 		useSession.getState().init();
@@ -66,6 +77,7 @@ const sheet = { presentation: "transparentModal", animation: "none", gestureEnab
 
 function Root() {
 	const t = useTheme();
+	const T = useT();
 	const router = useRouter();
 	const signedIn = useSession((s) => !!s.user);
 	const expired = useSession((s) => s.expired);
@@ -118,11 +130,12 @@ function Root() {
 					<Stack.Screen name="trees" options={sheet} />
 					<Stack.Screen name="pick-me" options={sheet} />
 					<Stack.Screen name="invited" />
+					<Stack.Screen name="delete-account" />
 					<Stack.Screen name="tree/[treeId]/index" options={{ animation: "none" }} />
 					<Stack.Screen name="tree/[treeId]/person/[personId]" options={{ animation: "none" }} />
 				</Stack.Protected>
 			</Stack>
-			<OfflineBanner message={signedIn ? undefined : "You're offline."} />
+			<OfflineBanner message={signedIn ? undefined : T.offline.short} />
 			<ToastHost />
 		</NavThemeProvider>
 	);

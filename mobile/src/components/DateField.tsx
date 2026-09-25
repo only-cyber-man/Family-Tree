@@ -7,6 +7,7 @@ import type { CalendarDate } from "../lib/types";
 import { useTheme } from "../theme/useTheme";
 import { Button } from "./Button";
 import { Text } from "./Text";
+import { useT } from "../i18n";
 
 /**
  * A pressable row that opens the native date picker: a spinner sheet on iOS,
@@ -16,7 +17,7 @@ export function DateField({
 	label,
 	value,
 	onChange,
-	placeholder = "Choose a date",
+	placeholder,
 	error,
 	minimumDate,
 	maximumDate = new Date(),
@@ -32,6 +33,8 @@ export function DateField({
 	const t = useTheme();
 	const insets = useSafeAreaInsets();
 	const [open, setOpen] = useState(false);
+	const T = useT();
+	const ph = placeholder ?? T.common.chooseDate;
 	const [draft, setDraft] = useState<Date>(value ? toJsDate(value, 12) : new Date(1980, 0, 1, 12));
 
 	const openPicker = () => {
@@ -57,7 +60,7 @@ export function DateField({
 			<Text variant="label">{label}</Text>
 			<Pressable
 				accessibilityRole="button"
-				accessibilityLabel={`${label}: ${value ? formatLong(value) : placeholder}. Change`}
+				accessibilityLabel={T.common.dateA11y(label, value ? formatLong(value, T) : ph)}
 				onPress={openPicker}
 				style={({ pressed }) => [
 					styles.row,
@@ -65,11 +68,11 @@ export function DateField({
 				]}
 			>
 				<Text size={16} color={value ? t.c.ink : t.c.placeholder}>
-					{value ? formatLong(value) : placeholder}
+					{value ? formatLong(value, T) : ph}
 				</Text>
 				<View style={[styles.change, { backgroundColor: t.c.surface2 }]}>
 					<Text size={14} weight={600}>
-						Change
+						{T.common.change}
 					</Text>
 				</View>
 			</Pressable>
@@ -80,14 +83,14 @@ export function DateField({
 			) : null}
 			{Platform.OS === "ios" ? (
 				<Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)}>
-					<Pressable style={[styles.scrim, { backgroundColor: t.c.overlay }]} onPress={() => setOpen(false)} accessibilityLabel="Close date picker" />
+					<Pressable style={[styles.scrim, { backgroundColor: t.c.overlay }]} onPress={() => setOpen(false)} accessibilityLabel={T.common.closeDatePicker} />
 					<View style={[styles.sheet, { backgroundColor: t.c.surface, paddingBottom: insets.bottom + 12 }, t.shadow("lg")]}>
 						<View style={styles.sheetHeader}>
-							<Button kind="text" label="Cancel" onPress={() => setOpen(false)} />
+							<Button kind="text" label={T.common.cancel} onPress={() => setOpen(false)} />
 							<Text variant="serif">{label}</Text>
 							<Button
 								kind="text"
-								label="Done"
+								label={T.common.done}
 								onPress={() => {
 									onChange(fromJsDate(draft));
 									setOpen(false);
@@ -101,6 +104,7 @@ export function DateField({
 							minimumDate={minimumDate}
 							maximumDate={maximumDate}
 							themeVariant={t.scheme}
+							locale={T.locale}
 							accentColor={t.c.accent}
 							textColor={t.c.ink}
 							onChange={(_e, d) => d && setDraft(d)}

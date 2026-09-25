@@ -15,7 +15,7 @@ import type { NodeInput, PhotoInput } from "../src/lib/api";
 import { compareDates, parseDate } from "../src/lib/dates";
 import { errorMessage } from "../src/lib/errors";
 import { firstName } from "../src/lib/format";
-import { classifyName, GROUP_ORDER, groupGlyph, humanizeName } from "../src/lib/relations";
+import { classifyName, GROUP_ORDER, groupGlyph, relationChipLabel, typeSentence } from "../src/lib/relations";
 import type { CalendarDate, Gender } from "../src/lib/types";
 import { haptics } from "../src/services/haptics";
 import { pickPhoto, takePhoto } from "../src/services/photos";
@@ -24,10 +24,17 @@ import { toast } from "../src/store/toast";
 import { useTree, type CreateIds } from "../src/store/tree";
 import { tokens } from "../src/theme/tokens";
 import { useTheme } from "../src/theme/useTheme";
+import { useT } from "../src/i18n";
+import { useTreeAccounts } from "../src/hooks/useAccounts";
+import { linkConflict } from "../src/lib/links";
 
 /** Add person (camera one tap away) or, with ?id=, edit an existing one. */
+/** ft_nodes.note is a plain text field; the app caps it here. */
+const NOTE_MAX = 2000;
+
 export default function AddPerson() {
 	const t = useTheme();
+	const T = useT();
 	const router = useRouter();
 	const params = useLocalSearchParams<{ id?: string; linkTo?: string }>();
 	const full = useTree((s) => s.full);
@@ -62,6 +69,10 @@ export default function AddPerson() {
 	const [linkTarget, setLinkTarget] = useState<string | null>(params.linkTo ?? null);
 	const [errors, setErrors] = useState<{ name?: string; gender?: string; birth?: string; death?: string; link?: string }>({});
 	const [busy, setBusy] = useState(false);
+	const [note, setNote] = useState(existing?.note ?? "");
+	const [linkedUser, setLinkedUser] = useState<string>(existing?.user ?? "");
+	const { accounts, loading: accountsLoading } = useTreeAccounts(full?.tree);
+	const conflict = graph ? linkConflict(graph.persons, linkedUser, existing?.id) : null;
 
 	const types = useMemo(
 		() => [...(full?.relationshipNames ?? [])].sort((a, b) => GROUP_ORDER.indexOf(a.group) - GROUP_ORDER.indexOf(b.group) || a.name.localeCompare(b.name)),
@@ -79,23 +90,34 @@ export default function AddPerson() {
 	};
 
 	const save = async () => {
+		// One account ↔ one person per tree, same rule as the web dialog.
+		if (conflict) return;
 		const e: typeof errors = {};
-		if (!name.trim()) e.name = "Name is required.";
-		if (!gender) e.gender = "Choose a gender.";
-		if (!birth) e.birth = "Birth date is required.";
-		if (deceased && !death) e.death = "Add the date they passed away, or switch this off.";
-		if (birth && deceased && death && compareDates(death, birth) < 0) e.death = "Death date is before the birth date.";
-		if (!existing && linkOpen && (linkType || linkTarget) && !(linkType && linkTarget)) e.link = "Choose both the relation and the person, or clear the link.";
+		if (!name.trim()) e.name = T.addPerson.nameRequired;
+		if (!gender) e.gender = T.addPerson.chooseGender;
+		if (!birth) e.birth = T.addPerson.birthRequired;
+		if (deceased && !death) e.death = T.addPerson.deathRequired;
+		if (birth && deceased && death && compareDates(death, birth) < 0) e.death = T.addPerson.deathBeforeBirth;
+		if (!existing && linkOpen && (linkType || linkTarget) && !(linkType && linkTarget)) e.link = T.addPerson.linkIncomplete;
 		setErrors(e);
 		if (Object.keys(e).length) {
 			haptics.error();
 			return;
 		}
-		const input: NodeInput = { name: name.trim(), gender: gender!, birthDate: birth!, deathDate: deceased ? death : null, photo };
+		const input: NodeInput = {
+			name: name.trim(),
+			gender: gender!,
+			birthDate: birth!,
+			deathDate: deceased ? death : null,
+			photo,
+			note: note.slice(0, NOTE_MAX),
+			// "" clears the link on the server.
+			userId: linkedUser,
+		};
 		const treeId = boundTree.current ?? useTree.getState().full?.tree.id ?? null;
 		if (!treeId) {
 			haptics.error();
-			setSaveError("No tree is open, so nothing was saved. Choose a tree and try again.");
+			setSaveError(T.save.noTree);
 			return;
 		}
 		setBusy(true);
@@ -104,7 +126,7 @@ export default function AddPerson() {
 			if (existing) {
 				await editNode(existing.id, input);
 				haptics.success();
-				toast(`${firstName(input.name)} saved`, "success");
+				toast(T.addPerson.saved(firstName(input.name)), "success");
 				close();
 				return;
 			}
@@ -113,19 +135,19 @@ export default function AddPerson() {
 			if (linkError) {
 				// The person exists; "Try again" finishes the link (same ids, no duplicate).
 				haptics.error();
-				setSaveError(`${firstName(input.name)} was added, but the link couldn't be saved. ${linkError}`);
+				setSaveError(T.addPerson.linkFailed(firstName(input.name), linkError));
 				return;
 			}
 			haptics.success();
-			toast(`${firstName(input.name)} added to the tree`, "success", {
-				label: "Undo",
-				onPress: () => removeNode(node.id, node.tree).catch((err) => toast(errorMessage(err), "error")),
+			toast(T.addPerson.added(firstName(input.name)), "success", {
+				label: T.common.undo,
+				onPress: () => removeNode(node.id, node.tree).catch((err) => toast(errorMessage(err, T), "error")),
 			});
 			close();
 		} catch (err) {
 			// Save failed: the form stays open with everything the user entered.
 			haptics.error();
-			setSaveError(saveErrorMessage(err, existing ? "the changes" : firstName(input.name) || "this person"));
+			setSaveError(saveErrorMessage(err, existing ? T.save.theChanges : firstName(input.name) || T.save.thisPerson));
 		} finally {
 			setBusy(false);
 		}
@@ -133,17 +155,17 @@ export default function AddPerson() {
 
 	if (!full || (!owner && full)) {
 		return (
-			<RouteSheet snapPoints={tokens.mobile.sheetSnapPoints.addPerson as unknown as string[]} header={<SheetHeader title="Add person" onCancel={close} />}>
-				<Notice tone="neutral">{full ? "This tree is shared with you to look at. Only its owner can add people." : "Choose or create a tree first."}</Notice>
+			<RouteSheet snapPoints={tokens.mobile.sheetSnapPoints.addPerson as unknown as string[]} header={<SheetHeader title={T.addPerson.add} onCancel={close} />}>
+				<Notice tone="neutral">{full ? T.addPerson.viewerOnly : T.addPerson.chooseTreeFirst}</Notice>
 			</RouteSheet>
 		);
 	}
 
 	if (params.id && !existing) {
 		return (
-			<RouteSheet snapPoints={tokens.mobile.sheetSnapPoints.addPerson as unknown as string[]} header={<SheetHeader title="Edit person" onCancel={close} />}>
+			<RouteSheet snapPoints={tokens.mobile.sheetSnapPoints.addPerson as unknown as string[]} header={<SheetHeader title={T.addPerson.edit} onCancel={close} />}>
 				<Notice tone="neutral">
-					This person is no longer in the tree.
+					{T.addPerson.gone}
 				</Notice>
 			</RouteSheet>
 		);
@@ -154,7 +176,7 @@ export default function AddPerson() {
 	return (
 		<RouteSheet
 			snapPoints={tokens.mobile.sheetSnapPoints.addPerson as unknown as string[]}
-			header={<SheetHeader title={existing ? "Edit person" : "Add person"} onCancel={close} action="Save" onAction={save} busy={busy} actionDisabled={!canWrite} />}
+			header={<SheetHeader title={existing ? T.addPerson.edit : T.addPerson.add} onCancel={close} action={T.common.save} onAction={save} busy={busy} actionDisabled={!canWrite || !!conflict} />}
 		>
 			<OfflineWriteHint />
 			{saveError ? <SaveFailed message={saveError} onRetry={save} busy={busy || !canWrite} /> : null}
@@ -162,45 +184,45 @@ export default function AddPerson() {
 				<Pressable
 					onPress={() => choose("library")}
 					accessibilityRole="button"
-					accessibilityLabel={photoUri ? "Change photo" : "Add a photo"}
+					accessibilityLabel={photoUri ? T.addPerson.changePhoto : T.addPerson.addPhoto}
 					style={[styles.photo, { borderColor: t.c.borderStrong, backgroundColor: t.c.bg }, photoUri && { borderStyle: "solid", borderWidth: 0 }]}
 				>
 					{photoUri ? <Image source={{ uri: photoUri }} style={styles.photoImg} contentFit="cover" /> : <Camera size={32} color={t.c.ink3} strokeWidth={1.5} />}
 				</Pressable>
 				{cameraDenied ? (
 					<Notice
-						title="Camera access is off"
+						title={T.addPerson.cameraOff}
 						actions={
 							<>
 								<Pressable onPress={() => Linking.openSettings()} style={[styles.smallPill, { backgroundColor: t.c.ink }]} accessibilityRole="button">
 									<Text size={13} weight={600} color={t.c.bg}>
-										Open Settings
+										{T.common.openSettings}
 									</Text>
 								</Pressable>
 								<Pressable onPress={() => choose("library")} style={[styles.smallPill, { borderWidth: 1, borderColor: t.c.borderStrong }]} accessibilityRole="button">
 									<Text size={13} weight={600}>
-										Use gallery
+										{T.addPerson.useGallery}
 									</Text>
 								</Pressable>
 							</>
 						}
 					>
-						You can still pick a photo from your gallery, or allow the camera in Settings.
+						{T.addPerson.cameraOffBody}
 					</Notice>
 				) : (
 					<View style={{ flexDirection: "row", gap: 8 }}>
-						<Chip label="Take photo" onPress={() => choose("camera")} />
-						<Chip label="Choose from gallery" onPress={() => choose("library")} />
+						<Chip label={T.addPerson.takePhoto} onPress={() => choose("camera")} />
+						<Chip label={T.addPerson.fromGallery} onPress={() => choose("library")} />
 					</View>
 				)}
 			</View>
 
 			<TextField
 				inSheet
-				label="Full name"
+				label={T.addPerson.fullName}
 				value={name}
 				onChangeText={setName}
-				placeholder="e.g. Maria Kowalska"
+				placeholder={T.addPerson.namePlaceholder}
 				autoCapitalize="words"
 				autoFocus={!existing}
 				error={errors.name}
@@ -208,7 +230,7 @@ export default function AddPerson() {
 			/>
 
 			<View style={{ gap: 6 }}>
-				<Text variant="label">Gender</Text>
+				<Text variant="label">{T.addPerson.gender}</Text>
 				<View style={{ flexDirection: "row", gap: 8 }}>
 					{(["female", "male"] as const).map((g) => {
 						const on = gender === g;
@@ -222,7 +244,7 @@ export default function AddPerson() {
 							>
 								<View style={[styles.swatch, { backgroundColor: t.node[g].fill, borderColor: t.node[g].border }]} />
 								<Text size={15} weight={600}>
-									{g === "female" ? "Female" : "Male"}
+									{g === "female" ? T.common.female : T.common.male}
 								</Text>
 							</Pressable>
 						);
@@ -235,38 +257,71 @@ export default function AddPerson() {
 				) : null}
 			</View>
 
-			<DateField label="Birth date" value={birth} onChange={setBirth} error={errors.birth} />
+			<DateField label={T.addPerson.birthDate} value={birth} onChange={setBirth} error={errors.birth} />
 
 			<View style={styles.switchRow}>
 				<View style={{ flex: 1 }}>
 					<Text size={15} weight={600}>
-						Has passed away
+						{T.addPerson.passedAway}
 					</Text>
-					<Text variant="caption">Adds a death date and a remembrance day</Text>
+					<Text variant="caption">{T.addPerson.passedAwayHint}</Text>
 				</View>
 				<Switch
-					accessibilityLabel="Has passed away"
+					accessibilityLabel={T.addPerson.passedAway}
 					value={deceased}
 					onValueChange={setDeceased}
 					trackColor={{ false: t.c.surface2, true: t.c.primary }}
 					ios_backgroundColor={t.c.surface2}
 				/>
 			</View>
-			{deceased ? <DateField label="Date of death" value={death} onChange={setDeath} error={errors.death} /> : null}
+			{deceased ? <DateField label={T.addPerson.deathDate} value={death} onChange={setDeath} error={errors.death} /> : null}
+
+			<TextField
+				inSheet
+				multiline
+				label={T.addPerson.note}
+				value={note}
+				onChangeText={(v) => setNote(v.slice(0, NOTE_MAX))}
+				maxLength={NOTE_MAX}
+				placeholder={T.addPerson.notePlaceholder}
+				hint={
+					<Text variant="small" style={{ textAlign: "right" }}>
+						{T.addPerson.noteCount(note.length, NOTE_MAX)}
+					</Text>
+				}
+			/>
+
+			<View style={{ gap: 8 }}>
+				<Text variant="label">{T.addPerson.linkedAccount}</Text>
+				<Text variant="small">{T.addPerson.linkedHint}</Text>
+				<View style={styles.chips}>
+					<Chip label={T.addPerson.linkedNone} selected={!linkedUser} onPress={() => setLinkedUser("")} />
+					{accounts.map((a) => (
+						<Chip
+							key={a.id}
+							selected={linkedUser === a.id}
+							label={a.isMe ? T.addPerson.linkedMe(a.email ?? undefined) : (a.email ?? "…")}
+							onPress={() => setLinkedUser(a.id)}
+						/>
+					))}
+				</View>
+				{accountsLoading ? <Text variant="small">{T.addPerson.loadingAccounts}</Text> : null}
+				{conflict ? <Notice>{T.addPerson.linkedConflict(conflict.name)}</Notice> : null}
+			</View>
 
 			{!existing && graph && graph.persons.length > 0 ? (
 				<View style={{ gap: 10 }}>
 					<Text variant="label">
-						Link to someone{" "}
+						{T.addPerson.linkTo}{" "}
 						<Text size={13} weight={500} color={t.c.ink3}>
-							optional, saves a step
+							{T.addPerson.linkOptional}
 						</Text>
 					</Text>
 					{!linkOpen ? (
 						<Pressable onPress={() => setLinkOpen(true)} accessibilityRole="button" style={[styles.linkRow, { borderColor: t.c.border, backgroundColor: t.c.bg }]}>
 							<Link2 size={18} color={t.c.ink3} strokeWidth={1.75} />
 							<Text size={15} color={t.c.ink3}>
-								e.g. mother of {graph.persons[0]?.name}
+								{T.addPerson.linkExample(graph.persons[0]?.name ?? "")}
 							</Text>
 						</Pressable>
 					) : (
@@ -274,9 +329,10 @@ export default function AddPerson() {
 							<View style={[styles.sentence, { backgroundColor: t.c.surface2 }]}>
 								<Text serif size={17} style={{ lineHeight: 24 }}>
 									<Text serif size={17} weight={600}>
-										{name.trim() || "New person"}
+										{name.trim() || T.addPerson.newPerson}
 									</Text>{" "}
-									{typeName ? humanizeName(typeName.name).toLowerCase() : "…"}{" "}
+									{typeName ? typeSentence(typeName.name, gender ?? "female", T) : "…"}
+									{T.lang === "pl" ? ": " : " "}
 									<Text serif size={17} weight={600}>
 										{target?.name ?? "…"}
 									</Text>
@@ -291,7 +347,7 @@ export default function AddPerson() {
 										selected={linkType === rt.id}
 										glyph={groupGlyph(rt.group)}
 										glyphColor={rt.group === "BIOLOGICAL" ? t.c.bio : rt.group === "IN-LAW" ? t.c.inlaw : rt.group === "CHURCH" ? t.c.church : t.c.other}
-										label={`${humanizeName(rt.name)} ${rt.isBidirectional ? "↔" : "→"}`}
+										label={relationChipLabel(rt.name, rt.isBidirectional, T)}
 										onPress={() => setLinkType(linkType === rt.id ? null : rt.id)}
 									/>
 								))}
@@ -303,7 +359,7 @@ export default function AddPerson() {
 								</Text>
 							) : null}
 							{typeName && classifyName(typeName.name).kind === "parent" && !classifyName(typeName.name).reversed ? (
-								<Text variant="small">The new person is the parent; {target ? firstName(target.name) : "the chosen person"} is the child.</Text>
+								<Text variant="small">{T.addPerson.parentNote(target ? firstName(target.name) : T.addPerson.theChosen)}</Text>
 							) : null}
 							<Pressable
 								onPress={() => {
@@ -315,7 +371,7 @@ export default function AddPerson() {
 								style={{ alignSelf: "flex-start", minHeight: 44, justifyContent: "center" }}
 							>
 								<Text size={14} weight={700} color={t.c.accent}>
-									Don't link now
+									{T.addPerson.dontLink}
 								</Text>
 							</Pressable>
 						</>

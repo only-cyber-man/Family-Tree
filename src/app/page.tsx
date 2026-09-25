@@ -6,27 +6,25 @@ import { AlertIcon, PlusIcon } from "@/components/Icons";
 import { LegalLinks } from "@/components/LegalShell";
 import { LandingNav } from "./LandingNav";
 import { HeroGraph } from "./HeroGraph";
+import { getT } from "@/i18n/server";
 import s from "./landing.module.css";
 
 const LINES = [
-	{ label: "Biological", color: "var(--bio)", width: 2.5 },
-	{ label: "Married", color: "var(--inlaw)", width: 4, cap: true },
-	{ label: "Lives with", color: "var(--inlaw)", width: 1.25, dash: "2 6", cap: true },
-	{ label: "Church", color: "var(--church)", width: 2, dash: "2 5" },
-	{ label: "Other", color: "var(--other)", width: 1, dash: "3 7", muted: true },
+	{ key: "biological", color: "var(--bio)", width: 2.5 },
+	{ key: "married", color: "var(--inlaw)", width: 4, cap: true },
+	{ key: "livesWith", color: "var(--inlaw)", width: 1.25, dash: "2 6", cap: true },
+	{ key: "church", color: "var(--church)", width: 2, dash: "2 5" },
+	{ key: "other", color: "var(--other)", width: 1, dash: "3 7", muted: true },
+] as const;
+
+const CALENDAR_DAYS = [
+	{ day: 3, color: "var(--accent)" },
+	{ day: 15, color: "var(--church)" },
+	{ day: 28, color: "var(--accent)" },
 ];
 
-const CALENDAR = [
-	{ dow: "Sat", day: 3, title: "Maria Kowalska's birthday", meta: "Birthday · repeats yearly", color: "var(--accent)" },
-	{ dow: "Thu", day: 15, title: "† Stanisław Kowalski, remembrance", meta: "Remembrance · repeats yearly", color: "var(--church)" },
-	{ dow: "Wed", day: 28, title: "Zofia Nowak's birthday", meta: "Birthday · repeats yearly", color: "var(--accent)" },
-];
-
-const STEPS = [
-	{ title: "Start with yourself", body: "Create a tree, add the first person: a name, a birth date, and a photo if you have one." },
-	{ title: "Link the people you know", body: "Parents, partners, godparents. Pick two people and a relationship, and the line draws itself into the right generation." },
-	{ title: "Invite the family", body: "Share read-only access by email, export the dates to your calendar, and keep the tree on your phone." },
-];
+/** The phone mock-up is always drawn in the light theme. */
+const PHONE_DOTS = [{ c: "#A5584C" }, { c: "#3F6E7A", o: 0.6 }, { c: "#A5584C" }];
 
 export default async function Landing({
 	searchParams: { err, deleted },
@@ -37,6 +35,8 @@ export default async function Landing({
 	if (pb.authStore.isValid && !err) {
 		return redirect("/trees");
 	}
+	const t = getT();
+	const l = t.landing;
 
 	return (
 		<div className={s.page}>
@@ -45,7 +45,7 @@ export default async function Landing({
 				<div className={`${s.wrap} ${s.errorBanner}`}>
 					<div className="alert alert-info" role="status">
 						<AlertIcon />
-						<span>Your account and your trees have been deleted.</span>
+						<span>{l.deleted}</span>
 					</div>
 				</div>
 			) : null}
@@ -60,22 +60,18 @@ export default async function Landing({
 
 			<section className={`${s.wrap} ${s.hero}`}>
 				<div className={s.heroCopy}>
-					<div className={s.eyebrow}>A private family tree, drawn as a graph</div>
-					<h1 className={s.heroTitle}>Every family is a graph. Draw yours.</h1>
-					<p className={s.lead}>
-						Add the people you know, link how they are related, and watch the
-						generations line up by birth year. Private by default, shared only
-						with the relatives you invite.
-					</p>
+					<div className={s.eyebrow}>{l.eyebrow}</div>
+					<h1 className={s.heroTitle}>{l.title}</h1>
+					<p className={s.lead}>{l.lead}</p>
 					<div className={s.ctaRow}>
 						<Link href="/sign-up" className={s.ctaPrimary}>
-							Start your tree, free
+							{l.cta}
 						</Link>
 						<Link href="/sign-in" className={s.ctaSecondary}>
-							Log in
+							{l.logIn}
 						</Link>
 					</div>
-					<div className={s.fine}>No ads, no public profiles.</div>
+					<div className={s.fine}>{l.fine}</div>
 				</div>
 				<div className={s.heroArt}>
 					<HeroGraph />
@@ -85,20 +81,16 @@ export default async function Landing({
 			<section id="features" className={s.band}>
 				<div className={`${s.wrap} ${s.section} ${s.stack}`}>
 					<div className={s.sectionHead}>
-						<div className={s.eyebrow}>The tree</div>
-						<h2 className={s.h2}>Boxes and lines, not forms and tables.</h2>
-						<p className={s.body}>
-							You build the tree the way you would sketch it on the back of an
-							envelope: a card for each person, a line for each relationship.
-							Drag, zoom, and click anyone to see who they are.
-						</p>
+						<div className={s.eyebrow}>{l.treeEyebrow}</div>
+						<h2 className={s.h2}>{l.treeTitle}</h2>
+						<p className={s.body}>{l.treeBody}</p>
 					</div>
 					<div className={s.features}>
 						<div className={s.feature}>
 							<div className={s.featureArt} aria-hidden>
 								<div className={s.timelineRow} style={{ top: 0 }} />
 								<div className={s.timelineRow} style={{ top: 60 }} />
-								{["1920s", "1940s", "1970s", "2000s"].map((label, i) => (
+								{l.decades.map((label, i) => (
 									<div key={label} className={s.timelineLabel} style={{ top: 6 + i * 30 }}>
 										{label}
 									</div>
@@ -108,17 +100,13 @@ export default async function Landing({
 								<div className={`${s.miniNode} ${s.male}`} style={{ left: 140, top: 66 }} />
 								<div className={`${s.miniNode} ${s.female}`} style={{ left: 220, top: 96 }} />
 							</div>
-							<h3>A timeline of generations</h3>
-							<p>
-								People sit on a vertical axis by birth year. Grandparents at the
-								top, grandchildren at the bottom, and every twenty years a new
-								band. You never wonder who came first.
-							</p>
+							<h3>{l.timelineTitle}</h3>
+							<p>{l.timelineBody}</p>
 						</div>
 						<div className={s.feature}>
 							<div className={`${s.featureArt} ${s.lineList}`} aria-hidden>
 								{LINES.map((line) => (
-									<div key={line.label} className={s.lineRow}>
+									<div key={line.key} className={s.lineRow}>
 										<svg width="90" height="8">
 											<line
 												x1="0"
@@ -126,37 +114,30 @@ export default async function Landing({
 												x2="90"
 												y2="4"
 												strokeWidth={line.width}
-												strokeDasharray={line.dash}
-												strokeLinecap={line.cap ? "round" : undefined}
+												strokeDasharray={"dash" in line ? line.dash : undefined}
+												strokeLinecap={"cap" in line ? "round" : undefined}
 												style={{ stroke: line.color }}
 											/>
 										</svg>
-										<span style={line.muted ? { color: "var(--ink3)" } : undefined}>
-											{line.label}
+										<span style={"muted" in line ? { color: "var(--ink3)" } : undefined}>
+											{l.lines[line.key]}
 										</span>
 									</div>
 								))}
 							</div>
-							<h3>Four kinds of family</h3>
-							<p>
-								Blood, marriage, godparents, and the neighbour everyone calls
-								uncle. Each group has its own line, and a marriage is the
-								heaviest stroke on the page while “lives with” is the faintest,
-								so the tree reads at a glance and still tells the whole story.
-							</p>
+							<h3>{l.kindsTitle}</h3>
+							<p>{l.kindsBody}</p>
 						</div>
 						<div className={s.feature}>
 							<div className={`${s.featureArt} ${s.chipArt}`} aria-hidden>
-								<span className={s.chip}>Age 40–90</span>
-								<span className={s.chip}>Hide: In-law</span>
-								<span className={`${s.chip} ${s.chipOn}`}>Women only</span>
-								<span className={s.chip}>Not: Nowak</span>
+								{l.chips.map((chip, i) => (
+									<span key={chip} className={`${s.chip} ${i === 2 ? s.chipOn : ""}`}>
+										{chip}
+									</span>
+								))}
 							</div>
-							<h3>Filters that cut the noise</h3>
-							<p>
-								Hide a relationship type, narrow to an age range, show one side
-								of the family. Whatever is left on screen is what gets exported.
-							</p>
+							<h3>{l.filtersTitle}</h3>
+							<p>{l.filtersBody}</p>
 						</div>
 					</div>
 				</div>
@@ -164,49 +145,38 @@ export default async function Landing({
 
 			<section id="calendar" className={`${s.wrap} ${s.section} ${s.split}`}>
 				<div className={s.splitCopy}>
-					<div className={s.eyebrow}>Calendar export</div>
-					<h2 className={s.h2}>
-						Every birthday. Every remembrance day. In the calendar you already
-						use.
-					</h2>
-					<p className={s.body}>
-						One click turns the visible part of your tree into an .ics file: a
-						yearly birthday for everyone living, and a yearly anniversary for
-						everyone who has passed. Import it into Google Calendar, Apple
-						Calendar or Outlook once, and it repeats forever.
-					</p>
+					<div className={s.eyebrow}>{l.calendarEyebrow}</div>
+					<h2 className={s.h2}>{l.calendarTitle}</h2>
+					<p className={s.body}>{l.calendarBody}</p>
 					<div className={s.pills}>
-						<span className={s.pill}>
-							<span className={s.dot} style={{ background: "var(--primary)" }} />
-							Birthdays, yearly
-						</span>
-						<span className={s.pill}>
-							<span className={s.dot} style={{ background: "var(--church)" }} />
-							Remembrance anniversaries
-						</span>
-						<span className={s.pill}>
-							<span className={s.dot} style={{ background: "var(--accent)" }} />
-							Follows your filters
-						</span>
+						{l.pills.map((pill, i) => (
+							<span key={pill} className={s.pill}>
+								<span
+									className={s.dot}
+									style={{ background: ["var(--primary)", "var(--church)", "var(--accent)"][i] }}
+								/>
+								{pill}
+							</span>
+						))}
 					</div>
 				</div>
 				<div className={s.splitArt}>
 					<div className={s.calendar}>
 						<div className={s.calendarHead}>
-							<div className={s.calendarMonth}>October</div>
-							<div className={s.calendarFile}>kowalski-family.ics</div>
+							<div className={s.calendarMonth}>{l.calendarMonth}</div>
+							<div className={s.calendarFile}>{l.calendarFile}</div>
 						</div>
-						{CALENDAR.map((row) => (
+						{CALENDAR_DAYS.map((row, i) => (
 							<div key={row.day} className={s.calendarRow}>
 								<div className={s.calendarDay}>
 									<div className={s.calendarDow} style={{ color: row.color }}>
-										{row.dow}
+										{l.calendarRows[i].dow}
 									</div>
 									<div className={s.calendarNum}>{row.day}</div>
 								</div>
 								<div>
-									<div className={s.calendarTitle}>{row.title}</div>
-									<div className={s.calendarMeta}>{row.meta}</div>
+									<div className={s.calendarTitle}>{l.calendarRows[i].title}</div>
+									<div className={s.calendarMeta}>{l.calendarRows[i].meta}</div>
 								</div>
 							</div>
 						))}
@@ -217,13 +187,9 @@ export default async function Landing({
 			<section className={s.private}>
 				<div className={`${s.wrap} ${s.section} ${s.split}`}>
 					<div className={s.splitCopy}>
-						<div className={s.eyebrow}>Private by default</div>
-						<h2 className={s.h2}>Yours, and whoever you invite.</h2>
-						<p className={s.body}>
-							There are no public trees and no search across families. You
-							create a tree, you invite relatives by email, they can look but not
-							touch. Change your mind and revoke access with one click.
-						</p>
+						<div className={s.eyebrow}>{l.privateEyebrow}</div>
+						<h2 className={s.h2}>{l.privateTitle}</h2>
+						<p className={s.body}>{l.privateBody}</p>
 					</div>
 					<div className={s.privateList} aria-hidden>
 						<div className={s.privateRow}>
@@ -231,10 +197,10 @@ export default async function Landing({
 								TK
 							</div>
 							<div style={{ flex: 1, minWidth: 0 }}>
-								<div className={s.who}>tomek (you)</div>
-								<div className={s.role}>Creator · can edit everything</div>
+								<div className={s.who}>{l.privateYou}</div>
+								<div className={s.role}>{l.privateCreator}</div>
 							</div>
-							<span className={s.privateBadge}>Owner</span>
+							<span className={s.privateBadge}>{l.privateOwner}</span>
 						</div>
 						<div className={s.privateRow}>
 							<div className={s.privateAvatar} style={{ background: "#6FA3B0" }}>
@@ -242,13 +208,13 @@ export default async function Landing({
 							</div>
 							<div style={{ flex: 1, minWidth: 0 }}>
 								<div className={s.who}>anna.nowak@…</div>
-								<div className={s.role}>Invited · read-only</div>
+								<div className={s.role}>{l.privateInvited}</div>
 							</div>
-							<span className={s.privateRevoke}>Revoke</span>
+							<span className={s.privateRevoke}>{l.privateRevoke}</span>
 						</div>
 						<div className={`${s.privateRow} ${s.privateInvite}`}>
 							<PlusIcon size={20} />
-							Invite by email…
+							{l.privateInvite}
 						</div>
 					</div>
 				</div>
@@ -256,23 +222,16 @@ export default async function Landing({
 
 			<section id="mobile" className={`${s.wrap} ${s.section} ${s.split}`}>
 				<div className={s.splitCopy}>
-					<div className={s.eyebrow}>iPhone and Android</div>
-					<h2 className={s.h2}>
-						The tree in your pocket, for the moments you need it.
-					</h2>
-					<p className={s.body}>
-						At a wedding and can’t place a face? Search a name and see how you are
-						related. The app also keeps an upcoming list of birthdays and
-						remembrance days, with a reminder the day before, and lets you add a
-						new relative with a photo in a few taps.
-					</p>
+					<div className={s.eyebrow}>{l.mobileEyebrow}</div>
+					<h2 className={s.h2}>{l.mobileTitle}</h2>
+					<p className={s.body}>{l.mobileBody}</p>
 					<div className={s.stores}>
 						<span className={s.store}>
 							<svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
 								<path d="M16.4 12.6c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.1-2.8.9-3.5.9-.7 0-1.9-.8-3.1-.8C6.1 7.4 3.7 9.3 3.7 13c0 1.1.2 2.3.6 3.4.6 1.6 2.6 5.5 4.7 5.4 1.1 0 1.8-.8 3.2-.8s2 .8 3.2.8c2.1 0 3.9-3.5 4.5-5.1-2.8-1.3-3.5-3.9-3.5-4.1zM13.9 5.7c1-1.2 1-2.9.9-3.5-1.4.1-2.9.9-3.7 1.9-.8.9-1.3 2.1-1.1 3.4 1.5.1 2.9-.7 3.9-1.8z" />
 							</svg>
 							<span className={s.storeText}>
-								<span className={s.storeSmall}>Coming soon to the</span>
+								<span className={s.storeSmall}>{l.appStoreSmall}</span>
 								<span className={s.storeBig}>App Store</span>
 							</span>
 						</span>
@@ -284,7 +243,7 @@ export default async function Landing({
 								<path d="M16.5 9.3l3.3 1.9c.6.4.6 1.2 0 1.6l-3.3 1.9-3-2.7 3-2.7z" fill="#D9A85A" />
 							</svg>
 							<span className={s.storeText}>
-								<span className={s.storeSmall}>COMING SOON TO</span>
+								<span className={s.storeSmall}>{l.playStoreSmall}</span>
 								<span className={s.storeBig}>Google Play</span>
 							</span>
 						</span>
@@ -293,12 +252,8 @@ export default async function Landing({
 				<div className={`${s.splitArt} ${s.phones}`} aria-hidden>
 					<div className={s.phone}>
 						<div className={`${s.phoneScreen} ${s.phoneLight}`}>
-							<div className={s.phoneTitle}>Upcoming</div>
-							{[
-								{ t: "Maria turns 75", m: "Sat 3 Oct · in 8 days", c: "#A5584C" },
-								{ t: "† Stanisław, 28 yrs", m: "Thu 15 Oct", c: "#3F6E7A", o: 0.6 },
-								{ t: "Zofia turns 21", m: "Wed 28 Oct", c: "#A5584C" },
-							].map((row) => (
+							<div className={s.phoneTitle}>{l.phoneUpcoming}</div>
+							{l.phoneRows.map((text, i) => ({ ...text, ...PHONE_DOTS[i] })).map((row) => (
 								<div key={row.t} className={s.phoneCard}>
 									<div
 										style={{
@@ -342,7 +297,7 @@ export default async function Landing({
 									Anna Nowak
 								</div>
 								<div style={{ fontSize: 10, color: "#B9B3A5" }}>
-									1976 · 50 · your mother’s cousin
+									{l.phoneRelation}
 								</div>
 							</div>
 						</div>
@@ -352,9 +307,9 @@ export default async function Landing({
 
 			<section id="how" className={s.band} style={{ borderBottom: 0 }}>
 				<div className={`${s.wrap} ${s.section}`} style={{ display: "flex", flexDirection: "column", gap: 36 }}>
-					<h2 className={s.h2}>How it works</h2>
+					<h2 className={s.h2}>{l.howTitle}</h2>
 					<div className={s.steps}>
-						{STEPS.map((step, i) => (
+						{l.steps.map((step, i) => (
 							<div key={step.title} className={s.step}>
 								<div className={s.stepNum}>{i + 1}</div>
 								<h3>{step.title}</h3>
@@ -364,10 +319,10 @@ export default async function Landing({
 					</div>
 					<div className={s.ctaRow} style={{ paddingTop: 8 }}>
 						<Link href="/sign-up" className={s.ctaPrimary}>
-							Start your tree, free
+							{l.cta}
 						</Link>
 						<span className={s.fine} style={{ fontSize: 14 }}>
-							Takes about a minute.
+							{l.minute}
 						</span>
 					</div>
 				</div>
@@ -377,8 +332,8 @@ export default async function Landing({
 				<div className={`${s.wrap} ${s.footerInner}`}>
 					<div className={s.footerBrand}>
 						<LogoMark size={22} />
-						<span className={s.footerName}>Family Tree</span>
-						<span>· Created by tomek7667</span>
+						<span className={s.footerName}>{t.common.appName}</span>
+						<span>· {t.common.createdBy}</span>
 					</div>
 					<div className={s.footerBrand} style={{ gap: 20 }}>
 						<LegalLinks />

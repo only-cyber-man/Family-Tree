@@ -46,7 +46,7 @@ describe("search", () => {
 		const res = searchPersons(graph.persons, "wisn");
 		expect(res.map((r) => r.person.id).sort()).toEqual(["anna", "piotr", "zofia"]);
 		const anna = res.find((r) => r.person.id === "anna")!;
-		expect(anna.person.name.slice(...anna.range)).toBe("Wiśn");
+		expect(anna.person.name.slice(...anna.range!)).toBe("Wiśn");
 		expect(searchPersons(graph.persons, "ann")[0].person.id).toBe("anna");
 		expect(searchPersons(graph.persons, "  ")).toEqual([]);
 	});

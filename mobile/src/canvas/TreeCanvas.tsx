@@ -22,12 +22,16 @@ import { arrowPath, edgeGeometry, edgeMayBeVisible, edgeStyle, type Box } from "
 import { yearsLabel, initials, firstName } from "../lib/format";
 import { focusLayout, layoutByBirthYear, DEFAULT_LAYOUT, type LayoutOptions, type Point } from "../lib/layout";
 import { NODE_SIZE, selectLod, type Lod } from "../lib/lod";
-import { humanizeName, relativesOf } from "../lib/relations";
+import { relativesOf, typeLabel } from "../lib/relations";
 import type { Visibility } from "../lib/filters";
 import type { CalendarDate, Graph, Person } from "../lib/types";
 import { haptics } from "../services/haptics";
 import { fonts, motion } from "../theme/theme";
 import { useTheme } from "../theme/useTheme";
+import { useT } from "../i18n";
+import { useSession } from "../store/session";
+import { openingScale, placeBandLabel } from "../lib/bands";
+import { tokens } from "../theme/tokens";
 
 /**
  * Overscan: the SVG is drawn this far past every viewport edge, so panning
@@ -57,7 +61,9 @@ export interface TreeCanvasProps {
 	onRequestFocus: (id: string) => void;
 	/** Space taken by overlays at the top and bottom of the canvas. */
 	insets: { top: number; bottom: number };
-	/** Camera resets to fit-all when this changes (e.g. switching trees). */
+	/** Person the tab opens centred on (at a readable zoom) when the tree does not fit readably. */
+	homeId?: string | null;
+	/** Camera resets to the opening view when this changes (e.g. switching trees). */
 	treeKey: string;
 	onAwayChange?: (away: boolean) => void;
 }
@@ -74,6 +80,8 @@ function fitText(s: string, maxChars: number): string {
 export const TreeCanvas = forwardRef<CanvasHandle, TreeCanvasProps>(function TreeCanvas(props, ref) {
 	const { graph, visible, pictures, today, selectedId, focusId, insets, treeKey } = props;
 	const t = useTheme();
+	const T = useT();
+	const myUserId = useSession((s) => s.user?.id);
 	const [size, setSize] = useState<{ width: number; height: number } | null>(null);
 	const layout = useMemo(() => layoutByBirthYear(visible.persons, visible.edges, MOBILE_LAYOUT), [visible]);
 	const viewport = useMemo<Viewport | null>(() => (size ? { ...size, insetTop: insets.top, insetBottom: insets.bottom } : null), [size, insets.top, insets.bottom]);
@@ -128,8 +136,14 @@ export const TreeCanvas = forwardRef<CanvasHandle, TreeCanvasProps>(function Tre
 	useEffect(() => {
 		if (!fit || !viewport || initFor.current === treeKey) return;
 		initFor.current = treeKey;
+		// Opening view: a pending centre request wins; otherwise a readable
+		// (compact LOD) zoom centred on "me" / the most-connected person. Fit-all
+		// is only used when the whole tree is already readable; the fit button
+		// still resets to fit-all.
 		const want = pendingCenter.current ? layout.positions[pendingCenter.current] : undefined;
-		const start = want ? centerOn(want, Math.max(fit.k, 0.9), viewport) : fit;
+		const home = props.homeId ? layout.positions[props.homeId] : undefined;
+		const k = openingScale(fit.k, tokens.mobile.zoomLOD.compact.min);
+		const start = want ? centerOn(want, Math.max(fit.k, 0.9), viewport) : home && k !== fit.k ? centerOn(home, k, viewport) : fit;
 		if (want) pendingCenter.current = null;
 		setLive(start);
 		setCamera(start);
@@ -440,12 +454,16 @@ export const TreeCanvas = forwardRef<CanvasHandle, TreeCanvasProps>(function Tre
 					const y0 = b.y0 * cam.k + cam.y;
 					const y1 = b.y1 * cam.k + cam.y;
 					if (y1 < -MARGIN || y0 > size.height + MARGIN) return null;
+					// Pinned below the header overlay, but always inside its own band.
+					const label = placeBandLabel(y0, y1, insets.top);
 					return (
 						<G key={b.index}>
 							{b.shaded ? <Rect x={-MARGIN} y={y0} width={W} height={y1 - y0} fill={t.c.band} /> : null}
-							<SvgText x={12} y={Math.max(y0, -MARGIN) + 17} fontSize={11} fontFamily={fonts.body[700]} fill={t.c.bandLabel}>
-								{b.label}
-							</SvgText>
+							{label.mode !== "none" ? (
+								<SvgText x={12} y={label.y} fontSize={11} fontFamily={fonts.body[700]} fill={t.c.bandLabel}>
+									{label.mode === "full" ? T.tree.bandLabel(b.startYear, b.endYear) : T.tree.bandLabelShort(b.startYear, b.endYear)}
+								</SvgText>
+							) : null}
 						</G>
 					);
 				});
@@ -469,7 +487,7 @@ export const TreeCanvas = forwardRef<CanvasHandle, TreeCanvasProps>(function Tre
 				</G>,
 			);
 			if (sel && lod === "full" && !display) {
-				const label = humanizeName(e.name);
+				const label = typeLabel(e.name, T);
 				const w = label.length * 5.6 + 14;
 				labelEls.push(
 					<G key={`l${e.id}`}>
@@ -493,10 +511,14 @@ export const TreeCanvas = forwardRef<CanvasHandle, TreeCanvasProps>(function Tre
 			const sel = p.id === selectedId;
 			const nc = t.node[p.gender];
 			const deceased = !!p.death;
+			// The person linked to my account: primary outer outline + "You" pill,
+			// deliberately different from the copper selection border.
+			const isYou = !!myUserId && p.userId === myUserId;
 			if (lod === "dot") {
 				const r = sel ? NODE_SIZE.dot.rSelected : NODE_SIZE.dot.r;
 				nodeEls.push(
 					<G key={p.id} opacity={op}>
+						{isYou ? <Circle cx={s.x} cy={s.y} r={r + 4.5} fill="none" stroke={t.c.primary} strokeWidth={2} /> : null}
 						<Circle
 							cx={s.x}
 							cy={s.y}
@@ -522,6 +544,7 @@ export const TreeCanvas = forwardRef<CanvasHandle, TreeCanvasProps>(function Tre
 			const card = (
 				<>
 					{sel ? <Rect x={x} y={y + 4} width={w} height={h} rx={rx} fill="#000" opacity={t.scheme === "dark" ? 0.35 : 0.1} /> : null}
+					{isYou ? <Rect x={x - 5} y={y - 5} width={w + 10} height={h + 10} rx={rx + 5} fill="none" stroke={t.c.primary} strokeWidth={2} /> : null}
 					<Rect
 						x={x}
 						y={y}
@@ -532,6 +555,14 @@ export const TreeCanvas = forwardRef<CanvasHandle, TreeCanvasProps>(function Tre
 						stroke={sel ? nc.selectedBorder : nc.border}
 						strokeWidth={sel ? 3 : 2}
 					/>
+					{isYou ? (
+						<G>
+							<Rect x={x + w - 34} y={y - 12} width={34} height={18} rx={9} fill={t.c.primary} />
+							<SvgText x={x + w - 17} y={y + 1} fontSize={10} fontFamily={fonts.body[700]} fill={t.c.onPrimary} textAnchor="middle">
+								{T.tree.youPill}
+							</SvgText>
+						</G>
+					) : null}
 				</>
 			);
 			if (lod === "compact") {
@@ -611,7 +642,7 @@ export const TreeCanvas = forwardRef<CanvasHandle, TreeCanvasProps>(function Tre
 				style={[styles.fill, { backgroundColor: t.c.canvasBg }]}
 				onLayout={onLayout}
 				accessible
-				accessibilityLabel={`Family tree with ${visible.persons.length} people. Use search to find someone.`}
+				accessibilityLabel={T.tree.canvasA11y(visible.persons.length)}
 			>
 				<Animated.View
 					style={[{ position: "absolute", left: -MARGIN, top: -MARGIN, width: W, height: H, transformOrigin: [MARGIN, MARGIN, 0] }, transformStyle]}

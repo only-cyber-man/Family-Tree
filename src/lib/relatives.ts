@@ -1,4 +1,5 @@
 import { Node, Relationship } from "./interfaces";
+import type { Dict } from "@/i18n";
 
 interface Family {
 	nodes: Node[];
@@ -96,17 +97,13 @@ const generations = (family: Family, nodeId: string, up: boolean): Node[][] => {
 	return levels;
 };
 
-const greatPrefix = (index: number) => "great-".repeat(index);
-
-const capitalize = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
-
 export interface RelativeGroup {
 	label: string;
 	people: Node[];
 }
 
 /** Extended family of one person, derived from parent and marriage links. */
-export const extendedFamily = (family: Family, nodeId: string): RelativeGroup[] => {
+export const extendedFamily = (family: Family, nodeId: string, t: Dict): RelativeGroup[] => {
 	const groups: RelativeGroup[] = [];
 	const push = (label: string, people: Node[]) => {
 		if (people.length > 0) {
@@ -114,15 +111,15 @@ export const extendedFamily = (family: Family, nodeId: string): RelativeGroup[] 
 		}
 	};
 	generations(family, nodeId, true)
-		.map((people, i) => ({ label: capitalize(`${greatPrefix(i)}grandparents`), people }))
+		.map((people, i) => ({ label: t.family.ancestors(i), people }))
 		.reverse()
 		.forEach(({ label, people }) => push(label, people));
-	push("Parents", getParents(family, nodeId));
-	push("Aunts and uncles", getAuntsAndUncles(family, nodeId));
-	push("Siblings", getSiblings(family, nodeId));
-	push("Children", getChildren(family, nodeId));
+	push(t.family.parents, getParents(family, nodeId));
+	push(t.family.auntsAndUncles, getAuntsAndUncles(family, nodeId));
+	push(t.family.siblings, getSiblings(family, nodeId));
+	push(t.family.children, getChildren(family, nodeId));
 	generations(family, nodeId, false).forEach((people, i) =>
-		push(capitalize(`${greatPrefix(i)}grandchildren`), people)
+		push(t.family.descendants(i), people)
 	);
 	return groups;
 };

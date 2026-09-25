@@ -15,6 +15,13 @@
 	padding: 16px 40px;
 }
 
+.navEnd {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	min-width: 0;
+}
+
 .prompt {
 	font-size: 14px;
 	color: var(--ink2);

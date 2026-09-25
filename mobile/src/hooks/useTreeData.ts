@@ -3,6 +3,7 @@ import { pictureUrl } from "../lib/api";
 import { todayDate } from "../lib/dates";
 import { applyFilters, type Visibility } from "../lib/filters";
 import { buildGraph } from "../lib/graph";
+import { resolveMe, type MeResolution } from "../lib/links";
 import type { CalendarDate, Graph, Person } from "../lib/types";
 import { useNetwork } from "../store/network";
 import { useSession } from "../store/session";
@@ -36,10 +37,19 @@ export function useIsOwner(): boolean {
 
 /** The "This is me" person for the active tree, if chosen on this device. */
 export function useMe(): Person | null {
+	return useMeInfo().person;
+}
+
+/**
+ * "This is me": the person linked to my account on the server (ft_nodes.user)
+ * wins; the on-device pick is only a fallback when nobody is linked.
+ */
+export function useMeInfo(): MeResolution {
 	const graph = useGraph();
 	const treeId = useTree((s) => s.treeId);
-	const meId = useSettings((s) => (treeId ? s.meByTree[treeId] : undefined));
-	return (meId && graph?.byId[meId]) || null;
+	const userId = useSession((s) => s.user?.id);
+	const pickId = useSettings((s) => (treeId ? s.meByTree[treeId] : undefined));
+	return useMemo(() => resolveMe(graph?.persons ?? [], userId, pickId), [graph, userId, pickId]);
 }
 
 /** Picture URLs by node id. */

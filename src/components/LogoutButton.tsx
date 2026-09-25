@@ -1,8 +1,11 @@
 "use client";
 
 import { pb } from "@/lib";
+import { useT } from "@/i18n/client";
 
-export const LogoutButton = () => (
+export const LogoutButton = () => {
+	const t = useT();
+	return (
 	<button
 		className="btn btn-outline btn-sm"
 		style={{ color: "var(--ink2)" }}
@@ -12,6 +15,7 @@ export const LogoutButton = () => (
 			window.location.href = "/";
 		}}
 	>
-		Log out
+		{t.nav.logOut}
 	</button>
-);
+	);
+};

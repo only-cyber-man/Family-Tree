@@ -3,6 +3,8 @@ import * as api from "../lib/api";
 import { errorMessage, isNetworkError } from "../lib/errors";
 import { loadAuth, onUnauthorized, pb } from "../lib/pb";
 import type { UserRecord } from "../lib/types";
+import { getT } from "../i18n";
+import { deleteOwnAccount } from "../lib/account";
 import { wipeAccountData } from "../services/account";
 import { useSettings } from "./settings";
 
@@ -15,6 +17,8 @@ interface SessionState {
 	signIn: (login: string, password: string) => Promise<void>;
 	signUp: (input: api.SignUpInput) => Promise<void>;
 	signOut: () => Promise<void>;
+	/** Deletes the account on the server (like the web), then signs out and wipes the device. Throws on failure. */
+	deleteAccount: () => Promise<void>;
 	markExpired: () => void;
 	forgetExpired: () => Promise<void>;
 }
@@ -65,6 +69,14 @@ export const useSession = create<SessionState>()((set, get) => ({
 	signOut: async () => {
 		// Token first: nothing that runs during the wipe (a trees refresh, a
 		// reload) can fetch or re-save the old account's data.
+		pb.authStore.clear();
+		set({ user: null, expired: false });
+		await wipeAccountData();
+	},
+	deleteAccount: async () => {
+		const user = get().user;
+		if (!user) throw new Error(getT().errors.notSignedIn);
+		await deleteOwnAccount(pb, user.id);
 		pb.authStore.clear();
 		set({ user: null, expired: false });
 		await wipeAccountData();

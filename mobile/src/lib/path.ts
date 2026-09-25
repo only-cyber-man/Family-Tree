@@ -1,5 +1,6 @@
+import { en, type Dict, type KinTerm, type KinWord } from "../i18n/en";
 import { capitalize } from "./format";
-import { classifyName, humanizeName, parentChild } from "./relations";
+import { classifyName, parentChild, typeLabel, typeSentence } from "./relations";
 import type { Edge, Gender, Graph } from "./types";
 
 // "How are we related": shortest path between two people, then the path put
@@ -85,33 +86,9 @@ export function relationshipPath(g: Graph, meId: string, targetId: string): Rela
 	return any ? { steps: any, familyOnly: false } : null;
 }
 
-const gw = (g: Gender, male: string, female: string) => (g === "male" ? male : female);
-
-const ORDINALS = ["", "", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth"];
-const TIMES = ["", "once", "twice", "three times", "four times", "five times"];
-
-function greats(n: number): string {
-	return n > 0 ? "great-".repeat(n) : "";
-}
-
 /** Blood-relative term for u steps up then d steps down. */
-export function bloodTerm(u: number, d: number, gender: Gender): string | null {
-	if (u === 0 && d === 0) return null;
-	if (d === 0) {
-		if (u === 1) return gw(gender, "father", "mother");
-		return greats(u - 2) + gw(gender, "grandfather", "grandmother");
-	}
-	if (u === 0) {
-		if (d === 1) return gw(gender, "son", "daughter");
-		return greats(d - 2) + gw(gender, "grandson", "granddaughter");
-	}
-	if (u === 1 && d === 1) return gw(gender, "brother", "sister");
-	if (d === 1) return greats(u - 2) + gw(gender, "uncle", "aunt");
-	if (u === 1) return (d === 2 ? "" : greats(d - 3) + "grand") + gw(gender, "nephew", "niece");
-	const degree = Math.min(u, d) - 1;
-	const removed = Math.abs(u - d);
-	const base = degree === 1 ? "cousin" : `${ORDINALS[degree] ?? `${degree}th`} cousin`;
-	return removed === 0 ? base : `${base} ${TIMES[removed] ?? `${removed} times`} removed`;
+export function bloodTerm(u: number, d: number, gender: Gender, L: Dict = en, siblingGender?: Gender): string | null {
+	return L.kin.term({ kind: "blood", up: u, down: d, gender, siblingGender });
 }
 
 /** Parses [spouse?] up* (sibling|up down)? down* [spouse?]. */
@@ -137,48 +114,47 @@ function shape(moves: Move[]): { u: number; d: number; spouseStart: boolean; spo
 	return { u, d, spouseStart, spouseEnd };
 }
 
-function stepWord(g: Graph, s: Step): string {
-	const to = g.byId[s.to];
-	const gender = to?.gender ?? "female";
+function stepWord(g: Graph, s: Step, L: Dict): KinWord {
+	const gender = g.byId[s.to]?.gender ?? "female";
 	switch (s.move) {
 		case "up":
-			return gw(gender, "father", "mother");
+			return { rel: "parent", gender };
 		case "down":
-			return gw(gender, "son", "daughter");
+			return { rel: "child", gender };
 		case "sibling":
-			return gw(gender, "brother", "sister");
+			return { rel: "sibling", gender };
 		case "spouse":
-			return gw(gender, "husband", "wife");
+			return { rel: "spouse", gender };
 		case "partner":
-			return "partner";
+			return { rel: "partner", gender };
 		default:
-			return otherWord(s.edge, s.to === s.edge.source);
+			return {
+				rel: "other",
+				gender,
+				noun: L.kin.otherNoun(s.edge.name, s.to === s.edge.source, s.edge.bidirectional, gender, typeLabel(s.edge.name, en)),
+			};
 	}
 }
 
-/** Word for the far end of an "other" edge, e.g. "godparent". */
-function otherWord(e: Edge, farIsSource: boolean): string {
-	const word = humanizeName(e.name).replace(/ (of|to|with)$/, "").toLowerCase();
-	if (farIsSource || e.bidirectional) return word;
-	if (/god(parent|mother|father)/.test(word)) return "godchild";
-	if (/god(child|son|daughter)/.test(word)) return "godparent";
-	return word;
-}
-
-/** "your mother's brother's daughter"; an up immediately followed by a down reads as a sibling. */
-export function possessiveChain(g: Graph, steps: Step[]): string {
-	const words: string[] = [];
+/** Chain words; an up immediately followed by a down reads as a sibling. */
+function chainWords(g: Graph, steps: Step[], L: Dict): KinWord[] {
+	const words: KinWord[] = [];
 	for (let i = 0; i < steps.length; i++) {
 		const s = steps[i];
 		const next = steps[i + 1];
 		if (s.move === "up" && next?.move === "down") {
-			words.push(stepWord(g, { ...next, move: "sibling" }));
+			words.push(stepWord(g, { ...next, move: "sibling" }, L));
 			i++;
 			continue;
 		}
-		words.push(stepWord(g, s));
+		words.push(stepWord(g, s, L));
 	}
-	return words.length ? "your " + words.join("'s ") : "you";
+	return words;
+}
+
+/** "your mother's brother's daughter" / "córka brata twojej matki". */
+export function possessiveChain(g: Graph, steps: Step[], L: Dict = en): string {
+	return L.kin.chain(chainWords(g, steps, L));
 }
 
 export interface Kinship {
@@ -192,51 +168,46 @@ export interface Kinship {
 	title: string;
 }
 
-export function describeKinship(g: Graph, steps: Step[]): Kinship {
-	if (steps.length === 0) return { term: null, chain: "you", phrase: "you", title: "You" };
+export function describeKinship(g: Graph, steps: Step[], L: Dict = en): Kinship {
+	if (steps.length === 0) return { term: null, chain: L.kin.you, phrase: L.kin.you, title: L.kin.youTitle };
 	const target = g.byId[steps[steps.length - 1].to];
 	const gender = target?.gender ?? "female";
-	const chain = possessiveChain(g, steps);
-	let term: string | null = null;
+	const chain = possessiveChain(g, steps, L);
+	let spec: KinTerm | null = null;
 	const moves = steps.map((s) => s.move);
-	if (moves.length === 1 && moves[0] === "partner") term = "partner";
+	if (moves.length === 1 && moves[0] === "partner") spec = { kind: "affinal", which: "partner", gender };
 	const sh = shape(moves);
-	if (sh && !term) {
+	if (sh && !spec) {
 		const { u, d, spouseStart, spouseEnd } = sh;
-		if (!spouseStart && !spouseEnd) term = bloodTerm(u, d, gender);
-		else if (spouseStart && !spouseEnd) {
-			if (u === 0 && d === 0) term = gw(gender, "husband", "wife");
-			else if (u === 1 && d === 0) term = gw(gender, "father-in-law", "mother-in-law");
-			else if (u === 1 && d === 1) term = gw(gender, "brother-in-law", "sister-in-law");
-			else if (u === 0 && d === 1) term = gw(gender, "stepson", "stepdaughter");
+		if (!spouseStart && !spouseEnd) {
+			// The sibling on the way down (for nephew/niece terms that depend on it).
+			const siblingStep = u === 1 ? steps.find((s) => s.move === "sibling") ?? steps[1] : undefined;
+			const siblingGender = siblingStep ? g.byId[siblingStep.to]?.gender : undefined;
+			spec = { kind: "blood", up: u, down: d, gender, siblingGender };
+		} else if (spouseStart && !spouseEnd) {
+			if (u === 0 && d === 0) spec = { kind: "affinal", which: "spouse", gender };
+			else if (u === 1 && d === 0) spec = { kind: "affinal", which: "parentInLaw", gender };
+			else if (u === 1 && d === 1) spec = { kind: "affinal", which: "siblingInLaw", gender };
+			else if (u === 0 && d === 1) spec = { kind: "affinal", which: "stepChild", gender };
 		} else if (!spouseStart && spouseEnd) {
-			if (u === 0 && d === 1) term = gw(gender, "son-in-law", "daughter-in-law");
-			else if (u === 1 && d === 1) term = gw(gender, "brother-in-law", "sister-in-law");
-			else if (u === 1 && d === 0) term = gw(gender, "stepfather", "stepmother");
+			if (u === 0 && d === 1) spec = { kind: "affinal", which: "childInLaw", gender };
+			else if (u === 1 && d === 1) spec = { kind: "affinal", which: "siblingInLaw", gender };
+			else if (u === 1 && d === 0) spec = { kind: "affinal", which: "stepParent", gender };
 		}
 	}
-	const phrase = term ? `your ${term}` : chain;
+	const term = spec ? L.kin.term(spec) : null;
+	const phrase = term ? L.kin.phrase(term, gender) : chain;
 	return { term, chain, phrase, title: capitalize(phrase) };
 }
 
 /** How the person at `s.from` relates to the one at `s.to`: "child of", "mother of". */
-export function stepLabel(g: Graph, s: Step): string {
-	const from = g.byId[s.from];
-	const gender = from?.gender ?? "female";
-	switch (s.move) {
-		case "up":
-			return "child of";
-		case "down":
-			return gw(gender, "father of", "mother of");
-		case "sibling":
-			return gw(gender, "brother of", "sister of");
-		case "spouse":
-			return gw(gender, "husband of", "wife of");
-		case "partner":
-			return humanizeName(s.edge.name).toLowerCase();
-		default:
-			return s.from === s.edge.source || s.edge.bidirectional
-				? humanizeName(s.edge.name).toLowerCase()
-				: `${otherWord(s.edge, false)} of`;
+export function stepLabel(g: Graph, s: Step, L: Dict = en): string {
+	const gender = g.byId[s.from]?.gender ?? "female";
+	if (s.move === "partner") return typeLabel(s.edge.name, L).toLowerCase();
+	if (s.move === "other") {
+		if (s.from === s.edge.source || s.edge.bidirectional) return typeSentence(s.edge.name, gender, L).replace(/^is /, "");
+		const noun = L.kin.otherNoun(s.edge.name, false, false, gender, typeLabel(s.edge.name, en));
+		return L.lang === "en" ? `${noun.nom} of` : noun.nom;
 	}
+	return L.kin.step(s.move, gender);
 }

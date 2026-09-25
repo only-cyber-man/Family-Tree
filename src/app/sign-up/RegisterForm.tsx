@@ -4,25 +4,27 @@ import { FormEvent, useState } from "react";
 import { isValidEmail, pb } from "@/lib";
 import { AlertIcon } from "@/components/Icons";
 import { PasswordInput } from "@/components/PasswordInput";
+import type { Dict } from "@/i18n";
+import { useT } from "@/i18n/client";
 import styles from "@/components/auth.module.css";
 
 type Field = "username" | "name" | "email" | "password" | "passwordConfirm";
 
 const MIN_PASSWORD = 8;
 
-const validate = (data: Record<Field, string>) => {
+const validate = (data: Record<Field, string>, t: Dict) => {
 	const errors: Partial<Record<Field, string>> = {};
 	if (!data.username.trim()) {
-		errors.username = "Pick a username.";
+		errors.username = t.auth.pickUsername;
 	}
 	if (!isValidEmail(data.email.trim())) {
-		errors.email = "That doesn't look like a full email address.";
+		errors.email = t.common.emailInvalid;
 	}
 	if (data.password.length < MIN_PASSWORD) {
-		errors.password = `At least ${MIN_PASSWORD} characters.`;
+		errors.password = t.auth.minPassword(MIN_PASSWORD);
 	}
 	if (data.passwordConfirm !== data.password) {
-		errors.passwordConfirm = "Passwords don't match.";
+		errors.passwordConfirm = t.auth.passwordsDiffer;
 	}
 	return errors;
 };
@@ -36,6 +38,8 @@ const FieldError = ({ message }: { message?: string }) =>
 	) : null;
 
 export const RegisterForm = () => {
+	const t = useT();
+	const a = t.auth;
 	const [data, setData] = useState<Record<Field, string>>({
 		username: "",
 		name: "",
@@ -56,7 +60,7 @@ export const RegisterForm = () => {
 
 	const submit = async (e: FormEvent) => {
 		e.preventDefault();
-		const found = validate(data);
+		const found = validate(data, t);
 		setErrors(found);
 		setServerError(null);
 		if (Object.keys(found).length > 0) {
@@ -86,7 +90,7 @@ export const RegisterForm = () => {
 			setErrors(fieldErrors);
 			if (other.length > 0 || Object.keys(fieldErrors).length === 0) {
 				setServerError(
-					[error?.message ?? "Could not create the account.", ...other].join("\n")
+					[error?.message ?? a.createFailed, ...other].join("\n")
 				);
 			}
 			setIsLoading(false);
@@ -103,9 +107,7 @@ export const RegisterForm = () => {
 			window.location.href = "/trees";
 		} catch (error: any) {
 			setServerError(
-				`Your account was created, but signing in failed: ${
-					error?.message ?? "unknown error"
-				}. Try signing in.`
+				a.signInAfterCreateFailed(error?.message ?? a.unknownError)
 			);
 			setIsLoading(false);
 		}
@@ -116,8 +118,8 @@ export const RegisterForm = () => {
 	return (
 		<form className={`${styles.card} ${styles.cardTight}`} onSubmit={submit} noValidate>
 			<div>
-				<h1 className={styles.title}>Start your tree</h1>
-				<p className={styles.subtitle}>Free, private, no ads.</p>
+				<h1 className={styles.title}>{a.registerTitle}</h1>
+				<p className={styles.subtitle}>{a.registerSubtitle}</p>
 			</div>
 			{serverError ? (
 				<div className="alert" role="alert">
@@ -127,7 +129,7 @@ export const RegisterForm = () => {
 			) : null}
 			<div className={styles.row}>
 				<label className="field">
-					<span className="field-label">Username</span>
+					<span className="field-label">{a.username}</span>
 					<input
 						className={inputClass("username")}
 						autoComplete="username"
@@ -141,7 +143,7 @@ export const RegisterForm = () => {
 				<label className="field">
 					<span className="field-label">
 						<span>
-							Display name <span className="field-optional">optional</span>
+							{a.displayName} <span className="field-optional">{t.common.optional}</span>
 						</span>
 					</span>
 					<input
@@ -155,7 +157,7 @@ export const RegisterForm = () => {
 				</label>
 			</div>
 			<label className="field">
-				<span className="field-label">Email</span>
+				<span className="field-label">{a.email}</span>
 				<input
 					className={inputClass("email")}
 					type="email"
@@ -167,7 +169,7 @@ export const RegisterForm = () => {
 				<FieldError message={errors.email} />
 			</label>
 			<label className="field">
-				<span className="field-label">Password</span>
+				<span className="field-label">{a.password}</span>
 				<PasswordInput
 					className={inputClass("password")}
 					autoComplete="new-password"
@@ -178,11 +180,11 @@ export const RegisterForm = () => {
 				{errors.password ? (
 					<FieldError message={errors.password} />
 				) : (
-					<span className="field-hint">At least {MIN_PASSWORD} characters.</span>
+					<span className="field-hint">{a.minPassword(MIN_PASSWORD)}</span>
 				)}
 			</label>
 			<label className="field">
-				<span className="field-label">Confirm password</span>
+				<span className="field-label">{a.confirmPassword}</span>
 				<PasswordInput
 					className={inputClass("passwordConfirm")}
 					autoComplete="new-password"
@@ -199,11 +201,10 @@ export const RegisterForm = () => {
 				disabled={isLoading}
 			>
 				{isLoading ? <span className="spinner" /> : null}
-				{isLoading ? "Creating account…" : "Create account"}
+				{isLoading ? a.creating : a.create}
 			</button>
 			<div className={styles.note}>
-				We&apos;ll send a verification email. Your tree is visible only to you and
-				the people you invite.
+				{a.registerNote}
 			</div>
 		</form>
 	);

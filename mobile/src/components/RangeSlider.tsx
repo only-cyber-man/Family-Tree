@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { StyleSheet, View, type LayoutChangeEvent } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { useTheme } from "../theme/useTheme";
+import { useT } from "../i18n";
 
 const THUMB = 28;
 
@@ -24,6 +25,7 @@ export function RangeSlider({
 	accessibilityLabel?: string;
 }) {
 	const t = useTheme();
+	const T = useT();
 	const [width, setWidth] = useState(0);
 	// Gestures are created once; everything they read lives in this ref so a
 	// re-render mid-drag does not re-attach the detector.
@@ -69,7 +71,7 @@ export function RangeSlider({
 			accessible
 			accessibilityRole="adjustable"
 			accessibilityLabel={accessibilityLabel}
-			accessibilityValue={{ text: `${low} to ${high}` }}
+			accessibilityValue={{ text: T.common.range(low, String(high)) }}
 			accessibilityActions={[{ name: "increment" }, { name: "decrement" }]}
 			onAccessibilityAction={(e) => {
 				if (e.nativeEvent.actionName === "increment") onChange(low, Math.min(max, high + 5));

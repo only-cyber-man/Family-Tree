@@ -2,6 +2,7 @@ import { X } from "lucide-react-native";
 import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from "react-native";
 import { useTheme } from "../theme/useTheme";
 import { Text } from "./Text";
+import { useT } from "../i18n";
 
 /** 36 pt pill; selected = copper border on accent-soft; hidden = struck through. */
 export function Chip({
@@ -59,10 +60,11 @@ export function Chip({
 /** 30 pt removable chip floating on the canvas. */
 export function FilterChip({ label, onRemove }: { label: string; onRemove: () => void }) {
 	const t = useTheme();
+	const T = useT();
 	return (
 		<Pressable
 			accessibilityRole="button"
-			accessibilityLabel={`Remove filter ${label}`}
+			accessibilityLabel={T.common.removeFilter(label)}
 			onPress={onRemove}
 			style={[styles.filter, { backgroundColor: t.c.surface, borderColor: t.c.border }, t.shadow("md")]}
 		>

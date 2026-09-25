@@ -1,7 +1,11 @@
+"use client";
+
 import Link from "next/link";
 import { Brand } from "./Logo";
 import { LogoutButton } from "./LogoutButton";
+import { PreferenceControls } from "./PreferenceControls";
 import { initials } from "@/lib/people";
+import { useT } from "@/i18n/client";
 
 export const UserAvatar = ({ name, size = 34 }: { name: string; size?: number }) => (
 	<div
@@ -19,22 +23,26 @@ export const UserAvatar = ({ name, size = 34 }: { name: string; size?: number })
 	</div>
 );
 
-export const AppNav = ({ userName }: { userName: string }) => (
-	<nav className="app-nav" aria-label="Main">
-		<div style={{ display: "flex", alignItems: "center", gap: 32 }}>
-			<Brand href="/trees" />
-			<Link href="/trees" className="nav-link-active hide-sm" aria-current="page">
-				Trees
-			</Link>
-		</div>
-		<div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-			<span className="hide-sm" style={{ fontSize: 14, color: "var(--ink2)" }}>
-				{userName}
-			</span>
-			<Link href="/account" aria-label="Your account" title="Your account" style={{ display: "flex" }}>
-				<UserAvatar name={userName} />
-			</Link>
-			<LogoutButton />
-		</div>
-	</nav>
-);
+export const AppNav = ({ userName }: { userName: string }) => {
+	const t = useT();
+	return (
+		<nav className="app-nav" aria-label={t.common.mainNav}>
+			<div style={{ display: "flex", alignItems: "center", gap: 32, minWidth: 0 }}>
+				<Brand href="/trees" collapsible />
+				<Link href="/trees" className="nav-link-active hide-sm" aria-current="page">
+					{t.nav.trees}
+				</Link>
+			</div>
+			<div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+				<PreferenceControls />
+				<span className="hide-sm" style={{ fontSize: 14, color: "var(--ink2)" }}>
+					{userName}
+				</span>
+				<Link href="/account" aria-label={t.nav.account} title={t.nav.account} style={{ display: "flex" }}>
+					<UserAvatar name={userName} />
+				</Link>
+				<LogoutButton />
+			</div>
+		</nav>
+	);
+};

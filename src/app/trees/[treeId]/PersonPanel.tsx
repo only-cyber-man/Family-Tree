@@ -7,34 +7,23 @@ import { extendedFamily } from "@/lib/relatives";
 import {
 	GROUPS,
 	GROUP_ORDER,
-	groupOf,
-	humanize,
+	groupLabel,
 	relationshipsOf,
+	roleText,
 	sentence,
 } from "@/lib/relationshipStyle";
-import { CloseIcon, LockIcon, TrashIcon } from "@/components/Icons";
+import { AccountIcon, CloseIcon, LockIcon, TrashIcon } from "@/components/Icons";
 import { PersonAvatar } from "./PersonAvatar";
+import { useT } from "@/i18n/client";
 import s from "./treeView.module.css";
-
-const firstName = (name: string) => name.split(/\s+/)[0];
-
-/** How the other person relates, phrased from the selected person's side. */
-const roleText = (relationship: Relationship, selected: Node) => {
-	const phrase = humanize(relationship.relationshipName);
-	const prefix = /^IS_/.test(relationship.relationshipName?.name ?? "") ? "is " : "";
-	if (relationship.isBidirectional) {
-		return phrase;
-	}
-	return relationship.sourceNodeId === selected.id
-		? `${firstName(selected.name)} ${prefix}${phrase}`
-		: `${prefix}${phrase} ${firstName(selected.name)}`;
-};
 
 export const PersonPanel = ({
 	node,
 	nodes,
 	relationships,
 	isOwner,
+	linkText,
+	isYou,
 	onClose,
 	onSelectNode,
 	onEdit,
@@ -46,6 +35,9 @@ export const PersonPanel = ({
 	nodes: Node[];
 	relationships: Relationship[];
 	isOwner: boolean;
+	/** "This is you" / "Linked to …", or null when the person has no account. */
+	linkText: string | null;
+	isYou: boolean;
 	onClose: () => void;
 	onSelectNode: (id: string) => void;
 	onEdit: () => void;
@@ -53,6 +45,8 @@ export const PersonPanel = ({
 	onAddRelationship: () => void;
 	onRemoveRelationship: (id: string) => void;
 }) => {
+	const t = useT();
+	const p = t.panel;
 	const [showFamily, setShowFamily] = useState(false);
 	const byId = useMemo(() => new Map(nodes.map((n) => [n.id, n])), [nodes]);
 	const own = relationshipsOf(relationships, node.id);
@@ -60,32 +54,44 @@ export const PersonPanel = ({
 		group,
 		rows: own.filter((r) => (r.relationshipName?.group ?? "IRRELEVANT") === group),
 	})).filter((g) => g.rows.length > 0);
-	const family = showFamily ? extendedFamily({ nodes, relationships }, node.id) : [];
+	const family = showFamily ? extendedFamily({ nodes, relationships }, node.id, t) : [];
 
 	return (
-		<aside className={s.panel} aria-label={`${node.name} details`} data-side-panel>
+		<aside className={s.panel} aria-label={p.details(node.name)} data-side-panel>
 			<div className={s.panelHead}>
 				<PersonAvatar node={node} size={64} fontSize={20} />
 				<div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 4 }}>
 					<h2 className={s.panelName}>{node.name}</h2>
 					<div className={s.panelMeta}>
-						{node.gender === "male" ? "Male" : "Female"} · {ageText(node)}
+						{node.gender === "male" ? t.common.male : t.common.female} · {ageText(node, t)}
 					</div>
 					<div className={s.panelDates}>
-						<span>★ {formatDate(node.birthDate)}</span>
-						{node.deathDate ? <span>† {formatDate(node.deathDate)}</span> : null}
+						<span>★ {formatDate(node.birthDate, t)}</span>
+						{node.deathDate ? <span>† {formatDate(node.deathDate, t)}</span> : null}
 					</div>
+
 				</div>
-				<button className="icon-btn" aria-label="Close" onClick={onClose} style={{ width: 32, height: 32 }}>
+				<button className="icon-btn" aria-label={t.common.close} onClick={onClose} style={{ width: 32, height: 32 }}>
 					<CloseIcon size={16} />
 				</button>
 			</div>
 			<div className={s.panelBody}>
+				{linkText ? (
+					<span className={`${s.linkBadge} ${isYou ? s.linkBadgeYou : ""}`} title={linkText}>
+						<AccountIcon size={12} />
+						<span className={s.linkBadgeText}>{linkText}</span>
+					</span>
+				) : null}
+				{node.note ? (
+					<section className={s.note} aria-label={p.note}>
+						{node.note}
+					</section>
+				) : null}
 				{groups.map(({ group, rows }) => (
 					<div key={group} style={{ display: "flex", flexDirection: "column", gap: 6 }}>
 						<div className={s.groupTitle} style={{ color: GROUPS[group].color }}>
 							<span aria-hidden>{GROUPS[group].glyph}</span>
-							{GROUPS[group].label}
+							{groupLabel(t, group)}
 						</div>
 						{rows.map((r) => {
 							const otherId = r.sourceNodeId === node.id ? r.targetNodeId : r.sourceNodeId;
@@ -99,14 +105,14 @@ export const PersonPanel = ({
 										<PersonAvatar node={other} size={30} fontSize={11} />
 										<span style={{ minWidth: 0 }}>
 											<span className={s.relName}>{other.name}</span>
-											<span className={s.relRole}>{roleText(r, node)}</span>
+											<span className={s.relRole}>{roleText(t, r, node, other)}</span>
 										</span>
 									</button>
 									{isOwner ? (
 										<button
 											className={s.relRemove}
-											aria-label={`Remove relationship with ${other.name}`}
-											title="Remove relationship"
+											aria-label={p.removeWith(other.name)}
+											title={t.common.removeRelationship}
 											onClick={() => onRemoveRelationship(r.id)}
 										>
 											<CloseIcon size={14} />
@@ -117,16 +123,14 @@ export const PersonPanel = ({
 						})}
 					</div>
 				))}
-				{groups.length === 0 ? <div className={s.emptyRels}>No relationships yet.</div> : null}
+				{groups.length === 0 ? <div className={s.emptyRels}>{p.noRelationships}</div> : null}
 				{groups.length > 0 ? (
 					<button className={s.familyToggle} onClick={() => setShowFamily((v) => !v)}>
-						{showFamily ? "Hide extended family" : "Show extended family"}
+						{showFamily ? p.hideFamily : p.showFamily}
 					</button>
 				) : null}
 				{showFamily && family.length === 0 ? (
-					<div className={s.emptyRels}>
-						No parent or marriage links to work out the wider family from.
-					</div>
+					<div className={s.emptyRels}>{p.noFamily}</div>
 				) : null}
 				{family.map((group) => (
 					<div key={group.label} className={s.familyGroup}>
@@ -150,15 +154,15 @@ export const PersonPanel = ({
 				{isOwner ? (
 					<>
 						<button className="btn btn-outline btn-sm" style={{ flex: 1, height: 40 }} onClick={onEdit}>
-							Edit
+							{t.common.edit}
 						</button>
 						<button className="btn btn-primary btn-sm" style={{ flex: 1, height: 40 }} onClick={onAddRelationship}>
-							Add relationship
+							{t.common.addRelationship}
 						</button>
 						<button
 							className="btn btn-danger-outline"
 							style={{ width: 40, height: 40, padding: 0 }}
-							aria-label={`Remove ${node.name}`}
+							aria-label={p.removeNamed(node.name)}
 							onClick={onDelete}
 						>
 							<TrashIcon />
@@ -167,7 +171,7 @@ export const PersonPanel = ({
 				) : (
 					<div className={s.readOnly}>
 						<LockIcon />
-						Read-only. Only the tree&apos;s creator can edit.
+						{p.readOnly}
 					</div>
 				)}
 			</div>
@@ -188,30 +192,38 @@ export const EdgePanel = ({
 	onClose: () => void;
 	onRemove: () => void;
 }) => {
-	const group = groupOf(relationship.relationshipName);
+	const t = useT();
+	const groupKey = relationship.relationshipName?.group ?? "IRRELEVANT";
+	const group = GROUPS[groupKey] ?? GROUPS.IRRELEVANT;
 	const from = nodes.find((n) => n.id === relationship.sourceNodeId);
 	const to = nodes.find((n) => n.id === relationship.targetNodeId);
 	return (
-		<div className={s.edgePanel} role="dialog" aria-label="Relationship">
+		<div className={s.edgePanel} role="dialog" aria-label={t.panel.relationship}>
 			<div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
 				<div className={s.groupTitle} style={{ color: group.color }}>
 					<span aria-hidden>{group.glyph}</span>
-					{group.label}
+					{groupLabel(t, groupKey)}
 				</div>
-				<button className="icon-btn" aria-label="Close" onClick={onClose} style={{ width: 28, height: 28 }}>
+				<button className="icon-btn" aria-label={t.common.close} onClick={onClose} style={{ width: 28, height: 28 }}>
 					<CloseIcon size={14} />
 				</button>
 			</div>
 			<div className={s.edgeSentence}>
-				{sentence(from?.name ?? "Someone", relationship.relationshipName, to?.name ?? "someone")}
+				{sentence(
+					t,
+					from?.name ?? t.common.someone,
+					relationship.relationshipName,
+					to?.name ?? t.common.someoneLower,
+					from?.gender
+				)}
 			</div>
 			<div className={s.mono}>
 				{relationship.relationshipName?.name ?? "UNKNOWN"} ·{" "}
-				{relationship.isBidirectional ? "bidirectional" : "directional →"}
+				{relationship.isBidirectional ? t.panel.bidirectional : t.panel.directional}
 			</div>
 			{isOwner ? (
 				<button className="btn btn-danger-outline" style={{ height: 40, fontSize: 14 }} onClick={onRemove}>
-					Remove relationship
+					{t.common.removeRelationship}
 				</button>
 			) : null}
 		</div>

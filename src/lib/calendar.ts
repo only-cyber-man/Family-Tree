@@ -1,5 +1,6 @@
 import * as ics from "ics";
 import { Node } from "./interfaces";
+import type { Dict } from "@/i18n";
 
 const dateArray = (date: Date): ics.DateArray => [
 	date.getFullYear(),
@@ -9,35 +10,39 @@ const dateArray = (date: Date): ics.DateArray => [
 
 /**
  * One .ics with a yearly birthday for each living person and a yearly
- * remembrance day for each person who has passed.
+ * remembrance day for each person who has passed, in the UI language.
  */
-export const buildCalendar = (nodes: Node[], url: string) => {
+export const buildCalendar = (nodes: Node[], url: string, t: Dict) => {
 	const events: ics.EventAttributes[] = nodes.map((node) =>
 		node.deathDate
 			? {
 					start: dateArray(node.deathDate),
 					duration: { days: 1 },
 					recurrenceRule: "FREQ=YEARLY",
-					title: `† ${node.name}, remembrance`,
-					description: `Anniversary of ${node.name}'s passing (born ${node.birthDate.getFullYear()}).`,
+					title: t.calendar.remembranceTitle(node.name),
+					description: t.calendar.remembranceDescription(node.name, node.birthDate.getFullYear()),
 					url,
-					calName: "Family Tree",
+					calName: t.calendar.calName,
 					busyStatus: "FREE",
 			  }
 			: {
 					start: dateArray(node.birthDate),
 					duration: { days: 1 },
 					recurrenceRule: "FREQ=YEARLY",
-					title: `${node.name}'s birthday`,
-					description: `${node.name} was born in ${node.birthDate.getFullYear()}.`,
+					title: t.calendar.birthdayTitle(node.name),
+					description: t.calendar.birthdayDescription(
+						node.name,
+						node.birthDate.getFullYear(),
+						node.gender
+					),
 					url,
-					calName: "Family Tree",
+					calName: t.calendar.calName,
 					busyStatus: "FREE",
 			  }
 	);
 	const { error, value } = ics.createEvents(events);
 	if (error || !value) {
-		throw error ?? new Error("Could not build the calendar");
+		throw error ?? new Error(t.tree.calendarFailed);
 	}
 	return value;
 };

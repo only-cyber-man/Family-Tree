@@ -11,16 +11,18 @@ import { EmptyTreeIllustration } from "../src/components/Illustrations";
 import { RouteSheet } from "../src/components/Sheet";
 import { Text } from "../src/components/Text";
 import { TextField } from "../src/components/TextField";
-import { plural, relativeTime } from "../src/lib/format";
+import { relativeTime } from "../src/lib/format";
 import { haptics } from "../src/services/haptics";
 import { useSettings } from "../src/store/settings";
 import { toast } from "../src/store/toast";
 import { useTrees, type TreeSummary } from "../src/store/trees";
 import { useTheme } from "../src/theme/useTheme";
+import { useT } from "../src/i18n";
 
 /** Tree picker: owner / shared badge, create a new tree. Rename and delete stay on the web. */
 export default function Trees() {
 	const t = useTheme();
+	const T = useT();
 	const router = useRouter();
 	const params = useLocalSearchParams<{ create?: string }>();
 	const { items, status, refresh, create } = useTrees();
@@ -52,19 +54,19 @@ export default function Trees() {
 	};
 
 	const submit = async () => {
-		if (!name.trim()) return setSaveError("Give the tree a name first.");
-		if (!canWrite) return setSaveError("You're offline — changes can't be saved.");
+		if (!name.trim()) return setSaveError(T.trees.giveName);
+		if (!canWrite) return setSaveError(T.offline.write);
 		setBusy(true);
 		setSaveError(null);
 		try {
 			const tree = await create(name, treeRecordId.current);
 			haptics.success();
 			setActive(tree.id);
-			toast(`“${tree.name}” created`, "success");
+			toast(T.trees.created(tree.name), "success");
 			router.back();
 		} catch (e) {
 			haptics.error();
-			setSaveError(saveErrorMessage(e, "the tree"));
+			setSaveError(saveErrorMessage(e, T.save.theTree));
 		} finally {
 			setBusy(false);
 		}
@@ -72,27 +74,27 @@ export default function Trees() {
 
 	const newTree = creating ? (
 		<View style={{ gap: 10 }}>
-			<TextField inSheet label="Name of the new tree" value={name} onChangeText={setName} placeholder="My family tree" autoFocus returnKeyType="done" onSubmitEditing={submit} />
+			<TextField inSheet label={T.trees.nameLabel} value={name} onChangeText={setName} placeholder={T.trees.namePlaceholder} autoFocus returnKeyType="done" onSubmitEditing={submit} />
 			<OfflineWriteHint />
 			{saveError ? <SaveFailed message={saveError} onRetry={submit} busy={busy || !canWrite} /> : null}
 			<View style={{ flexDirection: "row", gap: 8 }}>
 				<Button
 					flex
 					kind="secondary"
-					label="Cancel"
+					label={T.common.cancel}
 					onPress={() => {
 						setCreating(false);
 						setSaveError(null);
 					}}
 				/>
-				<Button flex label="Create" loading={busy} disabled={!name.trim() || !canWrite} onPress={submit} />
+				<Button flex label={T.common.create} loading={busy} disabled={!name.trim() || !canWrite} onPress={submit} />
 			</View>
 		</View>
 	) : (
 		<Pressable onPress={startNewTree} accessibilityRole="button" style={[styles.newTree, { borderColor: t.c.borderStrong }]}>
 			<Plus size={18} color={t.c.ink2} strokeWidth={2} />
 			<Text size={15} weight={600} color={t.c.ink2}>
-				New tree
+				{T.trees.newTree}
 			</Text>
 		</Pressable>
 	);
@@ -103,7 +105,7 @@ export default function Trees() {
 			header={
 				<View style={styles.header}>
 					<Text variant="display" accessibilityRole="header">
-						Your trees
+						{T.trees.title}
 					</Text>
 				</View>
 			}
@@ -112,10 +114,10 @@ export default function Trees() {
 				<View style={{ alignItems: "center", gap: 14, paddingVertical: 12 }}>
 					<EmptyTreeIllustration width={180} />
 					<Text variant="title" center>
-						No trees yet
+						{T.home.noTrees}
 					</Text>
 					<Text variant="body" color={t.c.ink2} center>
-						Start with yourself and your parents. Invitations from relatives show up here on their own.
+						{T.home.noTreesBody}
 					</Text>
 				</View>
 			) : (
@@ -128,8 +130,9 @@ export default function Trees() {
 
 function TreeCard({ item, active, onPress }: { item: TreeSummary; active: boolean; onPress: () => void }) {
 	const t = useTheme();
+	const T = useT();
 	const viewers = item.tree.invited?.length ?? 0;
-	const share = item.isOwner ? (viewers ? plural(viewers, "viewer") : "Only you") : item.ownerEmail ? `by ${item.ownerEmail}` : "Shared with you";
+	const share = item.isOwner ? (viewers ? T.trees.viewers(viewers) : T.trees.onlyYou) : item.ownerEmail ? T.trees.by(item.ownerEmail) : T.common.sharedWithYou;
 	return (
 		<Pressable
 			onPress={onPress}
@@ -147,10 +150,10 @@ function TreeCard({ item, active, onPress }: { item: TreeSummary; active: boolea
 						{item.tree.name}
 					</Text>
 					<Text variant="caption">
-						{item.people == null ? "…" : plural(item.people, "person", "people")} · updated {relativeTime(item.tree.updated)}
+						{item.people == null ? "…" : T.trees.people(item.people)} · {T.trees.updated(relativeTime(item.tree.updated, new Date(), T))}
 					</Text>
 				</View>
-				<Badge label={item.isOwner ? "Owner" : "Shared with you"} tone={item.isOwner ? "accent" : "primary"} />
+				<Badge label={item.isOwner ? T.common.owner : T.common.sharedWithYou} tone={item.isOwner ? "accent" : "primary"} />
 			</View>
 			<View style={styles.cardBottom}>
 				<View style={{ flexDirection: "row", alignItems: "center", gap: 8, flexShrink: 1 }}>
@@ -161,7 +164,7 @@ function TreeCard({ item, active, onPress }: { item: TreeSummary; active: boolea
 				</View>
 				{active ? (
 					<Text size={13} weight={700} color={t.c.accent}>
-						Active ✓
+						{T.trees.active}
 					</Text>
 				) : null}
 			</View>

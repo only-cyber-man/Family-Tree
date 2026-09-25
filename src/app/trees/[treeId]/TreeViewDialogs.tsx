@@ -2,17 +2,21 @@
 
 import { FormEvent, useEffect, useId, useMemo, useRef, useState } from "react";
 import { Gender, getPocketbaseError, Node, Relationship, RelationshipName } from "@/lib";
+import { normalizeText } from "@/lib/filters";
 import { pictureUrl, sortByName, toDateInput, yearsText } from "@/lib/people";
-import { GROUPS, GROUP_ORDER, sentence } from "@/lib/relationshipStyle";
+import { GROUPS, GROUP_ORDER, groupLabel, sentence, typeLabel } from "@/lib/relationshipStyle";
 import { Dialog } from "@/components/Dialog";
 import { AlertIcon, CalendarIcon, CameraIcon, DownloadIcon, SearchIcon } from "@/components/Icons";
 import { PersonAvatar } from "./PersonAvatar";
-import { typeLabel } from "./FiltersDrawer";
+import { useT } from "@/i18n/client";
 import s from "./treeView.module.css";
 
+/** Name or note contains the query, ignoring case and diacritics. */
 const matches = (nodes: Node[], query: string) => {
-	const q = query.trim().toLowerCase();
-	return [...nodes].filter((n) => n.name.toLowerCase().includes(q)).sort(sortByName);
+	const q = normalizeText(query.trim());
+	return [...nodes]
+		.filter((n) => normalizeText(n.name).includes(q) || normalizeText(n.note).includes(q))
+		.sort(sortByName);
 };
 
 export const FindDialog = ({
@@ -24,18 +28,20 @@ export const FindDialog = ({
 	onPick: (node: Node) => void;
 	onClose: () => void;
 }) => {
+	const t = useT();
+	const dl = t.dialogs;
 	const [query, setQuery] = useState("");
 	const [active, setActive] = useState(0);
 	const results = useMemo(() => matches(nodes, query), [nodes, query]);
 
 	return (
-		<Dialog title="Find person" onClose={onClose} width={460} placement="top" bare className="dialog-flush">
+		<Dialog title={dl.findTitle} onClose={onClose} width={460} placement="top" bare className="dialog-flush">
 			<div className={s.findInput}>
 				<SearchIcon />
 				<input
 					autoFocus
-					placeholder="Type a name…"
-					aria-label="Search people"
+					placeholder={dl.findPlaceholder}
+					aria-label={dl.searchPeople}
 					value={query}
 					onChange={(e) => {
 						setQuery(e.target.value);
@@ -71,32 +77,68 @@ export const FindDialog = ({
 						</span>
 					</button>
 				))}
-				{results.length === 0 ? <div className={s.noResults}>No one by that name.</div> : null}
+				{results.length === 0 ? <div className={s.noResults}>{dl.noResults}</div> : null}
 			</div>
 		</Dialog>
 	);
 };
 
 const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
+const MAX_NOTE = 2000;
+
+export interface AccountOption {
+	id: string;
+	/** Shown in the select: "Me (tomek)", or the email. */
+	label: string;
+	/** Used in messages: the username or email. */
+	name: string;
+}
 
 export const PersonDialog = ({
 	node,
+	nodes,
 	treeId,
+	accounts,
 	onSave,
 	onClose,
 }: {
 	node: Node | null;
+	/** Everyone in the tree, to keep one account linked to one person. */
+	nodes: Node[];
 	treeId: string;
+	/** Accounts that can be linked: the signed-in user first, then the others with access. */
+	accounts: AccountOption[];
 	onSave: (data: FormData) => Promise<void>;
 	onClose: () => void;
 }) => {
+	const t = useT();
+	const dl = t.dialogs;
 	const [name, setName] = useState(node?.name ?? "");
 	const [gender, setGender] = useState<Gender>(node?.gender ?? "female");
 	const [birth, setBirth] = useState(toDateInput(node?.birthDate ?? null));
 	const [death, setDeath] = useState(toDateInput(node?.deathDate ?? null));
+	const [note, setNote] = useState(node?.note ?? "");
+	const [linkedUser, setLinkedUser] = useState(node?.userId ?? "");
 	const [photo, setPhoto] = useState<File | null>(null);
 	const [removePhoto, setRemovePhoto] = useState(false);
-	const [errors, setErrors] = useState<{ name?: string; birth?: string; death?: string; photo?: string }>({});
+	const [errors, setErrors] = useState<{
+		name?: string;
+		birth?: string;
+		death?: string;
+		photo?: string;
+		note?: string;
+	}>({});
+	const noteId = useId();
+	const linkedId = useId();
+	const linkedElsewhere = linkedUser
+		? nodes.find((n) => n.userId === linkedUser && n.id !== node?.id) ?? null
+		: null;
+	const linkConflict = linkedElsewhere
+		? dl.linkedConflict(
+				accounts.find((a) => a.id === linkedUser)?.name ?? linkedUser,
+				linkedElsewhere.name
+		  )
+		: null;
 	const [serverError, setServerError] = useState<string | null>(null);
 	const [busy, setBusy] = useState(false);
 	const fileInput = useRef<HTMLInputElement>(null);
@@ -114,21 +156,27 @@ export const PersonDialog = ({
 		e.preventDefault();
 		const found: typeof errors = {};
 		if (!name.trim()) {
-			found.name = "Enter a name.";
+			found.name = dl.nameRequired;
 		}
 		if (!birth) {
-			found.birth = "Enter a birth date.";
+			found.birth = dl.birthRequired;
 		}
 		if (birth && death && death < birth) {
-			found.death = "Death date is before the birth date.";
+			found.death = dl.deathBeforeBirth;
+		}
+		if (note.length > MAX_NOTE) {
+			found.note = dl.noteTooLong(MAX_NOTE);
 		}
 		setErrors(found);
-		if (Object.keys(found).length > 0) {
+		if (Object.keys(found).length > 0 || linkConflict) {
 			return;
 		}
 		const data = new FormData();
 		data.append("name", name.trim());
 		data.append("gender", gender);
+		data.append("note", note.trim());
+		// An empty value clears the link.
+		data.append("user", linkedUser);
 		data.append("birthDate", birth);
 		if (death || node) {
 			// An empty value clears a previously set death date.
@@ -154,8 +202,8 @@ export const PersonDialog = ({
 
 	return (
 		<Dialog
-			title={node ? "Edit person" : "Add person"}
-			subtitle="Name and birth date are required. Everything else can wait."
+			title={node ? dl.editPerson : dl.addPerson}
+			subtitle={dl.personSubtitle}
 			onClose={onClose}
 			width={520}
 		>
@@ -177,7 +225,7 @@ export const PersonDialog = ({
 					<div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
 						<div style={{ display: "flex", gap: 8 }}>
 							<button type="button" className="btn btn-outline btn-sm" style={{ fontSize: 13 }} onClick={() => fileInput.current?.click()}>
-								{shownPhoto ? "Change photo" : "Upload photo"}
+								{shownPhoto ? dl.changePhoto : dl.uploadPhoto}
 							</button>
 							{shownPhoto ? (
 								<button
@@ -192,7 +240,7 @@ export const PersonDialog = ({
 										}
 									}}
 								>
-									Remove
+									{t.common.remove}
 								</button>
 							) : null}
 						</div>
@@ -202,7 +250,7 @@ export const PersonDialog = ({
 								{errors.photo}
 							</span>
 						) : (
-							<span className="field-hint">JPG or PNG, up to 5 MB. Square works best.</span>
+							<span className="field-hint">{dl.photoHint}</span>
 						)}
 						<input
 							ref={fileInput}
@@ -212,7 +260,7 @@ export const PersonDialog = ({
 							onChange={(e) => {
 								const file = e.target.files?.[0] ?? null;
 								if (file && file.size > MAX_PHOTO_BYTES) {
-									setErrors((x) => ({ ...x, photo: "That photo is larger than 5 MB." }));
+									setErrors((x) => ({ ...x, photo: dl.photoTooLarge }));
 									e.target.value = "";
 									return;
 								}
@@ -224,10 +272,10 @@ export const PersonDialog = ({
 					</div>
 				</div>
 				<label className="field">
-					<span className="field-label">Full name</span>
+					<span className="field-label">{dl.fullName}</span>
 					<input
 						className={`input input-sunken ${errors.name ? "is-invalid" : ""}`}
-						placeholder="e.g. Maria Kowalska"
+						placeholder={dl.namePlaceholder}
 						value={name}
 						onChange={(e) => {
 						setName(e.target.value);
@@ -243,8 +291,8 @@ export const PersonDialog = ({
 					) : null}
 				</label>
 				<div className="field">
-					<span className="field-label">Gender</span>
-					<div style={{ display: "flex", gap: 8 }} role="radiogroup" aria-label="Gender">
+					<span className="field-label">{t.filters.gender}</span>
+					<div style={{ display: "flex", gap: 8 }} role="radiogroup" aria-label={t.filters.gender}>
 						{(["female", "male"] as const).map((value) => (
 							<button
 								key={value}
@@ -261,14 +309,14 @@ export const PersonDialog = ({
 										border: `2px solid var(--${value}-border)`,
 									}}
 								/>
-								{value === "female" ? "Female" : "Male"}
+								{value === "female" ? t.common.female : t.common.male}
 							</button>
 						))}
 					</div>
 				</div>
 				<div className={s.twoCol}>
 					<label className="field">
-						<span className="field-label">Birth date</span>
+						<span className="field-label">{dl.birthDate}</span>
 						<input
 							type="date"
 							className={`input input-sunken ${errors.birth ? "is-invalid" : ""}`}
@@ -289,7 +337,7 @@ export const PersonDialog = ({
 					<label className="field">
 						<span className="field-label">
 							<span>
-								Death date <span className="field-optional">optional</span>
+								{dl.deathDate} <span className="field-optional">{t.common.optional}</span>
 							</span>
 						</span>
 						<input
@@ -310,13 +358,77 @@ export const PersonDialog = ({
 						) : null}
 					</label>
 				</div>
+				<div className="field">
+					<label className="field-label" htmlFor={noteId}>
+						<span>
+							{dl.note} <span className="field-optional">{t.common.optional}</span>
+						</span>
+						<span
+							className="field-optional"
+							aria-live="polite"
+							style={note.length > MAX_NOTE ? { color: "var(--danger)" } : undefined}
+						>
+							{dl.noteCount(note.length, MAX_NOTE)}
+						</span>
+					</label>
+					<textarea
+						id={noteId}
+						className={`input input-sunken ${s.noteInput} ${errors.note ? "is-invalid" : ""}`}
+						rows={3}
+						maxLength={MAX_NOTE}
+						placeholder={dl.noteHint}
+						value={note}
+						onChange={(e) => {
+							setNote(e.target.value);
+							setErrors((x) => ({ ...x, note: undefined }));
+						}}
+					/>
+					{errors.note ? (
+						<span className="field-error">
+							<AlertIcon size={14} />
+							{errors.note}
+						</span>
+					) : null}
+				</div>
+				<div className="field">
+					<label className="field-label" htmlFor={linkedId}>
+						<span>
+							{dl.linkedAccount} <span className="field-optional">{t.common.optional}</span>
+						</span>
+					</label>
+					<select
+						id={linkedId}
+						className={`input input-sunken ${linkConflict ? "is-invalid" : ""}`}
+						value={linkedUser}
+						aria-invalid={!!linkConflict}
+						aria-describedby={`${linkedId}-hint`}
+						onChange={(e) => setLinkedUser(e.target.value)}
+					>
+						<option value="">{dl.linkedNone}</option>
+						{accounts.map((account) => (
+							<option key={account.id} value={account.id}>
+								{account.label}
+							</option>
+						))}
+					</select>
+					{linkConflict ? (
+						<span className="field-error" id={`${linkedId}-hint`} role="alert">
+							<AlertIcon size={14} />
+							{linkConflict}
+						</span>
+					) : (
+						<span className="field-hint" id={`${linkedId}-hint`}>
+							{dl.linkedHint}
+						</span>
+					)}
+				</div>
 				<div className="dialog-actions" style={{ paddingTop: 4 }}>
 					<button type="button" className="btn btn-outline" onClick={onClose}>
-						Cancel
+						{t.common.cancel}
 					</button>
-					<button type="submit" className="btn btn-primary" disabled={busy}>
+					<button type="submit" className="btn btn-primary" disabled={busy || !!linkConflict}>
 						{busy ? <span className="spinner" /> : null}
-						{node ? "Save changes" : "Add to tree"}
+						{node ? dl.saveChanges : dl.addToTree}
 					</button>
 				</div>
 			</form>
@@ -337,6 +449,7 @@ const PersonPicker = ({
 	onChange: (node: Node | null) => void;
 	exclude?: string;
 }) => {
+	const t = useT();
 	const [query, setQuery] = useState(value?.name ?? "");
 	const [open, setOpen] = useState(false);
 	const [active, setActive] = useState(0);
@@ -377,7 +490,7 @@ const PersonPicker = ({
 			<span className="field-label">{label}</span>
 			<input
 				className="input input-sunken"
-				placeholder="Search…"
+				placeholder={t.dialogs.search}
 				value={query}
 				role="combobox"
 				aria-expanded={open}
@@ -445,6 +558,8 @@ export const RelationshipDialog = ({
 	onSave: (from: Node, to: Node, type: RelationshipName) => Promise<void>;
 	onClose: () => void;
 }) => {
+	const t = useT();
+	const dl = t.dialogs;
 	const [from, setFrom] = useState<Node | null>(initialFrom);
 	const [to, setTo] = useState<Node | null>(null);
 	const [type, setType] = useState<RelationshipName | null>(null);
@@ -478,14 +593,20 @@ export const RelationshipDialog = ({
 
 	return (
 		<Dialog
-			title="Add relationship"
+			title={t.common.addRelationship}
 			subtitle={
 				<>
-					Read it as a sentence:{" "}
+					{dl.readAsSentence}{" "}
 					<em style={{ fontFamily: "var(--font-heading)" }}>
 						{type
-							? `${sentence(from?.name ?? "Someone", type, to?.name ?? "someone")}.`
-							: `${from?.name ?? "Someone"} … ${to?.name ?? "someone"}.`}
+							? `${sentence(
+									t,
+									from?.name ?? t.common.someone,
+									type,
+									to?.name ?? t.common.someoneLower,
+									from?.gender
+							  )}.`
+							: `${from?.name ?? t.common.someone} … ${to?.name ?? t.common.someoneLower}.`}
 					</em>
 				</>
 			}
@@ -496,15 +617,15 @@ export const RelationshipDialog = ({
 				{error || duplicate ? (
 					<div className="alert" role="alert">
 						<AlertIcon />
-						<span>{error ?? "That relationship is already in the tree."}</span>
+						<span>{error ?? dl.duplicate}</span>
 					</div>
 				) : null}
 				<div className={s.twoCol}>
-					<PersonPicker label="From person" nodes={nodes} value={from} onChange={setFrom} exclude={to?.id} />
-					<PersonPicker label="To person" nodes={nodes} value={to} onChange={setTo} exclude={from?.id} />
+					<PersonPicker label={dl.fromPerson} nodes={nodes} value={from} onChange={setFrom} exclude={to?.id} />
+					<PersonPicker label={dl.toPerson} nodes={nodes} value={to} onChange={setTo} exclude={from?.id} />
 				</div>
 				<div className="field" style={{ gap: 8 }}>
-					<span className="field-label">Relation type</span>
+					<span className="field-label">{dl.relationType}</span>
 					<div className={s.typeGroups}>
 						{GROUP_ORDER.map((group) => {
 							const types = relationshipNames.filter((n) => n.group === group);
@@ -514,19 +635,19 @@ export const RelationshipDialog = ({
 							return (
 								<div key={group} className={s.typeGroup}>
 									<span className={s.typeGroupLabel} style={{ color: GROUPS[group].color }}>
-										{GROUPS[group].glyph} {GROUPS[group].label}
+										{GROUPS[group].glyph} {groupLabel(t, group)}
 									</span>
-									{types.map((t) => (
+									{types.map((option) => (
 										<button
-											key={t.id}
+											key={option.id}
 											type="button"
-											aria-pressed={type?.id === t.id}
-											className={`${s.typePick} ${type?.id === t.id ? s.typePickOn : ""}`}
-											onClick={() => setType(t)}
+											aria-pressed={type?.id === option.id}
+											className={`${s.typePick} ${type?.id === option.id ? s.typePickOn : ""}`}
+											onClick={() => setType(option)}
 										>
-											{typeLabel(t)}
-											<span className={s.typeDir} aria-label={t.isBidirectional ? "both ways" : "one way"}>
-												{t.isBidirectional ? "↔" : "→"}
+											{typeLabel(t, option)}
+											<span className={s.typeDir} aria-label={option.isBidirectional ? dl.bothWays : dl.oneWay}>
+												{option.isBidirectional ? "↔" : "→"}
 											</span>
 										</button>
 									))}
@@ -537,11 +658,11 @@ export const RelationshipDialog = ({
 				</div>
 				<div className="dialog-actions">
 					<button type="button" className="btn btn-outline" onClick={onClose}>
-						Cancel
+						{t.common.cancel}
 					</button>
 					<button type="submit" className="btn btn-primary" disabled={invalid || busy}>
 						{busy ? <span className="spinner" /> : null}
-						Add relationship
+						{t.common.addRelationship}
 					</button>
 				</div>
 			</form>
@@ -558,40 +679,40 @@ export const ExportDialog = ({
 	onExport: () => void;
 	onClose: () => void;
 }) => {
+	const t = useT();
+	const dl = t.dialogs;
 	const living = nodes.filter((n) => !n.deathDate).length;
 	const dead = nodes.length - living;
 	return (
-		<Dialog onClose={onClose} bare title="Export to calendar" width={460}>
+		<Dialog onClose={onClose} bare title={dl.exportTitle} width={460}>
 			<div className="dialog-icon is-primary">
 				<CalendarIcon size={22} />
 			</div>
 			<div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
 				<h2 className="dialog-title" style={{ fontSize: 22 }}>
-					Export {nodes.length} {nodes.length === 1 ? "person" : "people"} to your calendar
+					{dl.exportHeading(nodes.length)}
 				</h2>
 				<p className="dialog-sub" style={{ fontSize: 15 }}>
-					A single .ics file with a yearly birthday for each living person and a
-					yearly remembrance day for each person who has passed. Hidden people are
-					not included.
+					{dl.exportBody}
 				</p>
 			</div>
 			<div className={s.stats}>
 				<div>
-					<span>Birthdays</span>
+					<span>{dl.birthdays}</span>
 					<strong>{living}</strong>
 				</div>
 				<div>
-					<span>Remembrance anniversaries</span>
+					<span>{dl.remembrances}</span>
 					<strong>{dead}</strong>
 				</div>
 			</div>
 			<div className="dialog-actions">
 				<button className="btn btn-outline" onClick={onClose}>
-					Cancel
+					{t.common.cancel}
 				</button>
 				<button className="btn btn-primary" disabled={nodes.length === 0} onClick={onExport}>
 					<DownloadIcon />
-					Download .ics
+					{dl.download}
 				</button>
 			</div>
 		</Dialog>

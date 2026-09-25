@@ -44,6 +44,8 @@ interface TreeState {
 	clear: () => void;
 	addNode: (treeId: string, input: api.NodeInput, ids: CreateIds, link?: { relationshipName: string; target: string }) => Promise<AddNodeResult>;
 	editNode: (id: string, input: api.NodeInput) => Promise<NodeRecord>;
+	/** Links (or with "" unlinks) a person to an account. */
+	setNodeUser: (treeId: string, nodeId: string, userId: string) => Promise<NodeRecord>;
 	/** Deletes a person of `treeId`, then (best effort) their relationships. */
 	removeNode: (id: string, treeId: string) => Promise<void>;
 	addRelationship: (input: api.RelationshipInput & { id: string; tree: string }) => Promise<RelationshipRecord>;
@@ -162,6 +164,14 @@ export const useTree = create<TreeState>()((set, get) => {
 			const node = await api.updateNode(id, input);
 			writeSeq++;
 			if (valid()) upsertNode(node.tree, node);
+			return node;
+		},
+
+		setNodeUser: async (treeId, nodeId, userId) => {
+			const valid = epochGuard();
+			const node = await api.setNodeUser(nodeId, userId);
+			writeSeq++;
+			if (valid()) upsertNode(treeId, node);
 			return node;
 		},
 

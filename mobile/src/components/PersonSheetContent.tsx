@@ -3,7 +3,7 @@ import { CalendarDays, Focus, Lock, Trash } from "lucide-react-native";
 import { Alert, Pressable, StyleSheet, View } from "react-native";
 import { useEnableReminders } from "../hooks/useReminders";
 import { useCanWrite, useGraph, useIsOwner, useMe, usePictures, useToday } from "../hooks/useTreeData";
-import { ageInfo, formatShort } from "../lib/dates";
+import { ageInfo, formatDayMonth, formatShort } from "../lib/dates";
 import { errorMessage } from "../lib/errors";
 import { inDays } from "../lib/format";
 import { groupGlyph, groupLabel, sheetGroups, type SheetRow } from "../lib/relations";
@@ -20,6 +20,10 @@ import { Button, IconButton } from "./Button";
 import { PersonRow } from "./People";
 import { Text } from "./Text";
 import { X } from "lucide-react-native";
+import { useT } from "../i18n";
+import { useAccountEmail } from "../hooks/useAccounts";
+import { useSession } from "../store/session";
+import { Badge } from "./Chip";
 
 /**
  * Person details: header, Focus / How are we related, next date, direct
@@ -32,7 +36,8 @@ export function PersonSheetContent({
 	onSelect,
 	onFocus,
 	collapsed,
-	focusLabel = "Focus",
+	focusLabel,
+	onRelate,
 }: {
 	personId: string;
 	onClose: () => void;
@@ -40,8 +45,11 @@ export function PersonSheetContent({
 	onFocus: (id: string) => void;
 	collapsed?: boolean;
 	focusLabel?: string;
+	/** Tablets: show "How are we related" in the side panel instead of a new screen. */
+	onRelate?: (id: string) => void;
 }) {
 	const t = useTheme();
+	const T = useT();
 	const router = useRouter();
 	const graph = useGraph();
 	const pictures = usePictures();
@@ -55,43 +63,41 @@ export function PersonSheetContent({
 	const remindersOn = useSettings((s) => s.reminders.enabled);
 	const enableReminders = useEnableReminders();
 	const ownerEmail = useTrees((s) => s.items.find((i) => i.tree.id === full?.tree.id)?.ownerEmail);
+	const myUserId = useSession((s) => s.user?.id);
+	const linkedEmail = useAccountEmail(graph?.byId[personId]?.userId);
 
 	const person = graph?.byId[personId];
 	if (!graph || !person || !full) {
 		return (
 			<View style={{ padding: 20, gap: 12 }}>
-				<Text variant="bodyLg">This person is no longer in the tree.</Text>
-				<Button kind="secondary" label="Close" onPress={onClose} />
+				<Text variant="bodyLg">{T.person.gone}</Text>
+				<Button kind="secondary" label={T.common.close} onPress={onClose} />
 			</View>
 		);
 	}
 
 	const info = ageInfo(person.birth, person.death, today);
-	const genderWord = person.gender === "male" ? "Male" : "Female";
-	const ageLine = info
-		? info.deceased
-			? `${genderWord} · ${info.age} at death${info.wouldBe ? ` · would be ${info.wouldBe}` : ""}`
-			: `${genderWord} · ${info.age} ${info.age === 1 ? "year" : "years"} old`
-		: genderWord;
-	const dates = [person.birth ? `★ ${formatShort(person.birth)}` : null, person.death ? `† ${formatShort(person.death)}` : null].filter(Boolean).join("   ");
+	const genderWord = person.gender === "male" ? T.common.male : T.common.female;
+	const ageLine = info ? (info.deceased ? T.person.ageDeceased(genderWord, info.age, info.wouldBe) : T.person.ageAlive(genderWord, info.age)) : genderWord;
+	const dates = [person.birth ? `★ ${formatShort(person.birth, T)}` : null, person.death ? `† ${formatShort(person.death, T)}` : null].filter(Boolean).join("   ");
 	const next = upcomingEvents([person], today, 60)[0];
-	const groups = sheetGroups(graph, personId);
+	const groups = sheetGroups(graph, personId, graph.edges, T);
 
 	const confirmRemovePerson = () => {
-		Alert.alert(`Remove ${person.name}?`, "Their relationships are removed too. This cannot be undone.", [
-			{ text: "Cancel", style: "cancel" },
+		Alert.alert(T.tree.removeTitle(person.name), T.tree.removeBody, [
+			{ text: T.common.cancel, style: "cancel" },
 			{
-				text: "Remove",
+				text: T.common.remove,
 				style: "destructive",
 				onPress: async () => {
 					try {
 						await removeNode(person.id, full.tree.id);
 						haptics.success();
-						toast(`${person.name} removed from the tree`, "success");
+						toast(T.person.removedFromTree(person.name), "success");
 						onClose();
 					} catch (e) {
 						haptics.error();
-						toast(`Couldn't remove ${person.name}. ${errorMessage(e)}`, "error");
+						toast(T.person.couldntRemove(person.name, errorMessage(e, T)), "error");
 					}
 				},
 			},
@@ -102,20 +108,20 @@ export function PersonSheetContent({
 		if (!owner || !canWrite) return;
 		haptics.longPress();
 		Alert.alert(`${row.person.name}`, `${row.role}`, [
-			{ text: "Open", onPress: () => onSelect(row.person.id) },
+			{ text: T.person.open, onPress: () => onSelect(row.person.id) },
 			{
-				text: "Remove relationship",
+				text: T.person.removeRelationship,
 				style: "destructive",
 				onPress: async () => {
 					try {
 						await removeRelationship(row.edge.id, full.tree.id);
-						toast("Relationship removed", "success");
+						toast(T.person.relationshipRemoved, "success");
 					} catch (e) {
 						toast(errorMessage(e), "error");
 					}
 				},
 			},
-			{ text: "Cancel", style: "cancel" },
+			{ text: T.common.cancel, style: "cancel" },
 		]);
 	};
 
@@ -130,41 +136,57 @@ export function PersonSheetContent({
 					</Text>
 					<Text size={14} color={t.c.ink2}>
 						{ageLine}
-						{isMe ? " · you" : ""}
+						{isMe ? ` · ${T.person.you}` : ""}
 					</Text>
 					{dates ? (
 						<Text size={14} color={t.c.ink2}>
 							{dates}
 						</Text>
 					) : null}
+					{person.userId ? (
+						<View style={{ paddingTop: 4 }}>
+							<Badge
+								tone={person.userId === myUserId ? "accent" : "primary"}
+								label={person.userId === myUserId ? T.person.thisIsYou : linkedEmail ? T.person.linkedTo(linkedEmail) : T.person.linkedToAccount}
+							/>
+						</View>
+					) : null}
 				</View>
-				<IconButton label="Close" variant="soft" size={36} onPress={onClose} icon={<X size={14} color={t.c.ink3} strokeWidth={2.5} />} />
+				<IconButton label={T.common.close} variant="soft" size={36} onPress={onClose} icon={<X size={14} color={t.c.ink3} strokeWidth={2.5} />} />
 			</View>
 
 			<View style={styles.actions}>
-				<Button flex size="sm" label={focusLabel} icon={<Focus size={16} color={t.c.onPrimary} strokeWidth={2} />} onPress={() => onFocus(person.id)} />
+				<Button flex size="sm" label={focusLabel ?? T.person.focus} icon={<Focus size={16} color={t.c.onPrimary} strokeWidth={2} />} onPress={() => onFocus(person.id)} />
 				{!isMe ? (
 					<Button
 						flex
 						size="sm"
 						kind="ghost"
-						label="How are we related?"
-						onPress={() => router.push({ pathname: "/person/[id]/path", params: { id: person.id } })}
+						label={T.person.howRelated}
+						onPress={() => (onRelate ? onRelate(person.id) : router.push({ pathname: "/person/[id]/path", params: { id: person.id } }))}
 					/>
 				) : null}
 			</View>
+
+			{person.note ? (
+				<View style={{ gap: 4 }}>
+					<Text variant="overline">{T.person.note}</Text>
+					<Text size={15} style={{ lineHeight: 22 }} selectable>
+						{person.note}
+					</Text>
+				</View>
+			) : null}
 
 			{next ? (
 				<View style={[styles.notice, { backgroundColor: t.c.accentSoft }]}>
 					<CalendarDays size={18} color={t.c.accent} strokeWidth={1.75} />
 					<Text size={13} style={{ flex: 1 }}>
-						{next.kind === "birthday" ? `Turns ${next.years}` : "Remembrance day"} {inDays(next.daysUntil)} · {next.date.day}{" "}
-						{["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][next.date.month - 1]}
+						{next.kind === "birthday" ? T.person.turns(next.years) : T.person.remembranceDay} {inDays(next.daysUntil, T)} · {formatDayMonth(next.date, T)}
 					</Text>
 					{!remindersOn ? (
 						<Pressable onPress={() => enableReminders()} hitSlop={10} accessibilityRole="button">
 							<Text size={13} weight={700} color={t.c.accent}>
-								Remind me
+								{T.person.remindMe}
 							</Text>
 						</Pressable>
 					) : null}
@@ -172,12 +194,12 @@ export function PersonSheetContent({
 			) : null}
 
 			{groups.length === 0 ? (
-				<Text variant="caption">{owner ? "No relationships yet. Add one to connect them to the tree." : "No relationships yet."}</Text>
+				<Text variant="caption">{owner ? T.person.noRelationshipsOwner : T.person.noRelationships}</Text>
 			) : (
 				(collapsed ? groups.slice(0, 1) : groups).map((g) => (
 					<View key={g.group} style={{ gap: 2 }}>
 						<Text size={12} weight={700} color={groupColor(t, g.group)} style={styles.groupLabel}>
-							{groupGlyph(g.group)} {groupLabel(g.group)}
+							{groupGlyph(g.group)} {groupLabel(g.group, T)}
 						</Text>
 						{(collapsed ? g.rows.slice(0, 1) : g.rows).map((row) => (
 							<View key={row.edge.id} style={{ marginHorizontal: -14, borderBottomWidth: collapsed ? 0 : 1, borderBottomColor: t.c.border }}>
@@ -200,22 +222,22 @@ export function PersonSheetContent({
 
 			{collapsed ? (
 				<Text variant="small" center>
-					Drag up for all relationships
+					{T.person.dragUp}
 				</Text>
 			) : owner ? (
 				<View style={{ gap: 10 }}>
 				<OfflineWriteHint />
 				<View style={styles.actions}>
-					<Button flex kind="ghost" size="md" label="Edit" disabled={!canWrite} onPress={() => router.push({ pathname: "/add-person", params: { id: person.id } })} />
-					<Button flex kind="ghost" size="md" label="Add relationship" disabled={!canWrite} onPress={() => router.push({ pathname: "/add-relationship", params: { from: person.id } })} />
-					<IconButton label={`Remove ${person.name}`} variant="plain" size={48} onPress={canWrite ? confirmRemovePerson : undefined} icon={<Trash size={18} color={t.c.danger} strokeWidth={1.75} />} style={{ borderWidth: 1, borderColor: t.c.border, borderRadius: 12, opacity: canWrite ? 1 : 0.45 }} />
+					<Button flex kind="ghost" size="md" label={T.common.edit} disabled={!canWrite} onPress={() => router.push({ pathname: "/add-person", params: { id: person.id } })} />
+					<Button flex kind="ghost" size="md" label={T.tree.addRelationship} disabled={!canWrite} onPress={() => router.push({ pathname: "/add-relationship", params: { from: person.id } })} />
+					<IconButton label={T.person.removeA11y(person.name)} variant="plain" size={48} onPress={canWrite ? confirmRemovePerson : undefined} icon={<Trash size={18} color={t.c.danger} strokeWidth={1.75} />} style={{ borderWidth: 1, borderColor: t.c.border, borderRadius: 12, opacity: canWrite ? 1 : 0.45 }} />
 				</View>
 				</View>
 			) : (
 				<View style={[styles.notice, { backgroundColor: t.c.surface2 }]}>
 					<Lock size={18} color={t.c.ink2} strokeWidth={1.75} />
 					<Text size={13} color={t.c.ink2} style={{ flex: 1 }}>
-						Shared with you{ownerEmail ? ` by ${ownerEmail}` : ""}. Only the owner can edit.
+						{T.person.sharedBy(ownerEmail)}
 					</Text>
 				</View>
 			)}

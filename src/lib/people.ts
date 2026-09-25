@@ -1,5 +1,6 @@
 import { formatDay, Node } from "./interfaces";
 import { pb } from "./data";
+import type { Dict } from "@/i18n";
 
 export const initials = (name: string) =>
 	name
@@ -10,8 +11,8 @@ export const initials = (name: string) =>
 		.join("")
 		.toUpperCase();
 
-export const formatDate = (date: Date) =>
-	date.toLocaleDateString("en-GB", {
+export const formatDate = (date: Date, t: Dict) =>
+	date.toLocaleDateString(t.dateLocale, {
 		day: "numeric",
 		month: "short",
 		year: "numeric",
@@ -32,8 +33,9 @@ export const yearsText = (node: Node) => {
 	return `${born} · ${node.age}`;
 };
 
-export const ageText = (node: Node) =>
-	node.deathDate ? `${node.age} at death` : `${node.age} years old`;
+/** "78 years old" / "77 at death"; Polish: "78 lat" / "zmarł w wieku 77 lat". */
+export const ageText = (node: Node, t: Dict) =>
+	t.person.age(node.age, node.gender, node.deathDate !== null);
 
 export const genderColorVar = (node: Pick<Node, "gender">) =>
 	node.gender === "male" ? "var(--male-border)" : "var(--female-border)";

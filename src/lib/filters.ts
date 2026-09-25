@@ -11,6 +11,8 @@ export interface TreeFilters {
 	gender: Gender | "both";
 	/** Comma-separated fragments; a person matching any of them is hidden. */
 	nameFilter: string;
+	/** Comma-separated fragments; when set, only people matching one of them stay. */
+	includeFilter: string;
 }
 
 export const EMPTY_FILTERS: TreeFilters = {
@@ -19,12 +21,25 @@ export const EMPTY_FILTERS: TreeFilters = {
 	maxAge: AGE_MAX,
 	gender: "both",
 	nameFilter: "",
+	includeFilter: "",
 };
+
+/**
+ * Lower-case without diacritics, so "zolkiewski" finds "Żółkiewski".
+ * ł/Ł have no combining form and are mapped by hand.
+ */
+export const normalizeText = (text: string) =>
+	text
+		.normalize("NFD")
+		.replace(/[\u0300-\u036f]/g, "")
+		.replace(/ł/g, "l")
+		.replace(/Ł/g, "L")
+		.toLowerCase();
 
 export const nameFragments = (nameFilter: string) =>
 	nameFilter
 		.split(",")
-		.map((name) => name.trim().toLowerCase())
+		.map((name) => normalizeText(name.trim()))
 		.filter((name) => name.length > 0);
 
 export const isNodeVisible = (node: Node, filters: TreeFilters) => {
@@ -39,9 +54,14 @@ export const isNodeVisible = (node: Node, filters: TreeFilters) => {
 	if (filters.gender !== "both" && filters.gender !== node.gender) {
 		return false;
 	}
-	const fragments = nameFragments(filters.nameFilter);
-	const name = node.name.toLowerCase();
-	return !fragments.some((fragment) => name.includes(fragment));
+	const name = normalizeText(node.name);
+	// Include first, then exclude.
+	const include = nameFragments(filters.includeFilter);
+	if (include.length > 0 && !include.some((fragment) => name.includes(fragment))) {
+		return false;
+	}
+	const exclude = nameFragments(filters.nameFilter);
+	return !exclude.some((fragment) => name.includes(fragment));
 };
 
 export const visibleGraph = (
@@ -64,4 +84,5 @@ export const activeFilterCount = (filters: TreeFilters) =>
 	filters.hiddenTypes.length +
 	(filters.minAge > AGE_MIN || filters.maxAge < AGE_MAX ? 1 : 0) +
 	(filters.gender !== "both" ? 1 : 0) +
-	(filters.nameFilter.trim().length > 0 ? 1 : 0);
+	(filters.nameFilter.trim().length > 0 ? 1 : 0) +
+	(filters.includeFilter.trim().length > 0 ? 1 : 0);

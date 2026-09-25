@@ -4,15 +4,16 @@ import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, { FadeInDown, FadeOutDown, runOnJS, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useToast } from "../store/toast";
-import { TAB_BAR_HEIGHT } from "../theme/theme";
 import { useTheme } from "../theme/useTheme";
 import { Text } from "./Text";
+import { useLayout } from "../hooks/useLayout";
 
 /** Bottom toast above the tab bar: one at a time, swipe to dismiss. */
 export function ToastHost({ bottomOffset }: { bottomOffset?: number }) {
 	const t = useTheme();
 	const insets = useSafeAreaInsets();
 	const current = useToast((s) => s.current);
+	const layout = useLayout();
 	const dismiss = useToast((s) => s.dismiss);
 	const x = useSharedValue(0);
 
@@ -49,7 +50,8 @@ export function ToastHost({ bottomOffset }: { bottomOffset?: number }) {
 					accessibilityLiveRegion="polite"
 					style={[
 						styles.toast,
-						{ backgroundColor: t.c.ink, marginBottom: (bottomOffset ?? TAB_BAR_HEIGHT + insets.bottom) + 16 },
+						{ backgroundColor: t.c.ink, marginBottom: (bottomOffset ?? (layout.bottomBar || insets.bottom)) + 16 },
+						layout.isTablet && { width: "100%", maxWidth: 520, alignSelf: "center" },
 						t.shadow("lg"),
 						style,
 					]}

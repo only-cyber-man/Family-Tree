@@ -10,15 +10,17 @@ import { Text } from "../src/components/Text";
 import { TextField } from "../src/components/TextField";
 import { useGraph, useToday } from "../src/hooks/useTreeData";
 import { AGE_MAX, applyFilters, DEFAULT_FILTERS, type Filters } from "../src/lib/filters";
-import { GROUP_ORDER, groupGlyph, humanizeName } from "../src/lib/relations";
+import { GROUP_ORDER, groupGlyph, typeLabel } from "../src/lib/relations";
 import type { Gender } from "../src/lib/types";
 import { useTree } from "../src/store/tree";
 import { tokens } from "../src/theme/tokens";
 import { useTheme } from "../src/theme/useTheme";
+import { useT } from "../src/i18n";
 
 /** Same filters as the web: hide relationship types, age range, gender, exclude names. */
 export default function FiltersSheet() {
 	const t = useTheme();
+	const T = useT();
 	const router = useRouter();
 	const current = useTree((s) => s.filters);
 	const setFilters = useTree((s) => s.setFilters);
@@ -40,28 +42,29 @@ export default function FiltersSheet() {
 
 	return (
 		<RouteSheet
+			tablet="side"
 			snapPoints={tokens.mobile.sheetSnapPoints.filters as unknown as string[]}
 			header={
 				<View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 20, paddingTop: 6, paddingBottom: 12 }}>
 					<Text variant="heading" accessibilityRole="header">
-						Filters
+						{T.filters.title}
 					</Text>
 					<Pressable onPress={() => setDraft(DEFAULT_FILTERS)} hitSlop={10} accessibilityRole="button">
 						<Text size={15} weight={700} color={t.c.accent}>
-							Clear all
+							{T.filters.clearAll}
 						</Text>
 					</Pressable>
 				</View>
 			}
 			footer={
 				<View style={{ paddingHorizontal: 20, paddingTop: 12, paddingBottom: 12, borderTopWidth: 1, borderTopColor: t.c.border }}>
-					<Button label={`Show ${shown} of ${graph?.persons.length ?? 0} people`} onPress={apply} />
+					<Button label={T.filters.show(shown, graph?.persons.length ?? 0)} onPress={apply} />
 				</View>
 			}
 		>
 			<View style={{ gap: 10 }}>
 				<Text size={13} weight={700}>
-					Hide relationship types
+					{T.filters.hideTypes}
 				</Text>
 				<View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
 					{types.map((rt) => {
@@ -72,8 +75,8 @@ export default function FiltersSheet() {
 								hidden={hidden}
 								glyph={groupGlyph(rt.group)}
 								glyphColor={glyphColor(rt.group)}
-								label={humanizeName(rt.name)}
-								accessibilityLabel={`${humanizeName(rt.name)}, ${hidden ? "hidden" : "shown"}`}
+								label={typeLabel(rt.name, T)}
+								accessibilityLabel={`${typeLabel(rt.name, T)}, ${hidden ? T.filters.hidden : T.filters.shown}`}
 								onPress={() =>
 									setDraft((d) => ({
 										...d,
@@ -88,35 +91,44 @@ export default function FiltersSheet() {
 			<View style={{ gap: 10 }}>
 				<View style={{ flexDirection: "row", justifyContent: "space-between" }}>
 					<Text size={13} weight={700}>
-						Age
+						{T.filters.age}
 					</Text>
 					<Text size={13} weight={600} color={t.c.ink2}>
 						{draft.minAge} – {draft.maxAge >= AGE_MAX ? `${AGE_MAX}+` : draft.maxAge}
 					</Text>
 				</View>
-				<RangeSlider min={0} max={AGE_MAX} low={draft.minAge} high={draft.maxAge} onChange={(lo, hi) => setDraft((d) => ({ ...d, minAge: lo, maxAge: hi }))} accessibilityLabel="Age range" />
+				<RangeSlider min={0} max={AGE_MAX} low={draft.minAge} high={draft.maxAge} onChange={(lo, hi) => setDraft((d) => ({ ...d, minAge: lo, maxAge: hi }))} accessibilityLabel={T.filters.ageRange} />
 			</View>
 			<View style={{ gap: 10 }}>
 				<Text size={13} weight={700}>
-					Gender
+					{T.filters.gender}
 				</Text>
 				<Segmented<Gender | "both">
 					value={draft.gender}
 					onChange={(gender) => setDraft((d) => ({ ...d, gender }))}
 					options={[
-						{ value: "both", label: "Everyone" },
-						{ value: "male", label: "Men" },
-						{ value: "female", label: "Women" },
+						{ value: "both", label: T.filters.everyone },
+						{ value: "male", label: T.filters.men },
+						{ value: "female", label: T.filters.women },
 					]}
 				/>
 			</View>
 			<TextField
 				inSheet
-				label="Exclude by name"
-				hint="Separate several names with commas."
+				label={T.filters.includeByName}
+				hint={T.filters.includeHint}
+				value={draft.includeNames ?? ""}
+				onChangeText={(includeNames) => setDraft((d) => ({ ...d, includeNames }))}
+				placeholder={T.filters.includePlaceholder}
+				autoCorrect={false}
+			/>
+			<TextField
+				inSheet
+				label={T.filters.excludeByName}
+				hint={T.filters.excludeHint}
 				value={draft.excludeNames}
 				onChangeText={(excludeNames) => setDraft((d) => ({ ...d, excludeNames }))}
-				placeholder="Nowak, Roman"
+				placeholder={T.filters.excludePlaceholder}
 				autoCorrect={false}
 			/>
 		</RouteSheet>

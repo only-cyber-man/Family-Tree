@@ -1,5 +1,6 @@
 import { Directory, File, Paths } from "expo-file-system";
 import * as Sharing from "expo-sharing";
+import { getT } from "../i18n";
 import { buildIcs, icsFileName } from "../lib/ics";
 import type { Person } from "../lib/types";
 
@@ -16,10 +17,11 @@ export function deleteExportedIcs() {
 
 /** Writes the .ics for the visible people and opens the share sheet. */
 export async function shareIcs(treeId: string, treeName: string, persons: Person[]): Promise<void> {
-	const file = new File(Paths.cache, icsFileName(treeName));
+	const L = getT();
+	const file = new File(Paths.cache, icsFileName(treeName, L));
 	if (file.exists) file.delete();
 	file.create();
-	file.write(buildIcs(persons, { treeId }));
-	if (!(await Sharing.isAvailableAsync())) throw new Error("Sharing is not available on this device.");
-	await Sharing.shareAsync(file.uri, { mimeType: "text/calendar", UTI: "public.calendar-event", dialogTitle: `${treeName} dates` });
+	file.write(buildIcs(persons, { treeId, L }));
+	if (!(await Sharing.isAvailableAsync())) throw new Error(L.errors.shareUnavailable);
+	await Sharing.shareAsync(file.uri, { mimeType: "text/calendar", UTI: "public.calendar-event", dialogTitle: L.ics.shareTitle(treeName) });
 }

@@ -19,6 +19,8 @@ import { toast } from "../src/store/toast";
 import { useTree } from "../src/store/tree";
 import { useTrees } from "../src/store/trees";
 import { useTheme } from "../src/theme/useTheme";
+import { useT } from "../src/i18n";
+import { FORM_MAX } from "../src/lib/responsive";
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -29,6 +31,7 @@ const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
  */
 export default function Invited() {
 	const t = useTheme();
+	const T = useT();
 	const router = useRouter();
 	const full = useTree((s) => s.full);
 	const addInvited = useTree((s) => s.addInvited);
@@ -67,26 +70,26 @@ export default function Invited() {
 		const value = email.trim();
 		const treeId = full?.tree.id;
 		if (!treeId) return;
-		if (!EMAIL.test(value)) return setError("That doesn't look like an email address.");
+		if (!EMAIL.test(value)) return setError(T.auth.emailInvalid);
 		// Also covers the keyboard's submit key, which bypasses the disabled button.
-		if (!canWrite) return setError("You're offline — changes can't be saved.");
+		if (!canWrite) return setError(T.offline.write);
 		if (writing) return;
 		setBusy(true);
 		setWriting(true);
 		setError(null);
 		try {
 			const userId = await findUserIdByEmail(value);
-			if (userId === full?.tree.creator) return setError("That's you; you already own this tree.");
-			if (invited.includes(userId)) return setError("They can already see this tree.");
+			if (userId === full?.tree.creator) return setError(T.invited.thatsYou);
+			if (invited.includes(userId)) return setError(T.invited.already);
 			// Atomic "invited+" on the server: concurrent changes cannot overwrite each other.
 			await addInvited(treeId, userId);
 			setEmails((e) => ({ ...e, [userId]: value }));
 			setEmail("");
 			haptics.success();
-			toast(`${value} can now see this tree`, "success");
+			toast(T.invited.canSee(value), "success");
 		} catch (e) {
 			haptics.error();
-			setError(isNotFound(e) ? "No Family Tree account uses that email. Ask them to sign up first, then invite them." : errorMessage(e));
+			setError(isNotFound(e) ? T.invited.noAccount : errorMessage(e, T));
 		} finally {
 			setBusy(false);
 			setWriting(false);
@@ -95,7 +98,7 @@ export default function Invited() {
 
 	const revoke = useCallback(
 		(id: string) => {
-			const label = emails[id] || "this person";
+			const label = emails[id] || T.invited.thisPerson;
 			// Bound to this tree: undo must not touch whichever tree is active later.
 			const treeId = full?.tree.id;
 			if (!treeId || writing) return;
@@ -105,42 +108,42 @@ export default function Invited() {
 					await op();
 					return true;
 				} catch (e) {
-					toast(errorMessage(e), "error");
+					toast(errorMessage(e, T), "error");
 					return false;
 				} finally {
 					setWriting(false);
 				}
 			};
-			Alert.alert(`Stop sharing with ${label}?`, "They will no longer see this tree.", [
-				{ text: "Cancel", style: "cancel" },
+			Alert.alert(T.invited.stopTitle(label), T.invited.stopBody, [
+				{ text: T.common.cancel, style: "cancel" },
 				{
-					text: "Revoke",
+					text: T.invited.revoke,
 					style: "destructive",
 					onPress: async () => {
 						// Atomic "invited-" / "invited+" bound to this tree id.
 						if (!(await run(() => removeInvited(treeId, id)))) return;
-						toast(`${label} can no longer see this tree`, "info", { label: "Undo", onPress: () => void run(() => addInvited(treeId, id)) }, 5000);
+						toast(T.invited.revoked(label), "info", { label: T.common.undo, onPress: () => void run(() => addInvited(treeId, id)) }, 5000);
 					},
 				},
 			]);
 		},
-		[emails, addInvited, removeInvited, full?.tree.id, writing],
+		[emails, addInvited, removeInvited, full?.tree.id, writing, T],
 	);
 
 	return (
-		<Screen contentStyle={{ gap: 18 }}>
-			<Pressable onPress={() => router.back()} style={styles.back} accessibilityRole="button" accessibilityLabel="Back">
+		<Screen maxWidth={FORM_MAX} contentStyle={{ gap: 18 }}>
+			<Pressable onPress={() => router.back()} style={styles.back} accessibilityRole="button" accessibilityLabel={T.common.back}>
 				<ChevronLeft size={20} color={t.c.ink2} strokeWidth={2.25} />
 				<Text size={16} weight={600} color={t.c.ink2}>
-					Settings
+					{T.common.settings}
 				</Text>
 			</Pressable>
 			<View style={{ gap: 4 }}>
 				<Text variant="display" size={28} accessibilityRole="header">
-					Who can see this tree
+					{T.invited.title}
 				</Text>
 				<Text size={15} color={t.c.ink2}>
-					Invited people can look, not edit.
+					{T.invited.subtitle}
 				</Text>
 			</View>
 			{owner ? (
@@ -154,7 +157,7 @@ export default function Invited() {
 								setEmail(v);
 								setError(null);
 							}}
-							placeholder="name@example.com"
+							placeholder={T.invited.emailPlaceholder}
 							keyboardType="email-address"
 							autoCapitalize="none"
 							autoCorrect={false}
@@ -162,27 +165,27 @@ export default function Invited() {
 							returnKeyType="send"
 							onSubmitEditing={invite}
 							error={error}
-							accessibilityLabel="Email of the person to invite"
+							accessibilityLabel={T.invited.emailA11y}
 						/>
-						<Button label="Invite" loading={busy} disabled={(writing && !busy) || !canWrite} onPress={invite} style={{ height: 50, paddingHorizontal: 16 }} />
+						<Button label={T.invited.invite} loading={busy} disabled={(writing && !busy) || !canWrite} onPress={invite} style={{ height: 50, paddingHorizontal: 16 }} />
 					</View>
-					<Notice>They need a Family Tree account with this email already. Nothing is emailed; the tree simply appears in their list.</Notice>
+					<Notice>{T.invited.note}</Notice>
 				</>
 			) : null}
 			<Card>
 				<Row
 					leading={<Avatar name={owner ? user?.name || user?.username || "?" : ownerEmail || "?"} color={t.c.primary} size={40} />}
-					title={owner ? `${user?.username ?? "You"} (you)` : ownerEmail ?? "Owner"}
-					subtitle="Creator"
-					trailing={<Badge label="Owner" tone="accent" />}
+					title={owner ? T.invited.youSuffix(user?.username ?? T.common.you) : ownerEmail ?? T.common.owner}
+					subtitle={T.invited.creator}
+					trailing={<Badge label={T.common.owner} tone="accent" />}
 				/>
 				{invited.map((id) => (
 					<Row
 						key={id}
 						onLongPress={owner && Platform.OS === "android" && !writing && canWrite ? () => revoke(id) : undefined}
 						leading={<Avatar name={emails[id] || "?"} gender="male" size={40} />}
-						title={emails[id] ? emails[id] : loading ? <Skeleton width={160} height={14} /> : id === user?.id ? "You" : "Unknown account"}
-						subtitle={id === user?.id ? "Viewer · you" : "Viewer"}
+						title={emails[id] ? emails[id] : loading ? <Skeleton width={160} height={14} /> : id === user?.id ? T.common.you : T.invited.unknown}
+						subtitle={id === user?.id ? T.invited.viewerYou : T.invited.viewer}
 						trailing={
 							owner ? (
 								<Pressable
@@ -190,11 +193,11 @@ export default function Invited() {
 									disabled={writing || !canWrite}
 									accessibilityRole="button"
 									accessibilityState={{ disabled: writing || !canWrite }}
-									accessibilityLabel={`Revoke ${emails[id] ?? ""}`}
+									accessibilityLabel={T.invited.revokeA11y(emails[id] ?? "")}
 									style={[styles.revoke, { borderColor: t.c.border, opacity: writing || !canWrite ? 0.45 : 1 }]}
 								>
 									<Text size={13} weight={600} color={t.c.danger}>
-										Revoke
+										{T.invited.revoke}
 									</Text>
 								</Pressable>
 							) : null
@@ -202,7 +205,7 @@ export default function Invited() {
 					/>
 				))}
 			</Card>
-			{invited.length === 0 ? <Text variant="caption">Only you can see this tree.</Text> : null}
+			{invited.length === 0 ? <Text variant="caption">{T.invited.onlyYou}</Text> : null}
 		</Screen>
 	);
 }
