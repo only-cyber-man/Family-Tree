@@ -1,9 +1,8 @@
 "use client";
 
-import React, { createContext, useState, useContext } from "react";
+import React, { createContext, useCallback, useContext, useRef, useState } from "react";
 import {
 	CreateRelationshipData,
-	Gender,
 	Node,
 	Relationship,
 	RelationshipName,
@@ -16,34 +15,19 @@ export interface FullTree {
 	relationships: Relationship[];
 	nodes: Node[];
 	relationshipNames: RelationshipName[];
-	femaleCount: number;
-	maleCount: number;
-
 	isCreator: boolean;
 }
 
 type TreeContextType = {
 	tree: FullTree | null;
 	fetchTree: (id: string) => Promise<FullTree | void>;
-	createNode: (data: FormData) => Promise<void>;
+	createNode: (data: FormData) => Promise<Node | null>;
 	editNode: (id: string, data: FormData) => Promise<Node | null>;
-	createRelationship: (data: CreateRelationshipData) => Promise<void>;
+	createRelationship: (data: CreateRelationshipData) => Promise<Relationship | null>;
 	deleteNode: (id: string) => Promise<void>;
 	deleteRelationship: (id: string) => Promise<void>;
 	isLoading: boolean;
 	error: string | null;
-
-	filterOut: (options: {
-		relationships: { relationShipNames: string[] };
-		nodesAge: { minAge: number; maxAge: number };
-		nodesGender: { genderToSee: Gender | "both" };
-		nodesName: { name: string };
-	}) => void;
-	shouldUpdateRelationships: boolean;
-	setShouldUpdateRelationships: (value: boolean) => void;
-
-	selectedNode: Node | null;
-	setSelectedNode: (node: Node | null) => void;
 };
 
 const TreeContext = createContext<TreeContextType | undefined>(undefined);
@@ -54,168 +38,122 @@ export const TreeProvider: React.FC<{ children: React.ReactNode }> = ({
 	const [tree, setTree] = useState<FullTree | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
-	const [shouldUpdateRelationships, setShouldUpdateRelationships] =
-		useState(false);
-	const [selectedNode, setSelectedNode] = useState<Node | null>(null);
+	// Only the most recent request may write state; an older, slower one for a
+	// tree the user already left is dropped.
+	const latestRequest = useRef(0);
 
-	const fetchTree = async (id: string): Promise<FullTree | void> => {
+	const fetchTree = useCallback(async (id: string): Promise<FullTree | void> => {
+		const request = ++latestRequest.current;
+		const isStale = () => request !== latestRequest.current;
 		try {
 			setIsLoading(true);
 			pb.autoCancellation(false);
-			const treeRecord = await pb.collection("ft_trees").getOne(id);
-			const tree = new Tree(treeRecord);
-			const relationshipsRecords = await pb
-				.collection("ft_relationships")
-				.getFullList({
-					expand: "relationshipName",
-					filter: `tree.id = "${id}"`,
-				});
-			const relationships = relationshipsRecords.map(
-				(relationshipRecord) => new Relationship(relationshipRecord)
-			);
-			const nodesRecords = await pb.collection("ft_nodes").getFullList({
-				filter: `tree.id = "${id}"`,
-			});
-			const nodes = nodesRecords.map((nodeRecord) => new Node(nodeRecord));
-			const relationshipsNamesRecords = await pb
-				.collection("ft_relationships_names")
-				.getFullList({
-					sort: "name",
-				});
-			const relationshipNames = relationshipsNamesRecords.map(
-				(relationshipNameRecord) => new RelationshipName(relationshipNameRecord)
-			);
-			const [femaleCount, maleCount] = nodes.reduce(
-				(previous, { gender }) => {
-					if (gender === "female") {
-						return [previous[0] + 1, previous[1]];
-					} else {
-						return [previous[0], previous[1] + 1];
-					}
-				},
-				[0, 0]
-			);
-
+			const [treeRecord, relationshipRecords, nodeRecords, nameRecords] =
+				await Promise.all([
+					pb.collection("ft_trees").getOne(id),
+					pb.collection("ft_relationships").getFullList({
+						expand: "relationshipName",
+						filter: pb.filter("tree.id = {:id}", { id }),
+					}),
+					pb.collection("ft_nodes").getFullList({
+						filter: pb.filter("tree.id = {:id}", { id }),
+					}),
+					pb.collection("ft_relationships_names").getFullList({
+						sort: "name",
+					}),
+				]);
+			if (isStale()) {
+				return;
+			}
+			const object = new Tree(treeRecord);
 			const newTree: FullTree = {
-				object: tree,
-				relationships,
-				nodes,
-				relationshipNames,
-				maleCount,
-				femaleCount,
-				isCreator: tree.creatorId === pb.authStore.model?.id,
+				object,
+				relationships: relationshipRecords.map((r) => new Relationship(r)),
+				nodes: nodeRecords.map((n) => new Node(n)),
+				relationshipNames: nameRecords.map((n) => new RelationshipName(n)),
+				isCreator: object.creatorId === pb.authStore.record?.id,
 			};
 			setTree(newTree);
-			setSelectedNode(null);
 			setError(null);
 			return newTree;
 		} catch (error: any) {
-			setError(getPocketbaseError(error));
+			if (!isStale()) {
+				setError(getPocketbaseError(error));
+			}
 		} finally {
-			setIsLoading(false);
+			if (!isStale()) {
+				setIsLoading(false);
+			}
 		}
-	};
+	}, []);
 
 	const createNode = async (data: FormData) => {
 		if (!tree) {
-			return;
+			return null;
 		}
-		const record = await pb.collection("ft_nodes").create(data);
-		const node = new Node(record);
-		const toAddFemale = node.gender === "female" ? 1 : 0;
-		const toAddMale = node.gender === "male" ? 1 : 0;
-		setTree({
-			nodes: [...tree.nodes, node],
-			object: tree.object,
-			relationshipNames: tree.relationshipNames,
-			relationships: tree.relationships,
-			femaleCount: tree.femaleCount + toAddFemale,
-			maleCount: tree.maleCount + toAddMale,
-			isCreator: tree.object.creatorId === pb.authStore.model?.id,
-		});
+		const node = new Node(await pb.collection("ft_nodes").create(data));
+		setTree((current) =>
+			current ? { ...current, nodes: [...current.nodes, node] } : current
+		);
+		return node;
 	};
 
-	const editNode = async (id: string, data: FormData): Promise<Node | null> => {
+	const editNode = async (id: string, data: FormData) => {
 		if (!tree) {
 			return null;
 		}
-		const record = await pb.collection("ft_nodes").update(id, data);
-		const node = new Node(record);
-		const previous = tree.nodes.find((n) => n.id === id);
-		const toAddFemale =
-			previous?.gender === record.gender
-				? 0
-				: record.gender === "female"
-				? 1
-				: -1;
-		const toAddMale =
-			previous?.gender === record.gender
-				? 0
-				: record.gender === "male"
-				? 1
-				: -1;
-		const nodes = tree.nodes.map((n) => (n.id === id ? node : n));
-		setTree({
-			nodes,
-			object: tree.object,
-			relationshipNames: tree.relationshipNames,
-			relationships: tree.relationships,
-			femaleCount: tree.femaleCount + toAddFemale,
-			maleCount: tree.maleCount + toAddMale,
-			isCreator: tree.object.creatorId === pb.authStore.model?.id,
-		});
+		const node = new Node(await pb.collection("ft_nodes").update(id, data));
+		setTree((current) =>
+			current
+				? { ...current, nodes: current.nodes.map((n) => (n.id === id ? node : n)) }
+				: current
+		);
 		return node;
 	};
 
 	const createRelationship = async (data: CreateRelationshipData) => {
 		if (!tree) {
-			return;
+			return null;
 		}
-		const relationshipRecord = await pb
-			.collection("ft_relationships")
-			.create(data);
-		const record = await pb
-			.collection("ft_relationships")
-			.getOne(relationshipRecord.id, {
+		const created = await pb.collection("ft_relationships").create(data);
+		const relationship = new Relationship(
+			await pb.collection("ft_relationships").getOne(created.id, {
 				expand: "relationshipName",
-			});
-		const relationship = new Relationship(record);
-		setTree({
-			nodes: tree.nodes,
-			object: tree.object,
-			relationshipNames: tree.relationshipNames,
-			relationships: [...tree.relationships, relationship],
-			femaleCount: tree.femaleCount,
-			maleCount: tree.maleCount,
-			isCreator: tree.object.creatorId === pb.authStore.model?.id,
-		});
+			})
+		);
+		setTree((current) =>
+			current
+				? { ...current, relationships: [...current.relationships, relationship] }
+				: current
+		);
+		return relationship;
 	};
 
 	const deleteNode = async (id: string) => {
 		if (!tree) {
 			return;
 		}
-		await pb.collection("ft_nodes").delete(id);
-		const nodes = tree.nodes.filter((node) => node.id !== id);
-		const [femaleCount, maleCount] = nodes.reduce(
-			(previous, { gender }) => {
-				if (gender === "female") {
-					return [previous[0] + 1, previous[1]];
-				} else {
-					return [previous[0], previous[1] + 1];
-				}
-			},
-			[0, 0]
+		const attached = tree.relationships.filter(
+			(r) => r.sourceNodeId === id || r.targetNodeId === id
 		);
-		setTree({
-			nodes,
-			object: tree.object,
-			relationshipNames: tree.relationshipNames,
-			relationships: tree.relationships,
-			femaleCount,
-			maleCount,
-			isCreator: tree.object.creatorId === pb.authStore.model?.id,
-		});
+		// The person goes first: if that fails nothing has changed. Their
+		// relationships are cleaned up afterwards; any that fail to delete are
+		// orphans pointing at a missing node, which no view can show.
+		await pb.collection("ft_nodes").delete(id);
+		setTree((current) =>
+			current
+				? {
+						...current,
+						nodes: current.nodes.filter((n) => n.id !== id),
+						relationships: current.relationships.filter(
+							(r) => r.sourceNodeId !== id && r.targetNodeId !== id
+						),
+				  }
+				: current
+		);
+		await Promise.allSettled(
+			attached.map((r) => pb.collection("ft_relationships").delete(r.id))
+		);
 	};
 
 	const deleteRelationship = async (id: string) => {
@@ -223,68 +161,14 @@ export const TreeProvider: React.FC<{ children: React.ReactNode }> = ({
 			return;
 		}
 		await pb.collection("ft_relationships").delete(id);
-		const relationships = tree.relationships.filter(
-			(relationship) => relationship.id !== id
+		setTree((current) =>
+			current
+				? {
+						...current,
+						relationships: current.relationships.filter((r) => r.id !== id),
+				  }
+				: current
 		);
-		setTree({
-			nodes: tree.nodes,
-			object: tree.object,
-			relationshipNames: tree.relationshipNames,
-			relationships,
-			femaleCount: tree.femaleCount,
-			maleCount: tree.maleCount,
-			isCreator: tree.object.creatorId === pb.authStore.model?.id,
-		});
-	};
-
-	const filterOut = (options: {
-		relationships: { relationShipNames: string[] };
-		nodesAge: { minAge: number; maxAge: number };
-		nodesGender: {
-			genderToSee: Gender | "both";
-		};
-		nodesName: { name: string };
-	}) => {
-		if (!tree) {
-			return;
-		}
-		tree.relationships.forEach((relationship) => {
-			let isVisible = true;
-			if (
-				options.relationships.relationShipNames.includes(
-					relationship.relationshipName?.name ?? ""
-				)
-			) {
-				isVisible = false;
-			}
-			relationship.setVisible(isVisible);
-		});
-		const filtersNames = options.nodesName.name
-			.split(",")
-			.map((name) => name.trim().toLowerCase())
-			.filter((name) => name.length > 0);
-		tree.nodes.forEach((node) => {
-			let isVisible = true;
-			if (node.age < options.nodesAge.minAge) {
-				isVisible = false;
-			}
-			if (node.age > options.nodesAge.maxAge) {
-				isVisible = false;
-			}
-			if (
-				options.nodesGender.genderToSee !== "both" &&
-				options.nodesGender.genderToSee !== node.gender
-			) {
-				isVisible = false;
-			}
-			if (
-				filtersNames.length > 0 &&
-				filtersNames.some((name) => node.name.toLowerCase().includes(name))
-			) {
-				isVisible = false;
-			}
-			node.setVisible(isVisible);
-		});
 	};
 
 	return (
@@ -299,13 +183,6 @@ export const TreeProvider: React.FC<{ children: React.ReactNode }> = ({
 				deleteRelationship,
 				isLoading,
 				error,
-
-				filterOut,
-				shouldUpdateRelationships,
-				setShouldUpdateRelationships,
-
-				selectedNode,
-				setSelectedNode,
 			}}
 		>
 			{children}

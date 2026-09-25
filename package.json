@@ -14,26 +14,13 @@
 		"add-static": "mkdir -p ./.next/standalone/public/_next && cp -r ./.next/static ./.next/standalone/public/_next/ && cp -r ./public/. ./.next/standalone/public/"
 	},
 	"dependencies": {
-		"@egjs/hammerjs": "^2.0.17",
-		"@emotion/react": "^11.11.3",
-		"@emotion/styled": "^11.11.0",
-		"@mui/material": "^5.15.5",
-		"component-emitter": "^1.3.0",
 		"dotenv": "^16.4.5",
 		"eventsource": "^2.0.2",
 		"ics": "^3.7.6",
-		"keycharm": "^0.4.0",
 		"next": "14.2.5",
 		"pocketbase": "^0.25.1",
 		"react": "^18",
-		"react-dom": "^18",
-		"react-text-gradients-and-animations": "^1.1.7",
-		"sweetalert2": "^11.12.4",
-		"sweetalert2-react-content": "^5.0.7",
-		"uuid": "^9.0.0",
-		"vis-data": "^7.1.9",
-		"vis-network": "^9.1.9",
-		"vis-util": "^5.0.7"
+		"react-dom": "^18"
 	},
 	"devDependencies": {
 		"@babel/core": "^7.23.7",
@@ -41,8 +28,6 @@
 		"@types/node": "^20",
 		"@types/react": "^18",
 		"@types/react-dom": "^18",
-		"@types/seedrandom": "^3.0.8",
-		"@types/stopword": "^2.0.3",
 		"eslint": "^8",
 		"eslint-config-next": "14.2.5",
 		"nodemon": "^3.1.0",

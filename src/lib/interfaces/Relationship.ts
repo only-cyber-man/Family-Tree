@@ -1,7 +1,6 @@
 import { RecordModel } from "pocketbase";
 import { Node, NodeData } from "./Node";
 import { RelationshipName, RelationshipNameData } from "./RelationshipName";
-import { Edge } from "vis-network/esnext";
 
 export interface RelationshipData {
 	id: string;
@@ -41,35 +40,11 @@ export class Relationship {
 	public relationshipName?: RelationshipName;
 	public tree?: Relationship;
 
-	public isVisible: boolean = true;
 
 	get isBidirectional(): boolean {
 		return this.relationshipName?.isBidirectional ?? false;
 	}
 
-	visualization(): Edge {
-		let label = this.relationshipName?.name;
-		if (label && this.isBidirectional) {
-			label = label.replaceAll("_TO", "").replaceAll("IS_", "");
-		}
-
-		return {
-			from: this.sourceNodeId,
-			to: this.targetNodeId,
-			width: RelationshipName.groupToLabel(this.relationshipName?.group).width,
-			color: RelationshipName.groupToLabel(this.relationshipName?.group).color,
-			font: {
-				size: RelationshipName.groupToLabel(this.relationshipName?.group)
-					.fontSize,
-			},
-			label,
-			arrows: {
-				to: {
-					enabled: !this.isBidirectional,
-				},
-			},
-		};
-	}
 
 	constructor(data: RelationshipData | RecordModel) {
 		this.id = data.id;
@@ -99,9 +74,6 @@ export class Relationship {
 		}
 	}
 
-	public setVisible(visible: boolean): void {
-		this.isVisible = visible;
-	}
 
 	public serialize(): RelationshipData {
 		return {

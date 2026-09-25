@@ -1,10 +1,8 @@
 export default function LoadingPage() {
 	return (
-		<div className="has-text-centered">
-			<h1 className="title">Loading...</h1>
-			<button className="button is-loading">
-				What are you looking at? Just wait!
-			</button>
+		<div className="page-center" style={{ minHeight: "100vh" }}>
+			<span className="spinner" style={{ width: 28, height: 28, color: "var(--primary)" }} />
+			<p>Loading…</p>
 		</div>
 	);
 }

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Literata:ital,wght@0,400;0,600;1,400&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>body{margin:0;background:#F5F0E6;color:#1E2420;font-family:Manrope,system-ui,sans-serif;-webkit-font-smoothing:antialiased}a{color:#B5652B;text-decoration:none}a:hover{color:#9A5322;text-decoration:underline}</style>
+</helmet>
+<div style="max-width:1180px;margin:0 auto;padding:56px 40px 96px;display:flex;flex-direction:column;gap:72px">
+
+<header style="display:flex;flex-direction:column;gap:16px">
+  <img src="assets/logo/logo-no-background.svg" alt="Family Tree" style="width:260px;height:auto">
+  <h1 style="font-family:Literata,Georgia,serif;font-weight:600;font-size:44px;line-height:1.1;margin:8px 0 0;letter-spacing:-0.01em">Brand foundations</h1>
+  <p style="font-size:17px;line-height:1.5;color:#4A524C;max-width:720px;margin:0;text-wrap:pretty">One design system for the Next.js site and the Expo app. Every value here is in <a href="tokens.json">tokens.json</a> as a plain hex / px / weight so it can feed CSS variables and React Native StyleSheet from the same file. Other pages: <a href="index.dc.html">overview</a> · <a href="Landing.dc.html">landing</a> · <a href="TreeView.dc.html">tree view</a> · <a href="Mobile.dc.html">mobile</a>.</p>
+</header>
+
+<section style="display:flex;flex-direction:column;gap:24px">
+  <div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#B5652B">01</span><h2 style="font-family:Literata,Georgia,serif;font-weight:600;font-size:30px;margin:0">Logo system</h2>
+  <p style="margin:0;color:#4A524C;line-height:1.5;max-width:720px;text-wrap:pretty">The mark is a family drawn as a graph: two nodes above, joined through a trunk to one node below. Read top-down it is parents and child; read bottom-up it is a young tree branching. The lower node is copper, the "you" the tree starts from. No leaves, no oak silhouette, no hand-holding figures.</p></div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px">
+    <div style="background:#FFFDF8;border:1px solid #D9CFBC;border-radius:12px;padding:28px;display:flex;flex-direction:column;gap:18px"><img src="assets/logo/logo-color.svg" alt="" style="width:100%;height:auto"><div style="font-size:13px;color:#6F776F">Full color on parchment · <code style="font-family:ui-monospace,Menlo,monospace;font-size:12px">logo-color.svg</code></div></div>
+    <div style="background:#FFFDF8;border:1px solid #D9CFBC;border-radius:12px;padding:28px;display:flex;flex-direction:column;gap:18px;background-image:linear-gradient(45deg,#EDE6D8 25%,transparent 25%,transparent 75%,#EDE6D8 75%),linear-gradient(45deg,#EDE6D8 25%,transparent 25%,transparent 75%,#EDE6D8 75%);background-size:16px 16px;background-position:0 0,8px 8px"><img src="assets/logo/logo-no-background.svg" alt="" style="width:100%;height:auto"><div style="font-size:13px;color:#6F776F">Transparent · <code style="font-family:ui-monospace,Menlo,monospace;font-size:12px">logo-no-background.svg</code></div></div>
+    <div style="background:#FFFDF8;border:1px solid #D9CFBC;border-radius:12px;padding:28px;display:flex;flex-direction:column;gap:18px"><img src="assets/logo/logo-black.svg" alt="" style="width:100%;height:auto"><div style="font-size:13px;color:#6F776F">One color, ink · <code style="font-family:ui-monospace,Menlo,monospace;font-size:12px">logo-black.svg</code></div></div>
+    <div style="background:#2F5D46;border-radius:12px;padding:28px;display:flex;flex-direction:column;gap:18px"><img src="assets/logo/logo-white.svg" alt="" style="width:100%;height:auto"><div style="font-size:13px;color:#C9D9CF">One color, white · <code style="font-family:ui-monospace,Menlo,monospace;font-size:12px">logo-white.svg</code></div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px">
+    <div style="background:#FFFDF8;border:1px solid #D9CFBC;border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:14px">
+      <div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#6F776F">Scale test</div>
+      <div style="display:flex;align-items:flex-end;gap:18px"><img src="assets/favicon.svg" alt="" style="width:16px;height:16px"><img src="assets/favicon.svg" alt="" style="width:32px;height:32px"><img src="assets/logo/mark-color.svg" alt="" style="width:48px;height:48px"><img src="assets/logo/mark-color.svg" alt="" style="width:96px;height:96px"></div>
+      <div style="font-size:13px;color:#6F776F;line-height:1.5">16px favicon uses the bolder favicon.svg (stroke 8, r 10 on forest). Above 24px use the standard mark (stroke 6, r 8).</div>
+    </div>
+    <div style="background:#FFFDF8;border:1px solid #D9CFBC;border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:14px">
+      <div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#6F776F">Navbar 150×28</div>
+      <div style="height:56px;display:flex;align-items:center;padding:0 16px;border:1px solid #D9CFBC;border-radius:8px;background:#F5F0E6"><img src="assets/logo/logo-no-background.svg" alt="" style="width:150px;height:auto"></div>
+      <div style="height:56px;display:flex;align-items:center;padding:0 16px;border-radius:8px;background:#121714"><img src="assets/logo/logo-white.svg" alt="" style="width:150px;height:auto"></div>
+    </div>
+    <div style="background:#FFFDF8;border:1px solid #D9CFBC;border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:14px">
+      <div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#6F776F">Construction</div>
+      <div style="font-size:13px;color:#4A524C;line-height:1.6">64-unit grid. Nodes r8 at (16,16), (48,16), (32,50). Trunk 32,46→32,33; branches to each upper node. Stroke 6, round caps. Clear space = one node diameter. Wordmark: Literata 600, 30/64 of mark height, tracking −1%.</div>
+    </div>
+  </div>
+</section>
+
+<section style="display:flex;flex-direction:column;gap:24px">
+  <div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#B5652B">02</span><h2 style="font-family:Literata,Georgia,serif;font-weight:600;font-size:30px;margin:0">Mobile app assets</h2></div>
+  <div style="display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start">
+    <div style="display:flex;flex-direction:column;gap:10px;align-items:center"><img src="assets/app/ios-icon-1024.svg" alt="" style="width:160px;height:160px;border-radius:36px;box-shadow:0 4px 12px rgba(30,36,32,0.10)"><div style="font-size:13px;color:#6F776F;text-align:center">iOS icon 1024² · opaque<br>iOS masks the corners</div></div>
+    <div style="display:flex;flex-direction:column;gap:10px;align-items:center"><div style="position:relative;width:160px;height:160px"><img src="assets/app/android-adaptive-background.svg" alt="" style="position:absolute;inset:0;width:160px;height:160px;border-radius:50%"><img src="assets/app/android-adaptive-foreground.svg" alt="" style="position:absolute;inset:0;width:160px;height:160px"><div style="position:absolute;inset:0;border-radius:50%;border:1px dashed rgba(255,255,255,0.5);transform:scale(0.66)"></div></div><div style="font-size:13px;color:#6F776F;text-align:center">Android adaptive · fg / bg layers<br>dashed = 66% safe zone</div></div>
+    <div style="display:flex;flex-direction:column;gap:10px;align-items:center"><div style="width:160px;height:160px;border-radius:50%;background:#4A524C;display:flex;align-items:center;justify-content:center"><img src="assets/app/android-adaptive-monochrome.svg" alt="" style="width:160px;height:160px"></div><div style="font-size:13px;color:#6F776F;text-align:center">Monochrome layer<br>(themed icons)</div></div>
+    <div style="display:flex;flex-direction:column;gap:10px;align-items:center"><div style="width:160px;height:160px;border-radius:20px;background:#2F5D46;display:flex;align-items:center;justify-content:center"><img src="assets/app/splash-icon.svg" alt="" style="width:96px;height:96px"></div><div style="font-size:13px;color:#6F776F;text-align:center">Splash icon 200²<br>backgroundColor #2F5D46</div></div>
+    <div style="display:flex;flex-direction:column;gap:10px;align-items:center"><div style="width:160px;height:160px;border-radius:20px;background:#4A524C;display:flex;align-items:center;justify-content:center"><img src="assets/app/notification-icon.svg" alt="" style="width:48px;height:48px"></div><div style="font-size:13px;color:#6F776F;text-align:center">Notification icon 96²<br>white on transparent</div></div>
+  </div>
+</section>
+
+<section style="display:flex;flex-direction:column;gap:24px">
+  <div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#B5652B">03</span><h2 style="font-family:Literata,Georgia,serif;font-weight:600;font-size:30px;margin:0">Color</h2>
+  <p style="margin:0;color:#4A524C;line-height:1.5;max-width:720px;text-wrap:pretty">Parchment and forest carry the archive feeling; copper is the single warm accent, used for the primary CTA on marketing pages and for selection inside the app. Inside the product the primary action button is forest, so copper always means "this is selected / this is where you act next".</p></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+    <div style="background:#FFFDF8;border:1px solid #D9CFBC;border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:14px">
+      <div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#6F776F">Light</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px">
+        <sc-for list="{{ light }}" as="c" hint-placeholder-count="12"><div style="display:flex;flex-direction:column;gap:6px"><div style="height:56px;border-radius:8px;border:1px solid rgba(30,36,32,0.08);background:{{ c.hex }}"></div><div style="font-size:12px;font-weight:600">{{ c.name }}</div><div style="font-size:11px;color:#6F776F;font-family:ui-monospace,Menlo,monospace">{{ c.hex }}</div></div></sc-for>
+      </div>
+    </div>
+    <div style="background:#1A211C;border:1px solid #33403A;border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:14px;color:#EDE6D8">
+      <div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#858D84">Dark</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px">
+        <sc-for list="{{ dark }}" as="c" hint-placeholder-count="12"><div style="display:flex;flex-direction:column;gap:6px"><div style="height:56px;border-radius:8px;border:1px solid rgba(237,230,216,0.08);background:{{ c.hex }}"></div><div style="font-size:12px;font-weight:600">{{ c.name }}</div><div style="font-size:11px;color:#858D84;font-family:ui-monospace,Menlo,monospace">{{ c.hex }}</div></div></sc-for>
+      </div>
+    </div>
+  </div>
+  <div style="font-size:13px;color:#6F776F;line-height:1.6">Contrast: ink on parchment 13.9:1 · ink2 on parchment 7.4:1 · forest on parchment 6.9:1 · parchment on forest 6.9:1 · copper on parchment 4.6:1 (text OK at 15px+). Dark: ink on bg 14.6:1 · primary #5E9C78 on bg 6.4:1 · accent #D98A4E on bg 7.3:1.</div>
+</section>
+
+<section style="display:flex;flex-direction:column;gap:24px">
+  <div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#B5652B">04</span><h2 style="font-family:Literata,Georgia,serif;font-weight:600;font-size:30px;margin:0">Relationship groups</h2>
+  <p style="margin:0;color:#4A524C;line-height:1.5;max-width:720px;text-wrap:pretty">Four groups, each with a color, a dash pattern, a stroke weight and a legend glyph, so they stay distinct in grayscale and for deuteranopia (forest vs copper resolve by luminance and dash; plum sits far from both). Directional relationships end in an arrowhead (vis-network <code style="font-family:ui-monospace,Menlo,monospace;font-size:13px">arrows.to</code>, scale 0.7); bidirectional ones have no arrowhead. Same values on mobile via react-native-svg <code style="font-family:ui-monospace,Menlo,monospace;font-size:13px">strokeDasharray</code>.</p></div>
+  <div style="background:#FFFDF8;border:1px solid #D9CFBC;border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:16px">
+    <div style="display:flex;flex-direction:column;gap:4px"><div style="font-weight:700;font-size:15px">Emphasis within a group</div><div style="font-size:14px;color:#4A524C;line-height:1.55;max-width:760px;text-wrap:pretty">The group sets the color. A second tier sets the weight of the bond. A marriage is the heaviest stroke in the whole graph, a solid 4px beam. "Lives with" is the lightest, 1.25px fine dots. Everything else uses the group default. Until <code style="font-family:ui-monospace,Menlo,monospace;font-size:13px">ft_relationships_names.emphasis</code> exists (proposal: strong | normal | weak), map by name in code.</div></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px">
+      <div style="display:grid;grid-template-columns:1fr 150px;gap:12px;align-items:center;padding:14px 16px;border:1px solid #EDE6D8;border-radius:8px"><div style="display:flex;flex-direction:column;gap:3px"><div style="font-weight:700;font-size:14px">Strong · IS_MARRIED_TO</div><div style="font-size:12px;color:#6F776F;font-family:ui-monospace,Menlo,monospace">w 4 · solid · label 700</div></div><svg width="150" height="24" viewBox="0 0 150 24"><line x1="4" y1="12" x2="146" y2="12" stroke="#B5652B" stroke-width="4" stroke-linecap="round"></line></svg></div>
+      <div style="display:grid;grid-template-columns:1fr 150px;gap:12px;align-items:center;padding:14px 16px;border:1px solid #EDE6D8;border-radius:8px"><div style="display:flex;flex-direction:column;gap:3px"><div style="font-weight:700;font-size:14px">Normal · IS_STEPPARENT_OF</div><div style="font-size:12px;color:#6F776F;font-family:ui-monospace,Menlo,monospace">group default: w 2 · [8,5]</div></div><svg width="150" height="24" viewBox="0 0 150 24"><line x1="4" y1="12" x2="134" y2="12" stroke="#B5652B" stroke-width="2" stroke-dasharray="8 5" stroke-linecap="round"></line><path d="M134 6 L146 12 L134 18 Z" fill="#B5652B"></path></svg></div>
+      <div style="display:grid;grid-template-columns:1fr 150px;gap:12px;align-items:center;padding:14px 16px;border:1px solid #EDE6D8;border-radius:8px"><div style="display:flex;flex-direction:column;gap:3px"><div style="font-weight:700;font-size:14px">Weak · LIVES_WITH, IS_PARTNER_OF</div><div style="font-size:12px;color:#6F776F;font-family:ui-monospace,Menlo,monospace">w 1.25 · [2,6] · label 500</div></div><svg width="150" height="24" viewBox="0 0 150 24"><line x1="4" y1="12" x2="146" y2="12" stroke="#B5652B" stroke-width="1.25" stroke-dasharray="2 6" stroke-linecap="round"></line></svg></div>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+    <div style="background:#FFFDF8;border:1px solid #D9CFBC;border-radius:12px;padding:8px 24px;display:flex;flex-direction:column">
+      <sc-for list="{{ groups }}" as="g" hint-placeholder-count="4">
+        <div style="display:grid;grid-template-columns:28px 1fr 180px;gap:16px;align-items:center;padding:16px 0;border-bottom:1px solid #EDE6D8">
+          <div style="font-size:18px;color:{{ g.light }};text-align:center">{{ g.glyph }}</div>
+          <div style="display:flex;flex-direction:column;gap:4px"><div style="font-weight:700;font-size:15px">{{ g.label }} <span style="font-weight:500;color:#6F776F;font-size:13px">{{ g.key }}</span></div><div style="font-size:12px;color:#6F776F;font-family:ui-monospace,Menlo,monospace">{{ g.light }} · w {{ g.width }} · dash {{ g.dashText }}</div><div style="font-size:12px;color:#6F776F">{{ g.examples }}</div></div>
+          <svg width="180" height="24" viewBox="0 0 180 24"><line x1="4" y1="12" x2="164" y2="12" stroke="{{ g.light }}" stroke-width="{{ g.width }}" stroke-dasharray="{{ g.dash }}" stroke-linecap="round"></line><path d="M164 6 L176 12 L164 18 Z" fill="{{ g.light }}"></path></svg>
+        </div>
+      </sc-for>
+    </div>
+    <div style="background:#1A211C;border:1px solid #33403A;border-radius:12px;padding:8px 24px;display:flex;flex-direction:column;color:#EDE6D8">
+      <sc-for list="{{ groups }}" as="g" hint-placeholder-count="4">
+        <div style="display:grid;grid-template-columns:28px 1fr 180px;gap:16px;align-items:center;padding:16px 0;border-bottom:1px solid #232C26">
+          <div style="font-size:18px;color:{{ g.dark }};text-align:center">{{ g.glyph }}</div>
+          <div style="display:flex;flex-direction:column;gap:4px"><div style="font-weight:700;font-size:15px">{{ g.label }}</div><div style="font-size:12px;color:#858D84;font-family:ui-monospace,Menlo,monospace">{{ g.dark }} · w {{ g.width }} · dash {{ g.dashText }}</div></div>
+          <svg width="180" height="24" viewBox="0 0 180 24"><line x1="4" y1="12" x2="164" y2="12" stroke="{{ g.dark }}" stroke-width="{{ g.width }}" stroke-dasharray="{{ g.dash }}" stroke-linecap="round"></line><path d="M164 6 L176 12 L164 18 Z" fill="{{ g.dark }}"></path></svg>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+</section>
+
+<section style="display:flex;flex-direction:column;gap:24px">
+  <div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#B5652B">05</span><h2 style="font-family:Literata,Georgia,serif;font-weight:600;font-size:30px;margin:0">Person node</h2>
+  <p style="margin:0;color:#4A524C;line-height:1.5;max-width:720px;text-wrap:pretty">Gender is two muted hues of equal weight: slate teal and clay rose, as a tinted fill with a 2px border. Neither is saturated, neither is "the default". Selection is a 3px copper border, never a fill change. Deceased people keep their hue and get a † before the death year and a 60% desaturated photo. vis-network: <code style="font-family:ui-monospace,Menlo,monospace;font-size:13px">shape:"box", shapeProperties.borderRadius:10, borderWidth:2, margin 10/14</code>. The age-scaled border width from the current code is dropped.</p></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+    <div style="background:#F5F0E6;border:1px solid #D9CFBC;border-radius:12px;padding:32px;display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start;background-image:radial-gradient(rgba(30,36,32,0.08) 1px,transparent 1px);background-size:20px 20px">
+      <div style="width:196px;background:#DCE9EC;border:2px solid #3F6E7A;border-radius:10px;padding:12px 14px;display:flex;gap:12px;align-items:center"><div style="width:44px;height:44px;border-radius:50%;background:#3F6E7A;color:#F5F0E6;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;flex:none">JK</div><div style="display:flex;flex-direction:column;gap:2px;min-width:0"><div style="font-weight:700;font-size:14px;color:#1E2420;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Jan Kowalski</div><div style="font-size:12px;color:#4A524C">1948 · 78</div></div></div>
+      <div style="width:196px;background:#F1DDD8;border:3px solid #B5652B;border-radius:10px;padding:12px 14px;display:flex;gap:12px;align-items:center;box-shadow:0 4px 12px rgba(30,36,32,0.10)"><div style="width:44px;height:44px;border-radius:50%;background:#A5584C;color:#F5F0E6;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;flex:none">MK</div><div style="display:flex;flex-direction:column;gap:2px;min-width:0"><div style="font-weight:700;font-size:14px;color:#1E2420">Maria Kowalska</div><div style="font-size:12px;color:#4A524C">1951 · 75</div></div></div>
+      <div style="width:196px;background:#DCE9EC;border:2px solid #3F6E7A;border-radius:10px;padding:12px 14px;display:flex;gap:12px;align-items:center"><div style="width:44px;height:44px;border-radius:50%;background:#3F6E7A;color:#F5F0E6;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;flex:none;filter:saturate(0.4);opacity:0.85">SK</div><div style="display:flex;flex-direction:column;gap:2px;min-width:0"><div style="font-weight:700;font-size:14px;color:#1E2420">Stanisław Kowalski</div><div style="font-size:12px;color:#4A524C">1921 – †1998 · 77</div></div></div>
+      <div style="width:100%;font-size:12px;color:#6F776F">default · selected (copper 3px) · deceased</div>
+    </div>
+    <div style="background:#121714;border:1px solid #33403A;border-radius:12px;padding:32px;display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start;background-image:radial-gradient(rgba(237,230,216,0.08) 1px,transparent 1px);background-size:20px 20px">
+      <div style="width:196px;background:#1F3A41;border:2px solid #6FA3B0;border-radius:10px;padding:12px 14px;display:flex;gap:12px;align-items:center"><div style="width:44px;height:44px;border-radius:50%;background:#6FA3B0;color:#121714;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;flex:none">JK</div><div style="display:flex;flex-direction:column;gap:2px;min-width:0"><div style="font-weight:700;font-size:14px;color:#EDE6D8">Jan Kowalski</div><div style="font-size:12px;color:#B9B3A5">1948 · 78</div></div></div>
+      <div style="width:196px;background:#43282A;border:3px solid #D98A4E;border-radius:10px;padding:12px 14px;display:flex;gap:12px;align-items:center;box-shadow:0 4px 12px rgba(0,0,0,0.4)"><div style="width:44px;height:44px;border-radius:50%;background:#D08A80;color:#121714;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;flex:none">MK</div><div style="display:flex;flex-direction:column;gap:2px;min-width:0"><div style="font-weight:700;font-size:14px;color:#EDE6D8">Maria Kowalska</div><div style="font-size:12px;color:#B9B3A5">1951 · 75</div></div></div>
+      <div style="width:196px;background:#1F3A41;border:2px solid #6FA3B0;border-radius:10px;padding:12px 14px;display:flex;gap:12px;align-items:center"><div style="width:44px;height:44px;border-radius:50%;background:#6FA3B0;color:#121714;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;flex:none;filter:saturate(0.4);opacity:0.85">SK</div><div style="display:flex;flex-direction:column;gap:2px;min-width:0"><div style="font-weight:700;font-size:14px;color:#EDE6D8">Stanisław Kowalski</div><div style="font-size:12px;color:#B9B3A5">1921 – †1998 · 77</div></div></div>
+      <div style="width:100%;font-size:12px;color:#858D84">male: fill #1F3A41 / border #6FA3B0 · female: #43282A / #D08A80 · selected #D98A4E</div>
+    </div>
+  </div>
+</section>
+
+<section style="display:flex;flex-direction:column;gap:24px">
+  <div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#B5652B">06</span><h2 style="font-family:Literata,Georgia,serif;font-weight:600;font-size:30px;margin:0">Typography</h2></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+    <div style="background:#FFFDF8;border:1px solid #D9CFBC;border-radius:12px;padding:28px;display:flex;flex-direction:column;gap:18px">
+      <div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#6F776F">Literata · headings · 400, 600, 400 italic</div>
+      <div style="font-family:Literata,Georgia,serif;font-weight:600;font-size:44px;line-height:1.1;letter-spacing:-0.01em">Every family is a graph.</div>
+      <div style="font-family:Literata,Georgia,serif;font-weight:600;font-size:30px;line-height:1.15">Section heading 30/34</div>
+      <div style="font-family:Literata,Georgia,serif;font-weight:600;font-size:22px;line-height:1.25">Card title 22/28</div>
+      <div style="font-family:Literata,Georgia,serif;font-weight:400;font-style:italic;font-size:17px;line-height:1.5;color:#4A524C">Italic for names in prose: <em>Maria Kowalska</em>, 1951.</div>
+    </div>
+    <div style="background:#FFFDF8;border:1px solid #D9CFBC;border-radius:12px;padding:28px;display:flex;flex-direction:column;gap:18px">
+      <div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#6F776F">Manrope · UI · 400, 500, 600, 700</div>
+      <div style="font-size:17px;line-height:1.5">Body 17/26 for reading. Body 15/22 for dense UI.</div>
+      <div style="font-size:15px;font-weight:600;line-height:1.4">Button and label 15/600</div>
+      <div style="font-size:13px;font-weight:500;color:#4A524C;line-height:1.4">Meta 13/500 · dates, counts, helper text</div>
+      <div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#6F776F">Eyebrow 12/700 · +6% tracking</div>
+      <div style="font-size:13px;color:#6F776F;line-height:1.6">Mobile respects Dynamic Type: sizes scale with the OS setting up to 1.35×; node cards on the canvas do not scale (they follow zoom instead).</div>
+    </div>
+  </div>
+</section>
+
+<section style="display:flex;flex-direction:column;gap:24px">
+  <div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#B5652B">07</span><h2 style="font-family:Literata,Georgia,serif;font-weight:600;font-size:30px;margin:0">Spacing, radii, shadows, icons</h2></div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px">
+    <div style="background:#FFFDF8;border:1px solid #D9CFBC;border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:14px">
+      <div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#6F776F">Spacing · 4pt base</div>
+      <div style="display:flex;align-items:flex-end;gap:8px"><div style="width:4px;height:4px;background:#2F5D46"></div><div style="width:8px;height:8px;background:#2F5D46"></div><div style="width:12px;height:12px;background:#2F5D46"></div><div style="width:16px;height:16px;background:#2F5D46"></div><div style="width:24px;height:24px;background:#2F5D46"></div><div style="width:32px;height:32px;background:#2F5D46"></div><div style="width:48px;height:48px;background:#2F5D46"></div></div>
+      <div style="font-size:13px;color:#4A524C;font-family:ui-monospace,Menlo,monospace">4 8 12 16 20 24 32 40 48 64</div>
+    </div>
+    <div style="background:#FFFDF8;border:1px solid #D9CFBC;border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:14px">
+      <div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#6F776F">Radii</div>
+      <div style="display:flex;gap:12px;align-items:flex-end"><div style="width:44px;height:44px;border:2px solid #2F5D46;border-radius:4px"></div><div style="width:44px;height:44px;border:2px solid #2F5D46;border-radius:8px"></div><div style="width:44px;height:44px;border:2px solid #2F5D46;border-radius:12px"></div><div style="width:44px;height:44px;border:2px solid #2F5D46;border-radius:16px"></div><div style="width:64px;height:36px;border:2px solid #2F5D46;border-radius:999px"></div></div>
+      <div style="font-size:13px;color:#4A524C;line-height:1.6">4 chips · 8 inputs, buttons · 12 cards · 16 modals, sheets (24 on mobile sheets) · pill for tags and toggles</div>
+    </div>
+    <div style="background:#FFFDF8;border:1px solid #D9CFBC;border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:14px">
+      <div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#6F776F">Shadows / elevation</div>
+      <div style="display:flex;gap:16px"><div style="flex:1;height:56px;border-radius:12px;background:#FFFDF8;box-shadow:0 1px 2px rgba(30,36,32,0.08)"></div><div style="flex:1;height:56px;border-radius:12px;background:#FFFDF8;box-shadow:0 4px 12px rgba(30,36,32,0.10)"></div><div style="flex:1;height:56px;border-radius:12px;background:#FFFDF8;box-shadow:0 12px 32px rgba(30,36,32,0.16)"></div></div>
+      <div style="font-size:13px;color:#4A524C;line-height:1.6">sm: cards at rest (Android elevation 1) · md: hover, toolbar, node selected (3) · lg: modals, sheets (8). Dark mode uses the same offsets with black at 2× opacity plus a 1px border.</div>
+    </div>
+    <div style="background:#FFFDF8;border:1px solid #D9CFBC;border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:14px">
+      <div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#6F776F">Icons · Lucide, 1.75 stroke, round</div>
+      <div style="display:flex;gap:14px;color:#1E2420"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"></path></svg><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"></circle><circle cx="18" cy="18" r="3"></circle><path d="M8.5 8.5l7 7"></path></svg><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h18l-7 8v6l-4 2v-8z"></path></svg><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-7-4.5-7-11a7 7 0 0 1 14 0c0 6.5-7 11-7 11z"></path></svg></div>
+      <div style="font-size:13px;color:#4A524C;line-height:1.6">Lucide (ISC) on web and lucide-react-native on mobile. 20px in buttons, 24px in toolbars and tab bars, always paired with a label except in the mobile tab bar where labels sit below.</div>
+    </div>
+  </div>
+</section>
+
+<section style="display:flex;flex-direction:column;gap:16px;background:#FFFDF8;border:1px solid #D9CFBC;border-radius:12px;padding:28px">
+  <h2 style="font-family:Literata,Georgia,serif;font-weight:600;font-size:22px;margin:0">Proposals (not in the current data model)</h2>
+  <ul style="margin:0;padding-left:20px;color:#4A524C;line-height:1.7;font-size:15px">
+    <li><strong style="color:#1E2420">ft_nodes.nickname / maidenName</strong> (text, optional). Shown in italics under the name in the person sheet and as a search alias. Without it, "Grandma Basia" is not findable.</li>
+    <li><strong style="color:#1E2420">ft_nodes.notes</strong> (text, optional). A single free-text field, owner-editable, shown in the person sheet. Not a biography editor.</li>
+    <li><strong style="color:#1E2420">ft_trees.meNode</strong> per user (relation to ft_nodes, one per user per tree). Required for "How are we related" on mobile. Fallback in the designs: the user picks "This is me" once and it is stored on-device.</li>
+  </ul>
+</section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const light = [["bg","#F5F0E6"],["surface","#FFFDF8"],["surface2","#EDE6D8"],["border","#D9CFBC"],["ink","#1E2420"],["ink2","#4A524C"],["ink3","#6F776F"],["primary","#2F5D46"],["primarySoft","#DCE8E0"],["accent","#B5652B"],["accentSoft","#F3E1D2"],["danger","#A83C32"],["success","#3E7B4F"],["warning","#B8862E"],["info","#3F6E7A"]].map(([name,hex])=>({name,hex}));
+    const dark = [["bg","#121714"],["surface","#1A211C"],["surface2","#232C26"],["border","#33403A"],["ink","#EDE6D8"],["ink2","#B9B3A5"],["ink3","#858D84"],["primary","#5E9C78"],["primarySoft","#1F3529"],["accent","#D98A4E"],["accentSoft","#3A2617"],["danger","#E07B71"],["success","#6FB08A"],["warning","#D9A85A"],["info","#6FA3B0"]].map(([name,hex])=>({name,hex}));
+    const groups = [
+      {key:"BIOLOGICAL",label:"Biological",glyph:"●",light:"#2F5D46",dark:"#6FB08A",width:2.5,dash:"",dashText:"none",examples:"IS_MOTHER_OF, IS_FATHER_OF, IS_SIBLING_OF"},
+      {key:"IN-LAW",label:"In-law",glyph:"◆",light:"#B5652B",dark:"#E09A5F",width:2,dash:"8 5",dashText:"[8,5]",examples:"IS_MARRIED_TO, IS_STEPPARENT_OF"},
+      {key:"CHURCH",label:"Church",glyph:"✝",light:"#6B4E9B",dark:"#A98BD6",width:2,dash:"2 5",dashText:"[2,5]",examples:"IS_GODPARENT_OF, IS_WITNESS_OF"},
+      {key:"IRRELEVANT",label:"Other",glyph:"○",light:"#8A8F88",dark:"#6F766F",width:1,dash:"3 7",dashText:"[3,7]",examples:"IS_FRIEND_OF, IS_NEIGHBOUR_OF"}
+    ];
+    return { light, dark, groups };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Literata:ital,wght@0,400;0,600;1,400&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>body{margin:0;background:#E9E3D6;color:#1E2420;font-family:Manrope,system-ui,sans-serif;-webkit-font-smoothing:antialiased}a{color:#B5652B;text-decoration:none}a:hover{color:#9A5322;text-decoration:underline}input::placeholder{color:#8A8F88}@keyframes ftspin{to{transform:rotate(360deg)}}</style>
+</helmet>
+<div style="padding:40px;display:flex;flex-direction:column;gap:40px">
+<div style="display:flex;flex-direction:column;gap:6px"><h1 style="font-family:Literata,Georgia,serif;font-weight:600;font-size:28px;margin:0">Auth pages</h1><p style="margin:0;color:#4A524C;font-size:15px;max-width:720px;line-height:1.5">Centered card, 420px max. Same fields as today (username, optional display name, email, password, confirm). Field errors sit inline; a server error appears as a banner above the button instead of a SweetAlert. Labels are always visible; placeholders only show an example.</p></div>
+
+<div style="display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start">
+
+<div data-screen-label="Sign in · light" style="flex:none;width:1024px;height:720px;background:#F5F0E6;position:relative;overflow:hidden;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,0.1);display:flex;flex-direction:column">
+  <div style="position:absolute;inset:0;background-image:radial-gradient(rgba(30,36,32,0.07) 1px,transparent 1px);background-size:22px 22px"></div>
+  <nav style="position:relative;display:flex;align-items:center;justify-content:space-between;padding:16px 40px"><a href="Landing.dc.html" style="display:flex;align-items:center;gap:10px;color:#1E2420"><img src="assets/logo/mark-color.svg" alt="" style="width:28px;height:28px"><span style="font-family:Literata,Georgia,serif;font-weight:600;font-size:19px;white-space:nowrap">Family Tree</span></a><div style="font-size:14px;color:#4A524C">New here? <a href="#signup" style="font-weight:600">Create an account</a></div></nav>
+  <div style="position:relative;flex:1;display:flex;align-items:center;justify-content:center;padding:24px">
+    <form style="width:420px;background:#FFFDF8;border:1px solid #D9CFBC;border-radius:16px;padding:36px;box-shadow:0 12px 32px rgba(30,36,32,0.12);display:flex;flex-direction:column;gap:20px">
+      <div style="display:flex;flex-direction:column;gap:6px"><h2 style="font-family:Literata,Georgia,serif;font-weight:600;font-size:28px;margin:0;letter-spacing:-0.01em">Welcome back</h2><p style="margin:0;font-size:15px;color:#4A524C">Sign in to open your trees.</p></div>
+      <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;font-weight:600;color:#4A524C">Username or email</span><input type="text" value="tomek" style="height:44px;border:1px solid #D9CFBC;border-radius:8px;padding:0 14px;font:inherit;font-size:15px;background:#FFFDF8;color:#1E2420;outline:none" style-focus="border-color:#B5652B;box-shadow:0 0 0 3px rgba(181,101,43,0.2)"></label>
+      <label style="display:flex;flex-direction:column;gap:6px"><span style="display:flex;justify-content:space-between;font-size:13px;font-weight:600;color:#4A524C">Password <a href="#" style="font-weight:600">Forgot?</a></span><div style="position:relative"><input type="password" value="••••••••••" style="width:100%;box-sizing:border-box;height:44px;border:1px solid #D9CFBC;border-radius:8px;padding:0 44px 0 14px;font:inherit;font-size:15px;background:#FFFDF8;color:#1E2420;outline:none" style-focus="border-color:#B5652B;box-shadow:0 0 0 3px rgba(181,101,43,0.2)"><button type="button" aria-label="Show password" style="position:absolute;right:4px;top:4px;width:36px;height:36px;border:0;background:transparent;border-radius:6px;color:#6F776F;cursor:pointer;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"></path><circle cx="12" cy="12" r="3"></circle></svg></button></div></label>
+      <button type="submit" style="height:48px;border:0;border-radius:8px;background:#2F5D46;color:#F5F0E6;font:inherit;font-size:16px;font-weight:700;cursor:pointer;white-space:nowrap" style-hover="background:#264C39">Sign in</button>
+      <div style="font-size:14px;color:#4A524C;text-align:center">Don't have an account? <a href="#signup" style="font-weight:600">Sign up</a></div>
+    </form>
+  </div>
+  <div style="position:relative;padding:16px 40px;font-size:13px;color:#6F776F;display:flex;justify-content:space-between"><span>Created by tomek7667</span><a href="mailto:family-tree@cyber-man.pl" style="color:#6F776F">family-tree@cyber-man.pl</a></div>
+</div>
+
+<div id="signup" data-screen-label="Sign up · light" style="flex:none;width:1024px;height:720px;background:#F5F0E6;position:relative;overflow:hidden;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,0.1);display:flex;flex-direction:column">
+  <div style="position:absolute;inset:0;background-image:radial-gradient(rgba(30,36,32,0.07) 1px,transparent 1px);background-size:22px 22px"></div>
+  <nav style="position:relative;display:flex;align-items:center;justify-content:space-between;padding:16px 40px"><a href="Landing.dc.html" style="display:flex;align-items:center;gap:10px;color:#1E2420"><img src="assets/logo/mark-color.svg" alt="" style="width:28px;height:28px"><span style="font-family:Literata,Georgia,serif;font-weight:600;font-size:19px;white-space:nowrap">Family Tree</span></a><div style="font-size:14px;color:#4A524C">Already have an account? <a href="#" style="font-weight:600">Sign in</a></div></nav>
+  <div style="position:relative;flex:1;display:flex;align-items:center;justify-content:center;padding:24px">
+    <form style="width:420px;background:#FFFDF8;border:1px solid #D9CFBC;border-radius:16px;padding:32px 36px;box-shadow:0 12px 32px rgba(30,36,32,0.12);display:flex;flex-direction:column;gap:16px">
+      <div style="display:flex;flex-direction:column;gap:6px"><h2 style="font-family:Literata,Georgia,serif;font-weight:600;font-size:28px;margin:0;letter-spacing:-0.01em">Start your tree</h2><p style="margin:0;font-size:15px;color:#4A524C">Free, private, no ads.</p></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;font-weight:600;color:#4A524C">Username</span><input type="text" value="tomek" style="height:44px;border:1px solid #D9CFBC;border-radius:8px;padding:0 14px;font:inherit;font-size:15px;background:#FFFDF8;color:#1E2420;outline:none;min-width:0" style-focus="border-color:#B5652B;box-shadow:0 0 0 3px rgba(181,101,43,0.2)"></label>
+        <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;font-weight:600;color:#4A524C">Display name <span style="font-weight:500;color:#8A8F88">optional</span></span><input type="text" placeholder="Tomek" style="height:44px;border:1px solid #D9CFBC;border-radius:8px;padding:0 14px;font:inherit;font-size:15px;background:#FFFDF8;color:#1E2420;outline:none;min-width:0" style-focus="border-color:#B5652B;box-shadow:0 0 0 3px rgba(181,101,43,0.2)"></label>
+      </div>
+      <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;font-weight:600;color:#4A524C">Email</span><input type="email" value="tomek@cyber-man" style="height:44px;border:1.5px solid #A83C32;border-radius:8px;padding:0 14px;font:inherit;font-size:15px;background:#FFFDF8;color:#1E2420;outline:none" style-focus="box-shadow:0 0 0 3px rgba(168,60,50,0.18)"><span style="font-size:13px;color:#A83C32;display:flex;align-items:center;gap:6px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v5M12 16.5v.5"></path></svg>That doesn't look like a full email address.</span></label>
+      <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;font-weight:600;color:#4A524C">Password</span><input type="password" value="••••••••••••" style="height:44px;border:1px solid #D9CFBC;border-radius:8px;padding:0 14px;font:inherit;font-size:15px;background:#FFFDF8;color:#1E2420;outline:none" style-focus="border-color:#B5652B;box-shadow:0 0 0 3px rgba(181,101,43,0.2)"><span style="font-size:12px;color:#6F776F">At least 8 characters.</span></label>
+      <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;font-weight:600;color:#4A524C">Confirm password</span><input type="password" value="••••••••••••" style="height:44px;border:1px solid #D9CFBC;border-radius:8px;padding:0 14px;font:inherit;font-size:15px;background:#FFFDF8;color:#1E2420;outline:none" style-focus="border-color:#B5652B;box-shadow:0 0 0 3px rgba(181,101,43,0.2)"></label>
+      <button type="submit" style="height:48px;border:0;border-radius:8px;background:#2F5D46;color:#F5F0E6;font:inherit;font-size:16px;font-weight:700;cursor:pointer;margin-top:4px" style-hover="background:#264C39">Create account</button>
+      <div style="font-size:12px;color:#6F776F;text-align:center;line-height:1.5">We'll send a verification email. Your tree is visible only to you and the people you invite.</div>
+    </form>
+  </div>
+  <div style="position:relative;padding:16px 40px;font-size:13px;color:#6F776F;display:flex;justify-content:space-between"><span>Created by tomek7667</span><a href="mailto:family-tree@cyber-man.pl" style="color:#6F776F">family-tree@cyber-man.pl</a></div>
+</div>
+
+<div data-screen-label="Sign in · dark, server error, loading" style="flex:none;width:1024px;height:720px;background:#121714;color:#EDE6D8;position:relative;overflow:hidden;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,0.3);display:flex;flex-direction:column">
+  <div style="position:absolute;inset:0;background-image:radial-gradient(rgba(237,230,216,0.07) 1px,transparent 1px);background-size:22px 22px"></div>
+  <nav style="position:relative;display:flex;align-items:center;justify-content:space-between;padding:16px 40px"><a href="Landing.dc.html" style="display:flex;align-items:center;gap:10px;color:#EDE6D8"><img src="assets/logo/mark-white.svg" alt="" style="width:28px;height:28px"><span style="font-family:Literata,Georgia,serif;font-weight:600;font-size:19px;white-space:nowrap">Family Tree</span></a><div style="font-size:14px;color:#B9B3A5">New here? <a href="#signup" style="font-weight:600;color:#D98A4E">Create an account</a></div></nav>
+  <div style="position:relative;flex:1;display:flex;align-items:center;justify-content:center;padding:24px">
+    <form style="width:420px;background:#1A211C;border:1px solid #33403A;border-radius:16px;padding:36px;box-shadow:0 12px 32px rgba(0,0,0,0.4);display:flex;flex-direction:column;gap:20px">
+      <div style="display:flex;flex-direction:column;gap:6px"><h2 style="font-family:Literata,Georgia,serif;font-weight:600;font-size:28px;margin:0;letter-spacing:-0.01em">Welcome back</h2><p style="margin:0;font-size:15px;color:#B9B3A5">Sign in to open your trees.</p></div>
+      <div role="alert" style="display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:8px;background:#3E2321;border:1px solid #5A3230;color:#F1C6C1;font-size:14px;line-height:1.45"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E07B71" stroke-width="2" stroke-linecap="round" style="flex:none;margin-top:1px"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v5M12 16.5v.5"></path></svg><span>Wrong username or password. Check both and try again.</span></div>
+      <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;font-weight:600;color:#B9B3A5">Username or email</span><input type="text" value="tomek" style="height:44px;border:1px solid #33403A;border-radius:8px;padding:0 14px;font:inherit;font-size:15px;background:#121714;color:#EDE6D8;outline:none"></label>
+      <label style="display:flex;flex-direction:column;gap:6px"><span style="display:flex;justify-content:space-between;font-size:13px;font-weight:600;color:#B9B3A5">Password <a href="#" style="font-weight:600;color:#D98A4E">Forgot?</a></span><input type="password" value="••••••••••" style="height:44px;border:1px solid #D98A4E;border-radius:8px;padding:0 14px;font:inherit;font-size:15px;background:#121714;color:#EDE6D8;outline:none;box-shadow:0 0 0 3px rgba(217,138,78,0.25)"></label>
+      <button type="submit" disabled style="height:48px;border:0;border-radius:8px;background:#5E9C78;color:#0F1712;font:inherit;font-size:16px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:10px;opacity:0.85"><span style="width:18px;height:18px;border-radius:50%;border:2.5px solid rgba(15,23,18,0.25);border-top-color:#0F1712;animation:ftspin 0.8s linear infinite"></span>Signing in…</button>
+      <div style="font-size:14px;color:#B9B3A5;text-align:center">Don't have an account? <a href="#signup" style="font-weight:600;color:#D98A4E">Sign up</a></div>
+    </form>
+  </div>
+  <div style="position:relative;padding:16px 40px;font-size:13px;color:#858D84;display:flex;justify-content:space-between"><span>Created by tomek7667</span><a href="mailto:family-tree@cyber-man.pl" style="color:#858D84">family-tree@cyber-man.pl</a></div>
+</div>
+
+</div>
+<p style="margin:0;font-size:13px;color:#6F776F">Focus ring: 3px copper at 20% alpha plus copper border. Error: 1.5px danger border, message under the field. Loading: button keeps its label, spinner on the left, inputs stay visible. Dark variant swaps the token set only; layout is identical.</p>
+</div>
+</x-dc>
+</body>
+</html>

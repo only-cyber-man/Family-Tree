@@ -1,92 +1,44 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import Link from "next/link";
-import Image from "next/image";
-import { initPocketBase } from "@/lib/ssr";
-import { LogoutButton } from "./LogoutButton";
-import { BurgerButton } from "./Burger";
+import type { Metadata, Viewport } from "next";
+import { Literata, Manrope } from "next/font/google";
 import { Providers } from "./providers";
+import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
+const literata = Literata({
+	subsets: ["latin", "latin-ext"],
+	weight: ["400", "600"],
+	style: ["normal", "italic"],
+	variable: "--font-literata",
+	display: "swap",
+});
+
+const manrope = Manrope({
+	subsets: ["latin", "latin-ext"],
+	weight: ["400", "500", "600", "700"],
+	variable: "--font-manrope",
+	display: "swap",
+});
 
 export const metadata: Metadata = {
-	title: "Family Tree",
-	description: "Visualize your family tree",
+	title: {
+		default: "Family Tree",
+		template: "%s · Family Tree",
+	},
+	description:
+		"A private family tree, drawn as a graph. Add the people you know, link how they are related, and see the generations line up by birth year.",
 };
 
-export default async function RootLayout({
-	children,
-}: {
-	children: React.ReactNode;
-}) {
-	const pb = await initPocketBase();
+export const viewport: Viewport = {
+	themeColor: [
+		{ media: "(prefers-color-scheme: light)", color: "#F5F0E6" },
+		{ media: "(prefers-color-scheme: dark)", color: "#121714" },
+	],
+};
 
+export default function RootLayout({ children }: { children: React.ReactNode }) {
 	return (
-		<html lang="en">
-			<head>
-				<link
-					rel="stylesheet"
-					href="https://cdn.jsdelivr.net/npm/bulma@1.0.0/css/bulma.min.css"
-				></link>
-				<link
-					rel="stylesheet"
-					href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
-				></link>
-			</head>
-			<body className={inter.className}>
-				<nav className="navbar" role="navigation" aria-label="main navigation">
-					<div className="navbar-brand">
-						<Link className="navbar-item" href="/">
-							<Image
-								src="/logo-no-background.svg"
-								width="150"
-								height="28"
-								alt="logo"
-							/>
-						</Link>
-						<BurgerButton />
-					</div>
-					<div className="navbar-menu" id="navbar-menu-unique">
-						<Link href="/" className="navbar-item">
-							Home
-						</Link>
-						{pb.authStore.isValid && (
-							<Link href="/trees" className="navbar-item">
-								Trees
-							</Link>
-						)}
-						<div className="navbar-end">
-							<div className="navbar-item">
-								{pb.authStore.isValid && (
-									<>
-										<div style={{ marginRight: "1rem" }}>
-											Logged as{" "}
-											<b>
-												{pb.authStore.model?.username ??
-													pb.authStore.model?.email}
-											</b>
-										</div>
-										<LogoutButton />
-									</>
-								)}
-
-								{!pb.authStore.isValid && (
-									<div className="buttons">
-										<Link className="button is-primary" href="/sign-up">
-											<strong>Sign up</strong>
-										</Link>
-										<Link className="button is-light" href="/sign-in">
-											Log in
-										</Link>
-									</div>
-								)}
-							</div>
-						</div>
-					</div>
-				</nav>
-				<Providers>
-					<div className="section">{children}</div>
-				</Providers>
+		<html lang="en" className={`${literata.variable} ${manrope.variable}`}>
+			<body>
+				<Providers>{children}</Providers>
 			</body>
 		</html>
 	);

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="icon" href="assets/favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Literata:ital,wght@0,400;0,600;1,400&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>body{margin:0;background:#F5F0E6;color:#1E2420;font-family:Manrope,system-ui,sans-serif;-webkit-font-smoothing:antialiased}a{color:#B5652B;text-decoration:none}a:hover{color:#9A5322}code{font-family:ui-monospace,Menlo,monospace;font-size:0.92em;background:#EDE6D8;padding:1px 5px;border-radius:4px}</style>
+</helmet>
+<div style="max-width:1100px;margin:0 auto;padding:56px 40px 96px;display:flex;flex-direction:column;gap:48px">
+<header style="display:flex;flex-direction:column;gap:14px"><img src="assets/logo/logo-no-background.svg" alt="Family Tree" style="width:240px;height:auto"><h1 style="font-family:Literata,Georgia,serif;font-weight:600;font-size:44px;line-height:1.05;margin:8px 0 0;letter-spacing:-0.015em;max-width:760px;text-wrap:balance">Visual identity, website and native app for Family Tree</h1><p style="font-size:17px;line-height:1.55;color:#4A524C;max-width:720px;margin:0;text-wrap:pretty">One design system feeding the Next.js site and the Expo app, built on the existing PocketBase model (<code>ft_users</code>, <code>ft_trees</code>, <code>ft_nodes</code>, <code>ft_relationships</code>, <code>ft_relationships_names</code>) as read from the repo. Nothing here needs a field that doesn't exist; the three things that would, are labelled as proposals.</p></header>
+
+<section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px">
+  <sc-for list="{{ pages }}" as="p" hint-placeholder-count="8"><a href="{{ p.href }}" style="display:flex;flex-direction:column;gap:8px;padding:22px 24px;background:#FFFDF8;border:1px solid #D9CFBC;border-radius:12px;color:#1E2420;box-shadow:0 1px 2px rgba(30,36,32,0.08)" style-hover="border-color:#B9AD95;box-shadow:0 4px 12px rgba(30,36,32,0.10)"><span style="font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#B5652B">{{ p.num }}</span><span style="font-family:Literata,Georgia,serif;font-weight:600;font-size:22px">{{ p.title }}</span><span style="font-size:14px;line-height:1.5;color:#4A524C">{{ p.desc }}</span></a></sc-for>
+</section>
+
+<section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px">
+  <div style="display:flex;flex-direction:column;gap:12px"><h2 style="font-family:Literata,Georgia,serif;font-weight:600;font-size:24px;margin:0">Decisions worth knowing</h2><ul style="margin:0;padding-left:20px;color:#4A524C;line-height:1.7;font-size:15px;display:flex;flex-direction:column;gap:6px">
+    <li><strong style="color:#1E2420">Gender:</strong> slate teal vs clay rose, equal weight, tinted fill + 2px border. Neither is "default". Selection is a copper border, never a fill change.</li>
+    <li><strong style="color:#1E2420">Relationship groups</strong> get colour + dash + weight + glyph. On top of that, an emphasis tier: <em>married</em> is the heaviest line in the graph (solid 4px), <em>lives with</em> the lightest (1.25px dots). Everything else uses the group default.</li>
+    <li><strong style="color:#1E2420">Copper</strong> is the marketing CTA and, inside the product, the selection colour. The in-app primary button is forest, so copper always means "this is chosen".</li>
+    <li><strong style="color:#1E2420">Mobile navigation</strong> is five tabs (Home, Tree, Add, Dates, Settings). Home opens on search and the upcoming list, not on a list of trees; switching trees is a picker from the title.</li>
+    <li><strong style="color:#1E2420">Age-scaled node borders</strong> from the current code are dropped; birth year already encodes age through the vertical position.</li>
+  </ul></div>
+  <div style="display:flex;flex-direction:column;gap:12px"><h2 style="font-family:Literata,Georgia,serif;font-weight:600;font-size:24px;margin:0">Where the brief and the data disagree</h2><ul style="margin:0;padding-left:20px;color:#4A524C;line-height:1.7;font-size:15px;display:flex;flex-direction:column;gap:6px">
+    <li>"How are we related to <em>me</em>" has no <em>me</em>. Proposal: <code>ft_trees.meNode</code> per user; the design falls back to a one-time on-device choice.</li>
+    <li>Dashboard "number of people" is a count query over <code>ft_nodes</code>, not a stored field. "Last updated" uses <code>ft_trees.updated</code>, which changes only when the tree record itself changes; bumping it on node edits needs a PocketBase hook.</li>
+    <li>Invite by email resolves through <code>ft_gettable_users_email</code>, so invitees must already have an account. The UI says so instead of pretending to send invitations.</li>
+    <li>Nickname / maiden name and a notes field are shown as clearly labelled proposals only.</li>
+    <li>The SVG wordmark files embed a Google Fonts import and fall back to Georgia inside <code>&lt;img&gt;</code>; outline "Family Tree" to paths before shipping <code>logo-*.svg</code>.</li>
+  </ul></div>
+</section>
+
+<section style="background:#FFFDF8;border:1px solid #D9CFBC;border-radius:12px;padding:24px 28px;display:flex;flex-direction:column;gap:10px"><h2 style="font-family:Literata,Georgia,serif;font-weight:600;font-size:22px;margin:0">Files</h2><div style="font-size:14px;line-height:1.8;color:#4A524C;font-family:ui-monospace,Menlo,monospace">tokens.json · assets/logo/{mark,logo}-{color,black,white,no-background}.svg · assets/favicon.svg · assets/app/ios-icon-1024.svg · assets/app/android-adaptive-{foreground,background,monochrome}.svg · assets/app/splash-icon.svg · assets/app/notification-icon.svg · github.md</div></section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    return { pages: [
+      { num: "01", title: "Brand foundations", href: "Brand.dc.html", desc: "Logo system, app icons, light and dark palettes, relationship and node specs with exact hex and stroke values, type, spacing, radii, shadows, icons." },
+      { num: "02", title: "Landing page", href: "Landing.dc.html", desc: "Logged-out home: hero graph, tree, timeline, relationship types, calendar export, privacy, mobile app, how it works, footer. Fluid down to 390px." },
+      { num: "03", title: "Auth", href: "Auth.dc.html", desc: "Sign in and sign up as centered cards, light and dark, inline errors, loading state." },
+      { num: "04", title: "Trees dashboard", href: "Dashboard.dc.html", desc: "Tree cards with role badges and viewer avatars, empty state, create flow, manage invited, delete confirmation, dark variant." },
+      { num: "05", title: "Tree view (interactive)", href: "TreeView.dc.html", desc: "Pan, zoom, select, filter, add and remove people and relationships, export. Toggle owner/viewer and light/dark in Tweaks." },
+      { num: "06", title: "Responsive web", href: "Responsive.dc.html", desc: "Landing and dashboard in a 390px mobile browser." },
+      { num: "07", title: "Mobile app screens", href: "Mobile.dc.html", desc: "iOS and Android: onboarding, auth, tree picker, Home, search and relationship path, canvas with LOD and focus mode, person sheet, forms, sharing, dates, settings, states, dark mode." },
+      { num: "08", title: "Mobile hand-off", href: "MobileHandoff.dc.html", desc: "Rationale, expo-router tree, sheet snap points, gestures, motion, haptics, LOD thresholds, component inventory with states, store screenshot frames." }
+    ] };
+  }
+}
+</script>
+</body>
+</html>

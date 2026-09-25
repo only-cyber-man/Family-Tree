@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Literata:ital,wght@0,400;0,600;1,400&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F5F0E6;--surface:#FFFDF8;--surface2:#EDE6D8;--border:#D9CFBC;--border-strong:#B9AD95;--ink:#1E2420;--ink2:#4A524C;--ink3:#6F776F;--primary:#2F5D46;--primary-hover:#264C39;--on-primary:#F5F0E6;--primary-soft:#DCE8E0;--accent:#B5652B;--accent-soft:#F3E1D2;--on-accent:#FFFDF8;--danger:#A83C32;--danger-soft:#F3DBD8;--success:#3E7B4F;--band:#EDE6D8;--grid:rgba(30,36,32,0.06);--male-fill:#DCE9EC;--male-border:#3F6E7A;--female-fill:#F1DDD8;--female-border:#A5584C;--bio:#2F5D46;--inlaw:#B5652B;--church:#6B4E9B;--other:#8A8F88;--shadow-md:0 4px 12px rgba(30,36,32,0.10);--shadow-lg:0 12px 32px rgba(30,36,32,0.16);--overlay:rgba(30,36,32,0.45);--label-bg:rgba(245,240,230,0.9)}
+.ft-dark{--bg:#121714;--surface:#1A211C;--surface2:#232C26;--border:#33403A;--border-strong:#4A5A51;--ink:#EDE6D8;--ink2:#B9B3A5;--ink3:#858D84;--primary:#5E9C78;--primary-hover:#74B08D;--on-primary:#0F1712;--primary-soft:#1F3529;--accent:#D98A4E;--accent-soft:#3A2617;--on-accent:#1A120B;--danger:#E07B71;--danger-soft:#3E2321;--success:#6FB08A;--band:#1A211C;--grid:rgba(237,230,216,0.06);--male-fill:#1F3A41;--male-border:#6FA3B0;--female-fill:#43282A;--female-border:#D08A80;--bio:#6FB08A;--inlaw:#E09A5F;--church:#A98BD6;--other:#6F766F;--shadow-md:0 4px 12px rgba(0,0,0,0.35);--shadow-lg:0 12px 32px rgba(0,0,0,0.5);--overlay:rgba(0,0,0,0.6);--label-bg:rgba(18,23,20,0.9)}
+html,body{margin:0;height:100%;overflow:hidden}body{background:#F5F0E6;color:#1E2420;font-family:Manrope,system-ui,sans-serif;-webkit-font-smoothing:antialiased}a{color:#B5652B;text-decoration:none}a:hover{color:#9A5322}input::placeholder{color:#8A8F88}button{font-family:inherit}
+@keyframes ftToast{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes ftDrawer{from{transform:translateX(24px);opacity:0}to{transform:none;opacity:1}}
+input[type=range]{accent-color:#2F5D46}
+</style>
+</helmet>
+<div class="{{ rootClass }}" style="height:100vh;display:flex;flex-direction:column;background:var(--bg);color:var(--ink);font-family:Manrope,system-ui,sans-serif;position:relative;overflow:hidden">
+
+<header style="height:56px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:var(--surface);border-bottom:1px solid var(--border);z-index:5">
+  <div style="display:flex;align-items:center;gap:12px;min-width:0">
+    <a href="Dashboard.dc.html" aria-label="Back to trees" style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--ink2)" style-hover="background:var(--surface2)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg></a>
+    <img src="assets/logo/mark-color.svg" alt="" style="width:26px;height:26px">
+    <h1 style="font-family:Literata,Georgia,serif;font-weight:600;font-size:19px;margin:0;white-space:nowrap">Kowalski family</h1>
+    <span style="padding:3px 9px;border-radius:999px;font-size:12px;font-weight:700;background:{{ roleBadgeBg }};color:{{ roleBadgeFg }}">{{ roleLabel }}</span>
+    <span style="font-size:13px;color:var(--ink3);white-space:nowrap">{{ countText }}</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <div style="display:flex;align-items:center"><div style="width:28px;height:28px;border-radius:50%;background:#3F6E7A;color:#F5F0E6;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid var(--surface)">AN</div><div style="width:28px;height:28px;border-radius:50%;background:#A5584C;color:#F5F0E6;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid var(--surface);margin-left:-8px">KW</div></div>
+    <sc-if value="{{ isOwner }}" hint-placeholder-val="{{ true }}"><button style="height:36px;padding:0 12px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--ink);font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap" style-hover="background:var(--surface2)">Manage invited</button></sc-if>
+    <div style="width:32px;height:32px;border-radius:50%;background:var(--primary);color:var(--on-primary);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px">T</div>
+  </div>
+</header>
+
+<div style="flex:1;position:relative;overflow:hidden;min-height:0">
+  <div ref="{{ viewportRef }}" onMouseDown="{{ onDown }}" onMouseMove="{{ onMove }}" onMouseUp="{{ onUp }}" onMouseLeave="{{ onUp }}" onWheel="{{ onWheel }}" style="position:absolute;inset:0;overflow:hidden;cursor:{{ cursor }};background-color:var(--bg);background-image:radial-gradient(var(--grid) 1px,transparent 1px);background-size:24px 24px;user-select:none">
+    <div style="position:absolute;left:0;top:0;transform-origin:0 0;transform:{{ transform }};width:1400px;height:900px">
+      <sc-for list="{{ bands }}" as="b" hint-placeholder-count="0"><div style="position:absolute;left:0;right:0;top:{{ b.y }}px;height:{{ b.h }}px;background:{{ b.bg }};pointer-events:none"><span style="position:absolute;left:14px;top:8px;font-size:12px;font-weight:700;color:var(--ink3);letter-spacing:0.04em">{{ b.label }}</span></div></sc-for>
+      <svg width="1400" height="900" style="position:absolute;left:0;top:0;overflow:visible">
+        <defs>
+          <marker id="ar-BIOLOGICAL" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" style="fill:var(--bio)"></path></marker>
+          <marker id="ar-IN-LAW" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" style="fill:var(--inlaw)"></path></marker>
+          <marker id="ar-CHURCH" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" style="fill:var(--church)"></path></marker>
+          <marker id="ar-IRRELEVANT" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" style="fill:var(--other)"></path></marker>
+          <marker id="ar-sel" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" style="fill:var(--accent)"></path></marker>
+        </defs>
+        <sc-for list="{{ edges }}" as="e" hint-placeholder-count="0">
+          <g>
+            <path d="{{ e.d }}" fill="none" stroke="transparent" stroke-width="16" style="cursor:pointer" onClick="{{ e.select }}"></path>
+            <path d="{{ e.d }}" fill="none" stroke="{{ e.color }}" stroke-width="{{ e.width }}" stroke-dasharray="{{ e.dash }}" stroke-linecap="round" marker-end="{{ e.marker }}" style="pointer-events:none"></path>
+          </g>
+        </sc-for>
+      </svg>
+      <sc-for list="{{ edgeLabels }}" as="e" hint-placeholder-count="0"><div style="position:absolute;left:{{ e.lx }}px;top:{{ e.ly }}px;transform:translate(-50%,-50%);padding:1px 6px;border-radius:4px;background:var(--label-bg);color:var(--ink2);font-size:10px;font-weight:{{ e.labelWeight }};white-space:nowrap;pointer-events:none;line-height:14px">{{ e.label }}</div></sc-for>
+      <sc-for list="{{ nodes }}" as="n" hint-placeholder-count="0">
+        <div onClick="{{ n.select }}" style="position:absolute;left:{{ n.x }}px;top:{{ n.y }}px;width:180px;box-sizing:border-box;height:64px;border-radius:10px;padding:10px 12px;display:flex;gap:10px;align-items:center;cursor:pointer;background:{{ n.fill }};border:{{ n.border }};box-shadow:{{ n.shadow }};transition:box-shadow .15s">
+          <div style="width:40px;height:40px;border-radius:50%;flex:none;background:{{ n.avatarBg }};color:#F5F0E6;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;filter:{{ n.avatarFilter }}">{{ n.initials }}</div>
+          <div style="display:flex;flex-direction:column;gap:2px;min-width:0"><div style="font-weight:700;font-size:13px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ n.name }}</div><div style="font-size:11.5px;color:var(--ink2);white-space:nowrap">{{ n.years }}</div></div>
+          <span aria-label="{{ n.gender }}" style="position:absolute;right:8px;top:6px;font-size:10px;color:var(--ink3)">{{ n.glyph }}</span>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="position:absolute;left:16px;top:16px;display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start;z-index:4;pointer-events:none">
+    <sc-if value="{{ isOwner }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;align-items:center;gap:2px;padding:4px;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow-md);pointer-events:auto">
+        <button onClick="{{ openAddPerson }}" style="height:40px;padding:0 12px;border:0;border-radius:8px;background:transparent;color:var(--ink);font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;cursor:pointer;white-space:nowrap" style-hover="background:var(--surface2)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="8" r="4"></circle><path d="M2 21v-1a6 6 0 0 1 6-6h4"></path><path d="M19 14v6M16 17h6"></path></svg>Add person</button>
+        <button onClick="{{ openAddRel }}" style="height:40px;padding:0 12px;border:0;border-radius:8px;background:transparent;color:var(--ink);font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;cursor:pointer;white-space:nowrap" style-hover="background:var(--surface2)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"></circle><circle cx="18" cy="18" r="3"></circle><path d="M8.5 8.5l7 7"></path></svg>Add relationship</button>
+        <div style="width:1px;height:24px;background:var(--border);margin:0 4px"></div>
+        <button onClick="{{ openEditPerson }}" disabled="{{ noSelection }}" style="height:40px;padding:0 12px;border:0;border-radius:8px;background:transparent;color:var(--ink);font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;cursor:pointer;white-space:nowrap;opacity:{{ selOpacity }}" style-hover="background:var(--surface2)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"></path></svg>Edit</button>
+        <button onClick="{{ openDeletePerson }}" disabled="{{ noSelection }}" style="height:40px;padding:0 12px;border:0;border-radius:8px;background:transparent;color:var(--danger);font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;cursor:pointer;white-space:nowrap;opacity:{{ selOpacity }}" style-hover="background:var(--danger-soft)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"></path></svg>Remove</button>
+      </div>
+    </sc-if>
+    <div style="display:flex;align-items:center;gap:2px;padding:4px;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow-md);pointer-events:auto">
+      <button onClick="{{ openFind }}" style="height:40px;padding:0 12px;border:0;border-radius:8px;background:transparent;color:var(--ink);font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;cursor:pointer;white-space:nowrap" style-hover="background:var(--surface2)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>Find person</button>
+      <button onClick="{{ toggleFilters }}" style="height:40px;padding:0 12px;border:0;border-radius:8px;background:{{ filtersBtnBg }};color:var(--ink);font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;cursor:pointer;white-space:nowrap" style-hover="background:var(--surface2)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h18l-7 8v6l-4 2v-8z"></path></svg>Filters<sc-if value="{{ hasFilters }}" hint-placeholder-val="{{ false }}"><span style="min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:var(--accent);color:var(--on-accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center">{{ filterCount }}</span></sc-if></button>
+      <button onClick="{{ openExport }}" style="height:40px;padding:0 12px;border:0;border-radius:8px;background:transparent;color:var(--ink);font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;cursor:pointer;white-space:nowrap" style-hover="background:var(--surface2)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>Export to calendar</button>
+    </div>
+    <sc-if value="{{ hasFilters }}" hint-placeholder-val="{{ false }}">
+      <div style="width:100%;display:flex;flex-wrap:wrap;gap:6px;pointer-events:auto">
+        <sc-for list="{{ chips }}" as="c" hint-placeholder-count="0"><button onClick="{{ c.remove }}" style="height:28px;padding:0 6px 0 10px;border:1px solid var(--border);border-radius:999px;background:var(--surface);color:var(--ink);font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px;cursor:pointer" style-hover="border-color:var(--border-strong)">{{ c.text }}<span style="width:16px;height:16px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></span></button></sc-for>
+        <button onClick="{{ clearFilters }}" style="height:28px;padding:0 10px;border:0;border-radius:999px;background:transparent;color:var(--accent);font-size:12px;font-weight:700;cursor:pointer">Clear all</button>
+      </div>
+    </sc-if>
+  </div>
+
+  <div style="position:absolute;left:16px;bottom:16px;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow-md);padding:12px 14px;display:flex;flex-direction:column;gap:8px;z-index:3;font-size:12px">
+    <div style="display:flex;align-items:center;gap:8px"><svg width="34" height="8"><line x1="1" y1="4" x2="33" y2="4" style="stroke:var(--bio)" stroke-width="2.5"></line></svg><span style="font-weight:600;white-space:nowrap">● Biological</span></div>
+    <div style="display:flex;align-items:center;gap:8px"><svg width="34" height="8"><line x1="1" y1="4" x2="33" y2="4" style="stroke:var(--inlaw)" stroke-width="4" stroke-linecap="round"></line></svg><span style="font-weight:600;white-space:nowrap">◆ Married</span></div>
+    <div style="display:flex;align-items:center;gap:8px"><svg width="34" height="8"><line x1="1" y1="4" x2="33" y2="4" style="stroke:var(--inlaw)" stroke-width="1.25" stroke-dasharray="2 6" stroke-linecap="round"></line></svg><span style="font-weight:600;white-space:nowrap">◆ Lives with</span></div>
+    <div style="display:flex;align-items:center;gap:8px"><svg width="34" height="8"><line x1="1" y1="4" x2="33" y2="4" style="stroke:var(--church)" stroke-width="2" stroke-dasharray="2 5" stroke-linecap="round"></line></svg><span style="font-weight:600;white-space:nowrap">✝ Church</span></div>
+    <div style="display:flex;align-items:center;gap:8px"><svg width="34" height="8"><line x1="1" y1="4" x2="33" y2="4" style="stroke:var(--other)" stroke-width="1" stroke-dasharray="3 7"></line></svg><span style="font-weight:600;color:var(--ink2);white-space:nowrap">○ Other</span></div>
+    <div style="height:1px;background:var(--border);margin:2px 0"></div>
+    <div style="display:flex;gap:12px;white-space:nowrap"><span style="display:flex;align-items:center;gap:6px"><span style="width:12px;height:12px;border-radius:3px;background:var(--male-fill);border:2px solid var(--male-border)"></span>Male</span><span style="display:flex;align-items:center;gap:6px"><span style="width:12px;height:12px;border-radius:3px;background:var(--female-fill);border:2px solid var(--female-border)"></span>Female</span><span style="color:var(--ink3)">† deceased</span></div>
+  </div>
+
+  <div style="position:absolute;right:16px;bottom:16px;display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow-md);overflow:hidden;z-index:3">
+    <button onClick="{{ zoomIn }}" aria-label="Zoom in" style="width:40px;height:40px;border:0;background:transparent;color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center" style-hover="background:var(--surface2)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg></button>
+    <div style="height:1px;background:var(--border)"></div>
+    <button onClick="{{ zoomOut }}" aria-label="Zoom out" style="width:40px;height:40px;border:0;background:transparent;color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center" style-hover="background:var(--surface2)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"></path></svg></button>
+    <div style="height:1px;background:var(--border)"></div>
+    <button onClick="{{ zoomFit }}" aria-label="Fit to screen" style="width:40px;height:40px;border:0;background:transparent;color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center" style-hover="background:var(--surface2)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"></path></svg></button>
+    <div style="height:1px;background:var(--border)"></div>
+    <div style="height:28px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--ink3)">{{ zoomPct }}</div>
+  </div>
+
+  <sc-if value="{{ panelOpen }}" hint-placeholder-val="{{ false }}">
+    <aside style="position:absolute;right:16px;top:16px;bottom:16px;width:340px;background:var(--surface);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow-lg);display:flex;flex-direction:column;overflow:hidden;z-index:6;animation:ftDrawer .22s cubic-bezier(.2,.8,.2,1)">
+      <div style="padding:20px 20px 16px;display:flex;gap:14px;align-items:flex-start;border-bottom:1px solid var(--border)">
+        <div style="width:64px;height:64px;border-radius:50%;flex:none;background:{{ sel.avatarBg }};color:#F5F0E6;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px;filter:{{ sel.avatarFilter }}">{{ sel.initials }}</div>
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+          <h2 style="font-family:Literata,Georgia,serif;font-weight:600;font-size:22px;margin:0;line-height:1.2">{{ sel.name }}</h2>
+          <div style="font-size:13px;color:var(--ink2)">{{ sel.genderText }} · {{ sel.ageText }}</div>
+          <div style="display:flex;flex-direction:column;gap:2px;font-size:13px;color:var(--ink2);margin-top:4px"><span>★ {{ sel.birthText }}</span><sc-if value="{{ sel.dead }}" hint-placeholder-val="{{ false }}"><span>† {{ sel.deathText }}</span></sc-if></div>
+        </div>
+        <button onClick="{{ closePanel }}" aria-label="Close" style="width:32px;height:32px;border:0;border-radius:8px;background:transparent;color:var(--ink3);cursor:pointer;display:flex;align-items:center;justify-content:center;flex:none" style-hover="background:var(--surface2)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+      </div>
+      <div style="flex:1;overflow:auto;padding:12px 20px;display:flex;flex-direction:column;gap:16px">
+        <sc-for list="{{ sel.groups }}" as="g" hint-placeholder-count="0">
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:{{ g.color }}"><span>{{ g.glyph }}</span>{{ g.label }}</div>
+            <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="0">
+              <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;border:1px solid {{ r.borderColor }};background:{{ r.bg }}">
+                <button onClick="{{ r.go }}" style="flex:1;display:flex;align-items:center;gap:10px;border:0;background:transparent;padding:0;cursor:pointer;text-align:left;color:var(--ink);min-width:0"><div style="width:30px;height:30px;border-radius:50%;flex:none;background:{{ r.avatarBg }};color:#F5F0E6;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px">{{ r.initials }}</div><div style="min-width:0;display:flex;flex-direction:column"><span style="font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span><span style="font-size:12px;color:var(--ink3)">{{ r.role }}</span></div></button>
+                <sc-if value="{{ isOwner }}" hint-placeholder-val="{{ true }}"><button onClick="{{ r.remove }}" aria-label="Remove relationship" title="Remove relationship" style="width:28px;height:28px;border:0;border-radius:6px;background:transparent;color:var(--ink3);cursor:pointer;display:flex;align-items:center;justify-content:center;flex:none" style-hover="background:var(--danger-soft);color:var(--danger)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></button></sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </sc-for>
+        <sc-if value="{{ sel.noRels }}" hint-placeholder-val="{{ false }}"><div style="padding:16px;border:1px dashed var(--border);border-radius:8px;font-size:13px;color:var(--ink3);text-align:center">No relationships yet.</div></sc-if>
+      </div>
+      <div style="padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:8px">
+        <sc-if value="{{ isOwner }}" hint-placeholder-val="{{ true }}">
+          <button onClick="{{ openEditPerson }}" style="flex:1;height:40px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--ink);font-size:14px;font-weight:600;cursor:pointer" style-hover="background:var(--surface2)">Edit</button>
+          <button onClick="{{ openAddRelFromSel }}" style="flex:1;height:40px;border:0;border-radius:8px;background:var(--primary);color:var(--on-primary);font-size:14px;font-weight:700;cursor:pointer" style-hover="background:var(--primary-hover)">Add relationship</button>
+          <button onClick="{{ openDeletePerson }}" aria-label="Remove person" style="width:40px;height:40px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--danger);cursor:pointer;display:flex;align-items:center;justify-content:center" style-hover="background:var(--danger-soft)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"></path></svg></button>
+        </sc-if>
+        <sc-if value="{{ isViewer }}" hint-placeholder-val="{{ false }}"><div style="flex:1;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink3)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>Read-only. Only the tree's creator can edit.</div></sc-if>
+      </div>
+    </aside>
+  </sc-if>
+
+  <sc-if value="{{ edgePanelOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;right:16px;top:16px;width:320px;background:var(--surface);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow-lg);padding:18px 20px;display:flex;flex-direction:column;gap:14px;z-index:6;animation:ftDrawer .22s cubic-bezier(.2,.8,.2,1)">
+      <div style="display:flex;align-items:center;justify-content:space-between"><div style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:{{ selEdge.color }}"><span>{{ selEdge.glyph }}</span>{{ selEdge.groupLabel }}</div><button onClick="{{ closeEdge }}" aria-label="Close" style="width:28px;height:28px;border:0;border-radius:8px;background:transparent;color:var(--ink3);cursor:pointer;display:flex;align-items:center;justify-content:center" style-hover="background:var(--surface2)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></button></div>
+      <div style="font-family:Literata,Georgia,serif;font-size:18px;font-weight:600;line-height:1.3">{{ selEdge.sentence }}</div>
+      <div style="font-size:12px;color:var(--ink3);font-family:ui-monospace,Menlo,monospace">{{ selEdge.name }} · {{ selEdge.dirText }}</div>
+      <sc-if value="{{ isOwner }}" hint-placeholder-val="{{ true }}"><button onClick="{{ openDeleteEdge }}" style="height:40px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--danger);font-size:14px;font-weight:600;cursor:pointer" style-hover="background:var(--danger-soft)">Remove relationship</button></sc-if>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ filtersOpen }}" hint-placeholder-val="{{ false }}">
+    <aside style="position:absolute;right:0;top:0;bottom:0;width:360px;background:var(--surface);border-left:1px solid var(--border);box-shadow:var(--shadow-lg);display:flex;flex-direction:column;z-index:7;animation:ftDrawer .22s cubic-bezier(.2,.8,.2,1)">
+      <div style="padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between"><h2 style="font-family:Literata,Georgia,serif;font-weight:600;font-size:20px;margin:0">Filters</h2><div style="display:flex;gap:6px"><button onClick="{{ clearFilters }}" style="height:32px;padding:0 10px;border:0;border-radius:8px;background:transparent;color:var(--accent);font-size:13px;font-weight:700;cursor:pointer">Clear all</button><button onClick="{{ toggleFilters }}" aria-label="Close" style="width:32px;height:32px;border:0;border-radius:8px;background:transparent;color:var(--ink3);cursor:pointer;display:flex;align-items:center;justify-content:center" style-hover="background:var(--surface2)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></button></div></div>
+      <div style="flex:1;overflow:auto;padding:20px;display:flex;flex-direction:column;gap:24px">
+        <div style="display:flex;flex-direction:column;gap:10px"><div style="font-size:13px;font-weight:700">Hide relationship types</div><div style="display:flex;flex-wrap:wrap;gap:6px"><sc-for list="{{ relTypeChips }}" as="t" hint-placeholder-count="0"><button onClick="{{ t.toggle }}" style="height:30px;padding:0 10px;border:1px solid {{ t.border }};border-radius:999px;background:{{ t.bg }};color:{{ t.fg }};font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px;cursor:pointer;text-decoration:{{ t.deco }}"><span style="color:{{ t.glyphColor }}">{{ t.glyph }}</span>{{ t.label }}</button></sc-for></div><div style="font-size:12px;color:var(--ink3)">Struck-through types are hidden from the canvas and the export.</div></div>
+        <div style="display:flex;flex-direction:column;gap:10px"><div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700"><span>Age</span><span style="color:var(--ink2);font-weight:600">{{ minAge }} – {{ maxAge }}</span></div><label style="display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--ink3)">Minimum<input type="range" min="0" max="110" value="{{ minAge }}" onChange="{{ setMinAge }}" style="width:100%"></label><label style="display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--ink3)">Maximum<input type="range" min="0" max="110" value="{{ maxAge }}" onChange="{{ setMaxAge }}" style="width:100%"></label><div style="font-size:12px;color:var(--ink3)">Age at death for people who have passed away.</div></div>
+        <div style="display:flex;flex-direction:column;gap:10px"><div style="font-size:13px;font-weight:700">Gender</div><div style="display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;padding:3px;gap:3px;background:var(--surface2)"><sc-for list="{{ genderOpts }}" as="o" hint-placeholder-count="0"><button onClick="{{ o.pick }}" style="flex:1;height:34px;border:0;border-radius:6px;background:{{ o.bg }};color:{{ o.fg }};font-size:13px;font-weight:600;cursor:pointer;box-shadow:{{ o.shadow }}">{{ o.label }}</button></sc-for></div></div>
+        <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;font-weight:700">Exclude by name</span><input type="text" placeholder="Nowak, Roman" value="{{ nameFilter }}" onChange="{{ setNameFilter }}" style="height:40px;border:1px solid var(--border);border-radius:8px;padding:0 12px;font:inherit;font-size:14px;background:var(--bg);color:var(--ink);outline:none"><span style="font-size:12px;color:var(--ink3)">Comma-separated. Matches any part of a name.</span></label>
+      </div>
+      <div style="padding:14px 20px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--ink2)"><span>{{ visibleText }}</span><button onClick="{{ toggleFilters }}" style="height:40px;padding:0 18px;border:0;border-radius:8px;background:var(--primary);color:var(--on-primary);font-size:14px;font-weight:700;cursor:pointer" style-hover="background:var(--primary-hover)">Done</button></div>
+    </aside>
+  </sc-if>
+
+  <sc-if value="{{ findOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeModal }}" style="position:absolute;inset:0;background:var(--overlay);z-index:8;display:flex;align-items:flex-start;justify-content:center;padding-top:80px">
+      <div onClick="{{ stop }}" role="dialog" style="width:460px;background:var(--surface);border-radius:16px;box-shadow:var(--shadow-lg);overflow:hidden;display:flex;flex-direction:column">
+        <div style="display:flex;align-items:center;gap:10px;padding:0 16px;height:52px;border-bottom:1px solid var(--border);color:var(--ink3)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg><input autoFocus type="text" placeholder="Type a name…" value="{{ query }}" onChange="{{ setQuery }}" style="flex:1;height:40px;border:0;background:transparent;font:inherit;font-size:16px;color:var(--ink);outline:none"></div>
+        <div style="max-height:360px;overflow:auto;padding:6px;display:flex;flex-direction:column">
+          <sc-for list="{{ findResults }}" as="p" hint-placeholder-count="0"><button onClick="{{ p.pick }}" style="display:flex;align-items:center;gap:12px;padding:8px 10px;border:0;border-radius:8px;background:transparent;text-align:left;cursor:pointer;color:var(--ink)" style-hover="background:var(--surface2)"><div style="width:32px;height:32px;border-radius:50%;flex:none;background:{{ p.avatarBg }};color:#F5F0E6;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px">{{ p.initials }}</div><div style="display:flex;flex-direction:column"><span style="font-size:14px;font-weight:600">{{ p.name }}</span><span style="font-size:12px;color:var(--ink3)">{{ p.years }}</span></div></button></sc-for>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ personModalOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeModal }}" style="position:absolute;inset:0;background:var(--overlay);z-index:8;display:flex;align-items:center;justify-content:center;padding:24px">
+      <div onClick="{{ stop }}" role="dialog" style="width:520px;max-height:100%;overflow:auto;background:var(--surface);border-radius:16px;box-shadow:var(--shadow-lg);padding:28px;display:flex;flex-direction:column;gap:20px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between"><div style="display:flex;flex-direction:column;gap:4px"><h2 style="font-family:Literata,Georgia,serif;font-weight:600;font-size:24px;margin:0">{{ personModalTitle }}</h2><p style="margin:0;font-size:14px;color:var(--ink2)">Name and birth date are required. Everything else can wait.</p></div><button onClick="{{ closeModal }}" aria-label="Close" style="width:36px;height:36px;border:0;border-radius:8px;background:transparent;color:var(--ink3);cursor:pointer;display:flex;align-items:center;justify-content:center" style-hover="background:var(--surface2)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></button></div>
+        <div style="display:flex;gap:16px;align-items:center"><div style="width:72px;height:72px;border-radius:50%;flex:none;border:2px dashed var(--border-strong);display:flex;align-items:center;justify-content:center;color:var(--ink3);background:var(--bg)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8a2 2 0 0 1 2-2h2l2-2h4l2 2h2a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"></path><circle cx="12" cy="13" r="3.5"></circle></svg></div><div style="display:flex;flex-direction:column;gap:6px"><div style="display:flex;gap:8px"><button style="height:36px;padding:0 12px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--ink);font-size:13px;font-weight:600;cursor:pointer" style-hover="background:var(--surface2)">Upload photo</button><button style="height:36px;padding:0 12px;border:0;border-radius:8px;background:transparent;color:var(--ink3);font-size:13px;font-weight:600;cursor:pointer">Remove</button></div><span style="font-size:12px;color:var(--ink3)">JPG or PNG, up to 5 MB. Square works best.</span></div></div>
+        <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;font-weight:600;color:var(--ink2)">Full name</span><input type="text" value="{{ formName }}" onChange="{{ setFormName }}" placeholder="e.g. Maria Kowalska" style="height:44px;border:1px solid var(--border);border-radius:8px;padding:0 14px;font:inherit;font-size:15px;background:var(--bg);color:var(--ink);outline:none" style-focus="border-color:var(--accent);box-shadow:0 0 0 3px rgba(181,101,43,0.2)"></label>
+        <div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;font-weight:600;color:var(--ink2)">Gender</span><div style="display:flex;gap:8px"><sc-for list="{{ formGenderOpts }}" as="o" hint-placeholder-count="0"><button onClick="{{ o.pick }}" style="flex:1;height:44px;border:2px solid {{ o.border }};border-radius:8px;background:{{ o.bg }};color:var(--ink);font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px"><span style="width:12px;height:12px;border-radius:3px;background:{{ o.swatch }};border:2px solid {{ o.swatchBorder }}"></span>{{ o.label }}</button></sc-for></div></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;font-weight:600;color:var(--ink2)">Birth date</span><input type="date" value="{{ formBirth }}" onChange="{{ setFormBirth }}" style="height:44px;border:1px solid var(--border);border-radius:8px;padding:0 12px;font:inherit;font-size:15px;background:var(--bg);color:var(--ink);outline:none;min-width:0"></label>
+          <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;font-weight:600;color:var(--ink2)">Death date <span style="font-weight:500;color:var(--ink3)">optional</span></span><input type="date" value="{{ formDeath }}" onChange="{{ setFormDeath }}" style="height:44px;border:1px solid var(--border);border-radius:8px;padding:0 12px;font:inherit;font-size:15px;background:var(--bg);color:var(--ink);outline:none;min-width:0"></label>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:10px;padding-top:4px"><button onClick="{{ closeModal }}" style="height:44px;padding:0 16px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--ink);font-size:15px;font-weight:600;cursor:pointer" style-hover="background:var(--surface2)">Cancel</button><button onClick="{{ savePerson }}" style="height:44px;padding:0 18px;border:0;border-radius:8px;background:var(--primary);color:var(--on-primary);font-size:15px;font-weight:700;cursor:pointer" style-hover="background:var(--primary-hover)">{{ personModalCta }}</button></div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ relModalOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeModal }}" style="position:absolute;inset:0;background:var(--overlay);z-index:8;display:flex;align-items:center;justify-content:center;padding:24px">
+      <div onClick="{{ stop }}" role="dialog" style="width:560px;background:var(--surface);border-radius:16px;box-shadow:var(--shadow-lg);padding:28px;display:flex;flex-direction:column;gap:20px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between"><div style="display:flex;flex-direction:column;gap:4px"><h2 style="font-family:Literata,Georgia,serif;font-weight:600;font-size:24px;margin:0">Add relationship</h2><p style="margin:0;font-size:14px;color:var(--ink2)">Read it as a sentence: <em style="font-family:Literata,Georgia,serif">{{ relSentence }}</em></p></div><button onClick="{{ closeModal }}" aria-label="Close" style="width:36px;height:36px;border:0;border-radius:8px;background:transparent;color:var(--ink3);cursor:pointer;display:flex;align-items:center;justify-content:center" style-hover="background:var(--surface2)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></button></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div style="display:flex;flex-direction:column;gap:6px;position:relative"><span style="font-size:13px;font-weight:600;color:var(--ink2)">From person</span><input type="text" placeholder="Search…" value="{{ fromQuery }}" onChange="{{ setFromQuery }}" onFocus="{{ focusFrom }}" style="height:44px;border:1px solid var(--border);border-radius:8px;padding:0 12px;font:inherit;font-size:15px;background:var(--bg);color:var(--ink);outline:none" style-focus="border-color:var(--accent);box-shadow:0 0 0 3px rgba(181,101,43,0.2)"><sc-if value="{{ fromListOpen }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:0;right:0;top:74px;max-height:200px;overflow:auto;background:var(--surface);border:1px solid var(--border);border-radius:8px;box-shadow:var(--shadow-md);padding:4px;z-index:2;display:flex;flex-direction:column"><sc-for list="{{ fromResults }}" as="p" hint-placeholder-count="0"><button onClick="{{ p.pickFrom }}" style="display:flex;align-items:center;gap:10px;padding:6px 8px;border:0;border-radius:6px;background:transparent;text-align:left;cursor:pointer;color:var(--ink)" style-hover="background:var(--surface2)"><div style="width:26px;height:26px;border-radius:50%;flex:none;background:{{ p.avatarBg }};color:#F5F0E6;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:10px">{{ p.initials }}</div><span style="font-size:13px;font-weight:600">{{ p.name }}</span><span style="font-size:11px;color:var(--ink3);margin-left:auto">{{ p.birthYear }}</span></button></sc-for></div></sc-if></div>
+          <div style="display:flex;flex-direction:column;gap:6px;position:relative"><span style="font-size:13px;font-weight:600;color:var(--ink2)">To person</span><input type="text" placeholder="Search…" value="{{ toQuery }}" onChange="{{ setToQuery }}" onFocus="{{ focusTo }}" style="height:44px;border:1px solid var(--border);border-radius:8px;padding:0 12px;font:inherit;font-size:15px;background:var(--bg);color:var(--ink);outline:none" style-focus="border-color:var(--accent);box-shadow:0 0 0 3px rgba(181,101,43,0.2)"><sc-if value="{{ toListOpen }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:0;right:0;top:74px;max-height:200px;overflow:auto;background:var(--surface);border:1px solid var(--border);border-radius:8px;box-shadow:var(--shadow-md);padding:4px;z-index:2;display:flex;flex-direction:column"><sc-for list="{{ toResults }}" as="p" hint-placeholder-count="0"><button onClick="{{ p.pickTo }}" style="display:flex;align-items:center;gap:10px;padding:6px 8px;border:0;border-radius:6px;background:transparent;text-align:left;cursor:pointer;color:var(--ink)" style-hover="background:var(--surface2)"><div style="width:26px;height:26px;border-radius:50%;flex:none;background:{{ p.avatarBg }};color:#F5F0E6;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:10px">{{ p.initials }}</div><span style="font-size:13px;font-weight:600">{{ p.name }}</span><span style="font-size:11px;color:var(--ink3);margin-left:auto">{{ p.birthYear }}</span></button></sc-for></div></sc-if></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:13px;font-weight:600;color:var(--ink2)">Relation type</span>
+          <sc-for list="{{ relTypeGroups }}" as="g" hint-placeholder-count="0"><div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center"><span style="width:84px;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:{{ g.color }}">{{ g.glyph }} {{ g.label }}</span><sc-for list="{{ g.types }}" as="t" hint-placeholder-count="0"><button onClick="{{ t.pick }}" style="height:32px;padding:0 12px;border:2px solid {{ t.border }};border-radius:999px;background:{{ t.bg }};color:var(--ink);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px">{{ t.label }}<span style="font-size:10px;color:var(--ink3)">{{ t.dir }}</span></button></sc-for></div></sc-for>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:10px"><button onClick="{{ closeModal }}" style="height:44px;padding:0 16px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--ink);font-size:15px;font-weight:600;cursor:pointer" style-hover="background:var(--surface2)">Cancel</button><button onClick="{{ saveRel }}" disabled="{{ relInvalid }}" style="height:44px;padding:0 18px;border:0;border-radius:8px;background:var(--primary);color:var(--on-primary);font-size:15px;font-weight:700;cursor:pointer;opacity:{{ relCtaOpacity }}">Add relationship</button></div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ confirmOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeModal }}" style="position:absolute;inset:0;background:var(--overlay);z-index:9;display:flex;align-items:center;justify-content:center;padding:24px">
+      <div onClick="{{ stop }}" role="alertdialog" style="width:440px;background:var(--surface);border-radius:16px;box-shadow:var(--shadow-lg);padding:28px;display:flex;flex-direction:column;gap:18px">
+        <div style="width:44px;height:44px;border-radius:12px;background:var(--danger-soft);color:var(--danger);display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"></path></svg></div>
+        <div style="display:flex;flex-direction:column;gap:6px"><h2 style="font-family:Literata,Georgia,serif;font-weight:600;font-size:22px;margin:0">{{ confirmTitle }}</h2><p style="margin:0;font-size:15px;line-height:1.5;color:var(--ink2)">{{ confirmBody }}</p></div>
+        <div style="display:flex;justify-content:flex-end;gap:10px"><button onClick="{{ closeModal }}" style="height:44px;padding:0 16px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--ink);font-size:15px;font-weight:600;cursor:pointer" style-hover="background:var(--surface2)">Cancel</button><button onClick="{{ confirmAction }}" style="height:44px;padding:0 18px;border:0;border-radius:8px;background:var(--danger);color:#FFFDF8;font-size:15px;font-weight:700;cursor:pointer">{{ confirmCta }}</button></div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ exportOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeModal }}" style="position:absolute;inset:0;background:var(--overlay);z-index:8;display:flex;align-items:center;justify-content:center;padding:24px">
+      <div onClick="{{ stop }}" role="dialog" style="width:460px;background:var(--surface);border-radius:16px;box-shadow:var(--shadow-lg);padding:28px;display:flex;flex-direction:column;gap:18px">
+        <div style="width:44px;height:44px;border-radius:12px;background:var(--primary-soft);color:var(--primary);display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg></div>
+        <div style="display:flex;flex-direction:column;gap:6px"><h2 style="font-family:Literata,Georgia,serif;font-weight:600;font-size:22px;margin:0">Export {{ visibleCount }} people to your calendar</h2><p style="margin:0;font-size:15px;line-height:1.5;color:var(--ink2)">A single .ics file with a yearly birthday for each living person and a yearly remembrance day for each person who has passed. Hidden people are not included.</p></div>
+        <div style="display:flex;flex-direction:column;gap:6px;font-size:14px;color:var(--ink2)"><div style="display:flex;justify-content:space-between"><span>Birthdays</span><strong style="color:var(--ink)">{{ livingCount }}</strong></div><div style="display:flex;justify-content:space-between"><span>Remembrance anniversaries</span><strong style="color:var(--ink)">{{ deadCount }}</strong></div></div>
+        <div style="display:flex;justify-content:flex-end;gap:10px"><button onClick="{{ closeModal }}" style="height:44px;padding:0 16px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--ink);font-size:15px;font-weight:600;cursor:pointer" style-hover="background:var(--surface2)">Cancel</button><button onClick="{{ doExport }}" style="height:44px;padding:0 18px;border:0;border-radius:8px;background:var(--primary);color:var(--on-primary);font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px" style-hover="background:var(--primary-hover)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12M6 10l6 6 6-6M4 20h16"></path></svg>Download .ics</button></div>
+      </div>
+    </div>
+  </sc-if>
+
+  <div style="position:absolute;right:16px;bottom:16px;display:flex;flex-direction:column;gap:8px;z-index:10;pointer-events:none;align-items:flex-end;padding-bottom:180px">
+    <sc-for list="{{ toasts }}" as="t" hint-placeholder-count="0"><div role="status" style="pointer-events:auto;display:flex;align-items:center;gap:10px;padding:12px 14px;min-width:280px;max-width:360px;background:var(--ink);color:var(--bg);border-radius:12px;box-shadow:var(--shadow-lg);font-size:14px;animation:ftToast .2s ease-out"><span style="width:8px;height:8px;border-radius:50%;flex:none;background:{{ t.dot }}"></span><span style="flex:1">{{ t.text }}</span><sc-if value="{{ t.hasAction }}" hint-placeholder-val="{{ false }}"><button onClick="{{ t.action }}" style="height:28px;padding:0 10px;border:0;border-radius:6px;background:rgba(255,255,255,0.12);color:inherit;font-size:13px;font-weight:700;cursor:pointer">{{ t.actionLabel }}</button></sc-if><button onClick="{{ t.dismiss }}" aria-label="Dismiss" style="width:24px;height:24px;border:0;background:transparent;color:inherit;opacity:0.7;cursor:pointer;display:flex;align-items:center;justify-content:center"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></button></div></sc-for>
+  </div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;role&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;owner&quot;,&quot;options&quot;:[&quot;owner&quot;,&quot;viewer&quot;],&quot;tsType&quot;:&quot;'owner' | 'viewer'&quot;,&quot;section&quot;:&quot;State&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;'light' | 'dark'&quot;,&quot;section&quot;:&quot;State&quot;},&quot;showLabels&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Canvas&quot;}}">
+const TODAY = new Date("2026-09-25");
+const REL_TYPES = [
+  { name: "IS_FATHER_OF", group: "BIOLOGICAL", bi: false, label: "Father of", inLabel: "Father", outLabel: "Child" },
+  { name: "IS_MOTHER_OF", group: "BIOLOGICAL", bi: false, label: "Mother of", inLabel: "Mother", outLabel: "Child" },
+  { name: "IS_MARRIED_TO", group: "IN-LAW", bi: true, label: "Married to", inLabel: "Married to", outLabel: "Married to" },
+  { name: "LIVES_WITH", group: "IN-LAW", bi: true, label: "Lives with", inLabel: "Lives with", outLabel: "Lives with" },
+  { name: "IS_STEPPARENT_OF", group: "IN-LAW", bi: false, label: "Step-parent of", inLabel: "Step-parent", outLabel: "Step-child" },
+  { name: "IS_GODPARENT_OF", group: "CHURCH", bi: false, label: "Godparent of", inLabel: "Godparent", outLabel: "Godchild" },
+  { name: "IS_WITNESS_OF", group: "CHURCH", bi: false, label: "Wedding witness of", inLabel: "Witness", outLabel: "Witnessed for" },
+  { name: "IS_FRIEND_OF", group: "IRRELEVANT", bi: true, label: "Friend of", inLabel: "Friend", outLabel: "Friend" },
+  { name: "IS_NEIGHBOUR_OF", group: "IRRELEVANT", bi: true, label: "Neighbour of", inLabel: "Neighbour", outLabel: "Neighbour" }
+];
+const GROUPS = {
+  BIOLOGICAL: { label: "Biological", glyph: "●", color: "var(--bio)", width: 2.5, dash: "" },
+  "IN-LAW": { label: "In-law", glyph: "◆", color: "var(--inlaw)", width: 2, dash: "8 5" },
+  CHURCH: { label: "Church", glyph: "✝", color: "var(--church)", width: 2, dash: "2 5" },
+  IRRELEVANT: { label: "Other", glyph: "○", color: "var(--other)", width: 1, dash: "3 7" }
+};
+const STRONG = ["IS_MARRIED_TO"], WEAK = ["LIVES_WITH", "IS_PARTNER_OF", "IS_ENGAGED_TO"];
+const PEOPLE = [
+  { id: "p1", name: "Stanisław Kowalski", gender: "male", birth: "1921-03-12", death: "1998-10-15", x: 200 },
+  { id: "p2", name: "Helena Kowalska", gender: "female", birth: "1924-06-02", death: "2010-01-20", x: 420 },
+  { id: "p3", name: "Józef Nowak", gender: "male", birth: "1919-01-05", death: "1985-05-30", x: 640 },
+  { id: "p4", name: "Bronisława Nowak", gender: "female", birth: "1923-11-11", death: "2001-02-14", x: 860 },
+  { id: "p5", name: "Krystyna Zielińska", gender: "female", birth: "1946-04-18", x: 60 },
+  { id: "p6", name: "Jan Kowalski", gender: "male", birth: "1948-08-09", x: 300 },
+  { id: "p7", name: "Maria Kowalska", gender: "female", birth: "1951-10-03", x: 540 },
+  { id: "p8", name: "Andrzej Nowak", gender: "male", birth: "1954-02-27", x: 780 },
+  { id: "p16", name: "Roman Lis", gender: "male", birth: "1947-09-09", x: 1040 },
+  { id: "p15", name: "Marek Duda", gender: "male", birth: "1960-06-06", x: 1080 },
+  { id: "p9", name: "Piotr Wiśniewski", gender: "male", birth: "1974-07-14", x: 300 },
+  { id: "p10", name: "Anna Wiśniewska", gender: "female", birth: "1976-05-22", x: 540 },
+  { id: "p11", name: "Tomasz Kowalski", gender: "male", birth: "1979-12-01", x: 800 },
+  { id: "p12", name: "Ewa Lipska", gender: "female", birth: "1981-03-30", x: 1040 },
+  { id: "p13", name: "Zofia Wiśniewska", gender: "female", birth: "2005-10-28", x: 380 },
+  { id: "p14", name: "Kuba Wiśniewski", gender: "male", birth: "2009-01-17", x: 640 }
+];
+const RELS = [
+  ["r1", "p1", "p6", "IS_FATHER_OF"], ["r2", "p2", "p6", "IS_MOTHER_OF"], ["r3", "p1", "p5", "IS_FATHER_OF"], ["r4", "p2", "p5", "IS_MOTHER_OF"],
+  ["r5", "p3", "p7", "IS_FATHER_OF"], ["r6", "p4", "p7", "IS_MOTHER_OF"], ["r7", "p3", "p8", "IS_FATHER_OF"], ["r8", "p4", "p8", "IS_MOTHER_OF"],
+  ["r9", "p6", "p10", "IS_FATHER_OF"], ["r10", "p7", "p10", "IS_MOTHER_OF"], ["r11", "p6", "p11", "IS_FATHER_OF"], ["r12", "p7", "p11", "IS_MOTHER_OF"],
+  ["r13", "p9", "p13", "IS_FATHER_OF"], ["r14", "p10", "p13", "IS_MOTHER_OF"], ["r15", "p9", "p14", "IS_FATHER_OF"], ["r16", "p10", "p14", "IS_MOTHER_OF"],
+  ["r17", "p1", "p2", "IS_MARRIED_TO"], ["r18", "p3", "p4", "IS_MARRIED_TO"], ["r19", "p6", "p7", "IS_MARRIED_TO"], ["r20", "p9", "p10", "IS_MARRIED_TO"], ["r21", "p11", "p12", "LIVES_WITH"],
+  ["r22", "p11", "p13", "IS_GODPARENT_OF"], ["r23", "p15", "p14", "IS_GODPARENT_OF"], ["r24", "p16", "p6", "IS_FRIEND_OF"]
+].map(([id, from, to, name]) => ({ id, from, to, name }));
+const BASE_YEAR = 1919, LEVEL = 8, W = 180, H = 64, TOP = 40;
+const yearOf = d => new Date(d).getFullYear();
+const ageOf = p => { const end = p.death ? new Date(p.death) : TODAY, b = new Date(p.birth); let a = end.getFullYear() - b.getFullYear(); const m = end.getMonth() - b.getMonth(); if (m < 0 || (m === 0 && end.getDate() < b.getDate())) a--; return a; };
+const initials = n => n.split(/\s+/).map(s => s[0]).slice(0, 2).join("").toUpperCase();
+const fmt = d => new Date(d).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+const yearsText = p => p.death ? `${yearOf(p.birth)} – †${yearOf(p.death)} · ${ageOf(p)}` : `${yearOf(p.birth)} · ${ageOf(p)}`;
+
+class Component extends DCLogic {
+  state = {
+    people: PEOPLE.slice(), rels: RELS.slice(), nextId: 100,
+    tx: 40, ty: 20, scale: 0.8, dragging: false, lastX: 0, lastY: 0, moved: false,
+    selectedId: null, selectedEdgeId: null,
+    filtersOpen: false, hiddenTypes: [], minAge: 0, maxAge: 110, gender: "both", nameFilter: "",
+    modal: null, query: "", editingId: null,
+    formName: "", formGender: "female", formBirth: "", formDeath: "",
+    fromId: null, toId: null, fromQuery: "", toQuery: "", relType: null, listOpen: null,
+    toasts: []
+  };
+  componentDidMount() { this._up = () => this.setState({ dragging: false }); window.addEventListener("mouseup", this._up); }
+  componentWillUnmount() { window.removeEventListener("mouseup", this._up); }
+  toast(text, kind = "success", action = null) {
+    const id = Date.now() + Math.random();
+    const t = { id, text, kind, action };
+    this.setState(s => ({ toasts: [...s.toasts, t] }));
+    setTimeout(() => this.setState(s => ({ toasts: s.toasts.filter(x => x.id !== id) })), 5000);
+  }
+  isVisible(p) {
+    const s = this.state, a = ageOf(p);
+    if (a < s.minAge || a > s.maxAge) return false;
+    if (s.gender !== "both" && s.gender !== p.gender) return false;
+    const names = s.nameFilter.split(",").map(x => x.trim().toLowerCase()).filter(Boolean);
+    if (names.some(n => p.name.toLowerCase().includes(n))) return false;
+    return true;
+  }
+  renderVals() {
+    const s = this.state, isOwner = (this.props.role ?? "owner") === "owner", dark = (this.props.theme ?? "light") === "dark", showLabels = this.props.showLabels ?? true;
+    const byId = Object.fromEntries(s.people.map(p => [p.id, p]));
+    const visiblePeople = s.people.filter(p => this.isVisible(p));
+    const visIds = new Set(visiblePeople.map(p => p.id));
+    const pos = p => ({ x: p.x, y: (yearOf(p.birth) - BASE_YEAR) * LEVEL + TOP });
+    const nodes = visiblePeople.map(p => {
+      const { x, y } = pos(p), sel = p.id === s.selectedId, male = p.gender === "male";
+      return { id: p.id, name: p.name, x, y, initials: initials(p.name), years: yearsText(p), gender: p.gender, glyph: male ? "♂" : "♀",
+        fill: male ? "var(--male-fill)" : "var(--female-fill)",
+        border: sel ? "3px solid var(--accent)" : `2px solid ${male ? "var(--male-border)" : "var(--female-border)"}`,
+        shadow: sel ? "var(--shadow-md)" : "none",
+        avatarBg: male ? "var(--male-border)" : "var(--female-border)", avatarFilter: p.death ? "saturate(0.4) opacity(0.85)" : "none",
+        select: e => { e.stopPropagation(); if (s.moved) return; this.setState({ selectedId: p.id, selectedEdgeId: null, modal: null }); } };
+    });
+    const typeOf = n => REL_TYPES.find(t => t.name === n);
+    const styleFor = t => { const g = GROUPS[t.group]; if (STRONG.includes(t.name)) return { width: 4, dash: "", weight: 700 }; if (WEAK.includes(t.name)) return { width: 1.25, dash: "2 6", weight: 500 }; return { width: g.width, dash: g.dash, weight: 600 }; };
+    const edges = s.rels.filter(r => visIds.has(r.from) && visIds.has(r.to) && !s.hiddenTypes.includes(r.name)).map(r => {
+      const t = typeOf(r.name), g = GROUPS[t.group], a = byId[r.from], b = byId[r.to], pa = pos(a), pb = pos(b), st = styleFor(t), sel = r.id === s.selectedEdgeId;
+      let d, mx, my;
+      if (t.bi && Math.abs(pa.y - pb.y) < H * 1.5) { const l = pa.x < pb.x ? pa : pb, rr = pa.x < pb.x ? pb : pa; const x1 = l.x + W, y1 = l.y + H / 2, x2 = rr.x, y2 = rr.y + H / 2; d = `M${x1} ${y1} L${x2} ${y2}`; mx = (x1 + x2) / 2; my = (y1 + y2) / 2; }
+      else { const up = pa.y <= pb.y ? pa : pb, dn = pa.y <= pb.y ? pb : pa; const x1 = up.x + W / 2, y1 = up.y + H, x2 = dn.x + W / 2, y2 = dn.y; const c = (y1 + y2) / 2; d = pa.y <= pb.y ? `M${x1} ${y1} C${x1} ${c} ${x2} ${c} ${x2} ${y2}` : `M${x2} ${y2} C${x2} ${c} ${x1} ${c} ${x1} ${y1}`; mx = (x1 + x2) / 2; my = c; }
+      const label = t.label.replace(/ of$| to$/, "").toLowerCase(), lw = label.length * 5.6 + 12;
+      return { id: r.id, d, color: sel ? "var(--accent)" : g.color, width: sel ? st.width + 1 : st.width, dash: st.dash, marker: t.bi ? "" : (sel ? "url(#ar-sel)" : `url(#ar-${t.group})`),
+        showLabel: showLabels, label, labelWeight: st.weight, lx: mx - lw / 2, ly: my - 8, lw, tx: mx, ty: my + 3.5,
+        select: e => { e.stopPropagation(); this.setState({ selectedEdgeId: r.id, selectedId: null, modal: null }); } };
+    });
+    const minY = Math.min(...s.people.map(p => yearOf(p.birth))), maxY = Math.max(...s.people.map(p => yearOf(p.birth)));
+    const bands = []; for (let dec = Math.floor(minY / 20) * 20, i = 0; dec <= maxY; dec += 20, i++) { const y = (dec - BASE_YEAR) * LEVEL + TOP - 12; bands.push({ label: `${dec}s`, y, h: 20 * LEVEL, bg: i % 2 ? "transparent" : "var(--band)" }); }
+    const selP = byId[s.selectedId] || null;
+    const groupRows = { BIOLOGICAL: [], "IN-LAW": [], CHURCH: [], IRRELEVANT: [] };
+    if (selP) s.rels.filter(r => r.from === selP.id || r.to === selP.id).forEach(r => {
+      const t = typeOf(r.name), otherId = r.from === selP.id ? r.to : r.from, o = byId[otherId]; if (!o) return;
+      const role = r.from === selP.id ? t.outLabel : t.inLabel;
+      groupRows[t.group].push({ name: o.name, initials: initials(o.name), avatarBg: o.gender === "male" ? "var(--male-border)" : "var(--female-border)", role, borderColor: "var(--border)", bg: "var(--bg)",
+        go: () => this.setState({ selectedId: o.id }), remove: () => this.setState({ modal: "confirm-edge", selectedEdgeId: r.id }) });
+    });
+    const selGroups = Object.entries(groupRows).filter(([, rows]) => rows.length).map(([k, rows]) => ({ label: GROUPS[k].label, glyph: GROUPS[k].glyph, color: GROUPS[k].color, rows }));
+    const sel = selP ? { name: selP.name, initials: initials(selP.name), avatarBg: selP.gender === "male" ? "var(--male-border)" : "var(--female-border)", avatarFilter: selP.death ? "saturate(0.4) opacity(0.85)" : "none",
+      genderText: selP.gender === "male" ? "Male" : "Female", ageText: selP.death ? `${ageOf(selP)} at death` : `${ageOf(selP)} years old`, birthText: fmt(selP.birth), dead: !!selP.death, deathText: selP.death ? fmt(selP.death) : "", groups: selGroups, noRels: selGroups.length === 0 } : {};
+    const selR = s.rels.find(r => r.id === s.selectedEdgeId);
+    const selEdge = selR ? (() => { const t = typeOf(selR.name), g = GROUPS[t.group], a = byId[selR.from], b = byId[selR.to]; return { color: g.color, glyph: g.glyph, groupLabel: g.label, name: t.name, dirText: t.bi ? "bidirectional" : "directional →", sentence: `${a.name} ${t.label.toLowerCase()} ${b.name}` }; })() : {};
+    const hiddenCount = s.hiddenTypes.length, ageActive = s.minAge > 0 || s.maxAge < 110, genderActive = s.gender !== "both", nameActive = s.nameFilter.trim().length > 0;
+    const filterCount = hiddenCount + (ageActive ? 1 : 0) + (genderActive ? 1 : 0) + (nameActive ? 1 : 0);
+    const chips = [];
+    s.hiddenTypes.forEach(n => chips.push({ text: `Hide: ${typeOf(n).label}`, remove: () => this.setState(st => ({ hiddenTypes: st.hiddenTypes.filter(x => x !== n) })) }));
+    if (ageActive) chips.push({ text: `Age ${s.minAge}–${s.maxAge}`, remove: () => this.setState({ minAge: 0, maxAge: 110 }) });
+    if (genderActive) chips.push({ text: s.gender === "male" ? "Men only" : "Women only", remove: () => this.setState({ gender: "both" }) });
+    if (nameActive) chips.push({ text: `Not: ${s.nameFilter}`, remove: () => this.setState({ nameFilter: "" }) });
+    const relTypeChips = REL_TYPES.map(t => { const hidden = s.hiddenTypes.includes(t.name), g = GROUPS[t.group]; return { label: t.label, glyph: g.glyph, glyphColor: g.color, deco: hidden ? "line-through" : "none", bg: hidden ? "var(--surface2)" : "var(--surface)", fg: hidden ? "var(--ink3)" : "var(--ink)", border: hidden ? "var(--border)" : "var(--border-strong)",
+      toggle: () => this.setState(st => ({ hiddenTypes: hidden ? st.hiddenTypes.filter(x => x !== t.name) : [...st.hiddenTypes, t.name] })) }; });
+    const genderOpts = [["both", "Everyone"], ["male", "Men"], ["female", "Women"]].map(([v, label]) => ({ label, bg: s.gender === v ? "var(--surface)" : "transparent", fg: s.gender === v ? "var(--ink)" : "var(--ink2)", shadow: s.gender === v ? "0 1px 2px rgba(30,36,32,0.12)" : "none", pick: () => this.setState({ gender: v }) }));
+    const q = s.query.toLowerCase();
+    const findResults = s.people.filter(p => p.name.toLowerCase().includes(q)).sort((a, b) => a.name.localeCompare(b.name)).map(p => ({ name: p.name, initials: initials(p.name), years: yearsText(p), avatarBg: p.gender === "male" ? "var(--male-border)" : "var(--female-border)",
+      pick: () => { const { x, y } = pos(p); const vp = this.viewportEl; const vw = vp ? vp.clientWidth : 1200, vh = vp ? vp.clientHeight : 700; this.setState({ selectedId: p.id, selectedEdgeId: null, modal: null, query: "", scale: 1, tx: vw / 2 - (x + W / 2) - 180, ty: vh / 2 - (y + H / 2) }); } }));
+    const search = (query, key) => s.people.filter(p => p.name.toLowerCase().includes(query.toLowerCase())).map(p => ({ name: p.name, initials: initials(p.name), birthYear: yearOf(p.birth), avatarBg: p.gender === "male" ? "var(--male-border)" : "var(--female-border)",
+      pickFrom: () => this.setState({ fromId: p.id, fromQuery: p.name, listOpen: null }), pickTo: () => this.setState({ toId: p.id, toQuery: p.name, listOpen: null }) }));
+    const relTypeGroups = Object.keys(GROUPS).map(k => ({ label: GROUPS[k].label, glyph: GROUPS[k].glyph, color: GROUPS[k].color, types: REL_TYPES.filter(t => t.group === k).map(t => ({ label: t.label, dir: t.bi ? "↔" : "→", border: s.relType === t.name ? "var(--accent)" : "var(--border)", bg: s.relType === t.name ? "var(--accent-soft)" : "transparent", pick: () => this.setState({ relType: t.name }) })) }));
+    const fromP = byId[s.fromId], toP = byId[s.toId], rt = s.relType ? typeOf(s.relType) : null;
+    const relSentence = `${fromP ? fromP.name : "Someone"} ${rt ? rt.label.toLowerCase() : "…"} ${toP ? toP.name : "someone"}.`;
+    const relInvalid = !(fromP && toP && rt && fromP.id !== toP.id);
+    const formGenderOpts = [["female", "Female", "var(--female-fill)", "var(--female-border)"], ["male", "Male", "var(--male-fill)", "var(--male-border)"]].map(([v, label, swatch, swatchBorder]) => ({ label, swatch, swatchBorder, border: s.formGender === v ? "var(--accent)" : "var(--border)", bg: s.formGender === v ? "var(--accent-soft)" : "transparent", pick: () => this.setState({ formGender: v }) }));
+    const living = visiblePeople.filter(p => !p.death).length, dead = visiblePeople.length - living;
+    const confirmEdgeR = s.modal === "confirm-edge" ? selR : null;
+    const confirmMap = {
+      "confirm-person": selP ? { title: `Remove ${selP.name}?`, body: `This also removes ${s.rels.filter(r => r.from === selP.id || r.to === selP.id).length} relationships connected to them. There is no undo.`, cta: "Remove person",
+        action: () => { const id = selP.id; this.setState(st => ({ people: st.people.filter(p => p.id !== id), rels: st.rels.filter(r => r.from !== id && r.to !== id), selectedId: null, modal: null })); this.toast(`${selP.name} removed`); } } : {},
+      "confirm-edge": confirmEdgeR ? { title: "Remove this relationship?", body: `${selEdge.sentence}. The two people stay in the tree.`, cta: "Remove relationship",
+        action: () => { const id = confirmEdgeR.id; this.setState(st => ({ rels: st.rels.filter(r => r.id !== id), selectedEdgeId: null, modal: null })); this.toast("Relationship removed"); } } : {}
+    };
+    const cm = confirmMap[s.modal] || {};
+    const toasts = s.toasts.map(t => ({ text: t.text, dot: t.kind === "error" ? "#E07B71" : "#6FB08A", hasAction: !!t.action, actionLabel: t.action ? t.action.label : "", action: () => { if (t.action) t.action.fn(); this.setState(st => ({ toasts: st.toasts.filter(x => x.id !== t.id) })); }, dismiss: () => this.setState(st => ({ toasts: st.toasts.filter(x => x.id !== t.id) })) }));
+    const openPersonModal = editing => { const p = editing ? selP : null; this.setState({ modal: "person", editingId: p ? p.id : null, formName: p ? p.name : "", formGender: p ? p.gender : "female", formBirth: p ? p.birth : "", formDeath: p && p.death ? p.death : "" }); };
+    return {
+      rootClass: dark ? "ft-dark" : "", isOwner, isViewer: !isOwner, roleLabel: isOwner ? "Owner" : "Viewer · read-only", roleBadgeBg: isOwner ? "var(--accent-soft)" : "var(--primary-soft)", roleBadgeFg: isOwner ? "var(--accent)" : "var(--primary)",
+      countText: `${s.people.length} people · ${s.rels.length} relationships`,
+      transform: `translate(${s.tx}px, ${s.ty}px) scale(${s.scale})`, cursor: s.dragging ? "grabbing" : "grab", zoomPct: `${Math.round(s.scale * 100)}%`,
+      viewportRef: el => { this.viewportEl = el; },
+      onDown: e => { if (e.button !== 0) return; this.setState({ dragging: true, lastX: e.clientX, lastY: e.clientY, moved: false }); },
+      onMove: e => { if (!s.dragging) return; const dx = e.clientX - s.lastX, dy = e.clientY - s.lastY; this.setState(st => ({ tx: st.tx + dx, ty: st.ty + dy, lastX: e.clientX, lastY: e.clientY, moved: st.moved || Math.abs(dx) + Math.abs(dy) > 2 })); },
+      onUp: e => { if (s.dragging && !s.moved && e.type === "mouseup" && e.target === e.currentTarget) this.setState({ selectedId: null, selectedEdgeId: null }); this.setState({ dragging: false }); },
+      onWheel: e => { const rect = e.currentTarget.getBoundingClientRect(), px = e.clientX - rect.left, py = e.clientY - rect.top; const k = Math.exp(-e.deltaY * 0.0015); this.setState(st => { const ns = Math.min(2.5, Math.max(0.2, st.scale * k)), r = ns / st.scale; return { scale: ns, tx: px - (px - st.tx) * r, ty: py - (py - st.ty) * r }; }); },
+      zoomIn: () => this.setState(st => ({ scale: Math.min(2.5, st.scale * 1.25) })), zoomOut: () => this.setState(st => ({ scale: Math.max(0.2, st.scale / 1.25) })),
+      zoomFit: () => { const vp = this.viewportEl; const vw = vp ? vp.clientWidth : 1200, vh = vp ? vp.clientHeight : 700; const sc = Math.min(vw / 1320, vh / 860, 1.2); this.setState({ scale: sc, tx: (vw - 1280 * sc) / 2, ty: 24 }); },
+      bands, nodes, edges, edgeLabels: showLabels ? edges.map(e => ({ lx: e.tx, ly: e.ty - 3.5, label: e.label, labelWeight: e.labelWeight })) : [],
+      noSelection: !selP, selOpacity: selP ? 1 : 0.45,
+      openAddPerson: () => openPersonModal(false), openEditPerson: () => { if (selP) openPersonModal(true); },
+      openDeletePerson: () => { if (selP) this.setState({ modal: "confirm-person" }); },
+      openAddRel: () => this.setState({ modal: "rel", fromId: null, toId: null, fromQuery: "", toQuery: "", relType: null, listOpen: null }),
+      openAddRelFromSel: () => this.setState({ modal: "rel", fromId: selP.id, fromQuery: selP.name, toId: null, toQuery: "", relType: null, listOpen: null }),
+      openFind: () => this.setState({ modal: "find", query: "" }), openExport: () => this.setState({ modal: "export" }),
+      toggleFilters: () => this.setState(st => ({ filtersOpen: !st.filtersOpen })), filtersOpen: s.filtersOpen, filtersBtnBg: s.filtersOpen ? "var(--surface2)" : "transparent",
+      hasFilters: filterCount > 0, filterCount, chips, clearFilters: () => this.setState({ hiddenTypes: [], minAge: 0, maxAge: 110, gender: "both", nameFilter: "" }),
+      relTypeChips, minAge: s.minAge, maxAge: s.maxAge, setMinAge: e => this.setState({ minAge: Math.min(+e.target.value, s.maxAge) }), setMaxAge: e => this.setState({ maxAge: Math.max(+e.target.value, s.minAge) }),
+      genderOpts, nameFilter: s.nameFilter, setNameFilter: e => this.setState({ nameFilter: e.target.value }), visibleText: `${visiblePeople.length} of ${s.people.length} people visible`,
+      panelOpen: !!selP && s.modal === null && !s.filtersOpen, sel, closePanel: () => this.setState({ selectedId: null }),
+      edgePanelOpen: !!selR && s.modal === null && !s.filtersOpen, selEdge, closeEdge: () => this.setState({ selectedEdgeId: null }), openDeleteEdge: () => this.setState({ modal: "confirm-edge" }),
+      findOpen: s.modal === "find", query: s.query, setQuery: e => this.setState({ query: e.target.value }), findResults,
+      personModalOpen: s.modal === "person", personModalTitle: s.editingId ? "Edit person" : "Add person", personModalCta: s.editingId ? "Save changes" : "Add to tree",
+      formName: s.formName, setFormName: e => this.setState({ formName: e.target.value }), formGenderOpts, formBirth: s.formBirth, setFormBirth: e => this.setState({ formBirth: e.target.value }), formDeath: s.formDeath, setFormDeath: e => this.setState({ formDeath: e.target.value }),
+      savePerson: () => { if (!s.formName.trim() || !s.formBirth) { this.toast("Name and birth date are required", "error"); return; } if (s.editingId) { this.setState(st => ({ people: st.people.map(p => p.id === st.editingId ? { ...p, name: st.formName.trim(), gender: st.formGender, birth: st.formBirth, death: st.formDeath || undefined } : p), modal: null })); this.toast("Changes saved"); } else { const id = "p" + s.nextId; this.setState(st => ({ people: [...st.people, { id, name: st.formName.trim(), gender: st.formGender, birth: st.formBirth, death: st.formDeath || undefined, x: 60 + Math.round(Math.random() * 1000) }], nextId: st.nextId + 1, modal: null, selectedId: id })); this.toast(`${s.formName.trim()} added to the tree`); } },
+      relModalOpen: s.modal === "rel", relSentence, relInvalid, relCtaOpacity: relInvalid ? 0.5 : 1,
+      fromQuery: s.fromQuery, toQuery: s.toQuery, setFromQuery: e => this.setState({ fromQuery: e.target.value, fromId: null, listOpen: "from" }), setToQuery: e => this.setState({ toQuery: e.target.value, toId: null, listOpen: "to" }),
+      focusFrom: () => this.setState({ listOpen: "from" }), focusTo: () => this.setState({ listOpen: "to" }), fromListOpen: s.listOpen === "from", toListOpen: s.listOpen === "to", fromResults: search(s.fromId ? "" : s.fromQuery), toResults: search(s.toId ? "" : s.toQuery), relTypeGroups,
+      saveRel: () => { if (relInvalid) return; const id = "r" + s.nextId; this.setState(st => ({ rels: [...st.rels, { id, from: st.fromId, to: st.toId, name: st.relType }], nextId: st.nextId + 1, modal: null })); this.toast("Relationship added", "success", { label: "Undo", fn: () => this.setState(st => ({ rels: st.rels.filter(r => r.id !== id) })) }); },
+      confirmOpen: s.modal === "confirm-person" || s.modal === "confirm-edge", confirmTitle: cm.title || "", confirmBody: cm.body || "", confirmCta: cm.cta || "", confirmAction: cm.action || (() => {}),
+      exportOpen: s.modal === "export", visibleCount: visiblePeople.length, livingCount: living, deadCount: dead,
+      doExport: () => { this.setState({ modal: null }); this.toast(`kowalski-family.ics downloaded · ${visiblePeople.length} people`); },
+      closeModal: () => this.setState({ modal: null, listOpen: null }), stop: e => e.stopPropagation(),
+      toasts
+    };
+  }
+}
+</script>
+</body>
+</html>

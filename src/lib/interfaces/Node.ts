@@ -1,8 +1,23 @@
 import { RecordModel } from "pocketbase";
 import { Tree, TreeData } from "./Tree";
-import { Color, Node as VisualizationNode } from "vis-network/esnext";
 
 export type Gender = "male" | "female";
+
+/**
+ * Birth and death dates are calendar days, stored by PocketBase as UTC
+ * midnight ("1950-05-03 00:00:00.000Z"). Reading them as an instant would show
+ * the previous day west of UTC, so the day part is taken as a local date.
+ */
+export const parseDay = (value: string): Date => {
+	const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(value);
+	return match ? new Date(+match[1], +match[2] - 1, +match[3]) : new Date(value);
+};
+
+/** Inverse of parseDay: "YYYY-MM-DD" for the local calendar day. */
+export const formatDay = (date: Date): string => {
+	const pad = (n: number) => String(n).padStart(2, "0");
+	return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+};
 
 export interface NodeData {
 	id: string;
@@ -35,7 +50,6 @@ export class Node {
 
 	public tree?: Tree;
 
-	public isVisible: boolean = true;
 
 	get age(): number {
 		const deathDate = this.deathDate || new Date();
@@ -47,40 +61,6 @@ export class Node {
 		);
 	}
 
-	visualization(y: number, x: number): VisualizationNode {
-		const color: Color = {
-			background: this.gender === "male" ? "#4A90E2" : "#FFB6C1",
-			border: this.gender === "male" ? "#2C6EAA" : "#FF6F91",
-			highlight: {
-				background: this.gender === "male" ? "#357ABD" : "#FF85A1",
-				border: this.gender === "male" ? "#25537B" : "#FF4F75",
-			},
-			hover: {
-				background: this.gender === "male" ? "#73B2FF" : "#FFD1DC",
-				border: this.gender === "male" ? "#4A90E2" : "#FF85A1",
-			},
-		};
-		return {
-			id: this.id,
-			color,
-			borderWidth: this.age / 10,
-			borderWidthSelected: this.age / 9,
-			title: this.name,
-			fixed: {
-				y: true,
-			},
-			y,
-			x,
-			label:
-				this.name +
-				"\n\n" +
-				(this.age ? this.age + " years old" : "") +
-				"\n" +
-				(this.birthDate ? `★ ${this.birthDate.toLocaleDateString()}` : "") +
-				"\n" +
-				(this.deathDate ? `† ${this.deathDate.toLocaleDateString()}` : ""),
-		};
-	}
 
 	constructor(data: NodeData | RecordModel) {
 		this.id = data.id;
@@ -88,8 +68,8 @@ export class Node {
 		this.updated = new Date(data.updated);
 
 		this.name = data.name;
-		this.birthDate = new Date(data.birthDate);
-		this.deathDate = data.deathDate ? new Date(data.deathDate) : null;
+		this.birthDate = parseDay(data.birthDate);
+		this.deathDate = data.deathDate ? parseDay(data.deathDate) : null;
 		this.pictureUrl = data.picture;
 		this.treeId = data.tree;
 		this.gender = data.gender;
@@ -101,9 +81,6 @@ export class Node {
 		}
 	}
 
-	public setVisible(visible: boolean): void {
-		this.isVisible = visible;
-	}
 
 	public serialize(): NodeData {
 		return {
@@ -112,8 +89,8 @@ export class Node {
 			updated: this.updated.toISOString(),
 
 			name: this.name,
-			birthDate: this.birthDate.toISOString(),
-			deathDate: this.deathDate?.toISOString(),
+			birthDate: formatDay(this.birthDate),
+			deathDate: this.deathDate ? formatDay(this.deathDate) : undefined,
 			picture: this.pictureUrl,
 			tree: this.treeId,
 			gender: this.gender,

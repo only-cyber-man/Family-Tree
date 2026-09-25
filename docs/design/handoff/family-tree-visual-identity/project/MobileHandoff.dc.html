@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Literata:ital,wght@0,400;0,600;1,400&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>body{margin:0;background:#F5F0E6;color:#1E2420;font-family:Manrope,system-ui,sans-serif;-webkit-font-smoothing:antialiased}a{color:#B5652B;text-decoration:none}a:hover{color:#9A5322;text-decoration:underline}code{font-family:ui-monospace,Menlo,monospace;font-size:0.92em;background:#EDE6D8;padding:1px 5px;border-radius:4px}</style>
+</helmet>
+<div style="max-width:1180px;margin:0 auto;padding:56px 40px 96px;display:flex;flex-direction:column;gap:64px">
+
+<header style="display:flex;flex-direction:column;gap:12px"><img src="assets/logo/logo-no-background.svg" alt="Family Tree" style="width:220px;height:auto"><h1 style="font-family:Literata,Georgia,serif;font-weight:600;font-size:40px;line-height:1.1;margin:8px 0 0;letter-spacing:-0.01em">Mobile hand-off</h1><p style="font-size:17px;line-height:1.5;color:#4A524C;max-width:760px;margin:0;text-wrap:pretty">For the Expo / React Native build in <code>mobile/</code>. Tokens come from <a href="tokens.json">tokens.json</a>; screens are in <a href="Mobile.dc.html">Mobile</a>. Everything below is written so the engineer does not have to guess.</p></header>
+
+<section style="display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:32px;align-items:start">
+  <div style="display:flex;flex-direction:column;gap:16px">
+    <span style="font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#B5652B">Product rationale</span>
+    <h2 style="font-family:Literata,Georgia,serif;font-weight:600;font-size:30px;margin:0;line-height:1.15">The web builds the tree. The phone answers questions about it.</h2>
+    <div style="font-size:16px;line-height:1.6;color:#4A524C;display:flex;flex-direction:column;gap:12px;text-wrap:pretty">
+      <p style="margin:0">Building a 100-person graph is desk work: two hands, a big screen, many small drags. The phone comes out in four other moments, and the app is organised around exactly those.</p>
+      <ol style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px"><li><strong style="color:#1E2420">Place a face.</strong> Home opens on search. A result shows the person and, if you have set "This is me", the relationship in words ("your mother's cousin") with the step-by-step path behind it.</li><li><strong style="color:#1E2420">Know whose day it is.</strong> The web's .ics export becomes a live Upcoming list plus opt-in local reminders. No server involvement: everything is scheduled on-device from birth and death dates already in the tree.</li><li><strong style="color:#1E2420">Add them now.</strong> The centre tab opens Add person with the camera one tap away, then offers to link the new person to someone already in the tree so it never ends up floating.</li><li><strong style="color:#1E2420">Browse.</strong> A pinch-zoom canvas with level-of-detail rendering and a focus mode that shows one person's parents, partners and children, because the whole graph is unreadable at 6 inches.</li></ol>
+    </div>
+  </div>
+  <div style="background:#FFFDF8;border:1px solid #D9CFBC;border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:14px">
+    <div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#6F776F">Deliberately left out</div>
+    <ul style="margin:0;padding-left:18px;font-size:15px;line-height:1.6;color:#4A524C;display:flex;flex-direction:column;gap:6px">
+      <li><strong style="color:#1E2420">Free-form node dragging.</strong> Positions come from birth year and column order; mobile never edits layout.</li><li><strong style="color:#1E2420">Bulk editing, relationship type management</strong> (<code>ft_relationships_names</code> is read-only on mobile).</li><li><strong style="color:#1E2420">Tree deletion and rename.</strong> Owner-only, rare, destructive: web.</li><li><strong style="color:#1E2420">Account deletion, password change.</strong> Links out to the website.</li><li><strong style="color:#1E2420">Remote push.</strong> All reminders are local notifications; there is no notification backend to run.</li><li><strong style="color:#1E2420">Onboarding beyond two screens.</strong> Value, then the one permission that matters.</li>
+    </ul>
+    <div style="height:1px;background:#EDE6D8"></div>
+    <div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#6F776F">Needs from the brief that don't fit the data</div>
+    <ul style="margin:0;padding-left:18px;font-size:15px;line-height:1.6;color:#4A524C"><li>"How are we related" needs a <em>me</em> node per user. Proposal: <code>ft_trees.meNode</code> (or a <code>ft_user_prefs</code> row). Fallback shipped in the design: pick once, store in <code>expo-secure-store</code>.</li><li>Search by nickname/maiden name needs <code>ft_nodes.nickname</code>. Marked as proposal on the Search screen.</li></ul>
+  </div>
+</section>
+
+<section style="display:flex;flex-direction:column;gap:20px">
+  <div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#B5652B">Navigation</span><h2 style="font-family:Literata,Georgia,serif;font-weight:600;font-size:30px;margin:0">expo-router tree</h2></div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px">
+    <pre style="margin:0;background:#1E2420;color:#EDE6D8;border-radius:12px;padding:20px 24px;font-family:ui-monospace,Menlo,monospace;font-size:13px;line-height:1.6;overflow:auto">app/
+  _layout.tsx            fonts, theme, auth gate, deep links
+  (auth)/sign-in.tsx     (auth)/sign-up.tsx
+  onboarding.tsx
+  (tabs)/_layout.tsx     5 tabs, Add is a modal trigger
+    index.tsx            Home: search + upcoming + quick actions
+    tree.tsx             Canvas (react-native-svg)
+    dates.tsx            Upcoming list, reminder toggles
+    settings.tsx
+  person/[id].tsx        bottom sheet route (presentation: transparentModal)
+  person/[id]/path.tsx   How are we related
+  add-person.tsx         sheet, ?linkTo=&lt;id&gt;
+  add-relationship.tsx   sheet, ?from=&lt;id&gt;
+  filters.tsx            sheet
+  trees.tsx              picker (sheet from Home title)
+  invited.tsx            Manage invited (owner)
+
+scheme: familytree://
+familytree://tree/&lt;id&gt;               → set active tree, open (tabs)/tree
+familytree://tree/&lt;id&gt;/person/&lt;id&gt;   → same + person sheet at snap 1</pre>
+    <div style="display:flex;flex-direction:column;gap:14px;font-size:15px;line-height:1.6;color:#4A524C">
+      <div style="background:#FFFDF8;border:1px solid #D9CFBC;border-radius:12px;padding:18px 20px"><strong style="color:#1E2420">Tab bar.</strong> 56pt + bottom safe-area, surface background, 1px top border. Icons 26pt Lucide, label 11pt/600 (700 active). Active colour <code>primary</code>, inactive <code>ink3</code>. The Add tab is a 48pt raised primary circle (shadow md) that opens <code>add-person</code> as a sheet and never becomes "selected". iOS: no large-title nav bars inside tabs; screen titles are Literata 30 in content so they scroll. Android: same bar, Material ripple, no M3 pill indicator except the ripple; edge-to-edge with the bar padded for the gesture inset.</div>
+      <div style="background:#FFFDF8;border:1px solid #D9CFBC;border-radius:12px;padding:18px 20px"><strong style="color:#1E2420">Back.</strong> Swipe-back on iOS for pushed screens (path view, invited, tree picker). Android predictive back closes the top-most sheet first, then pops. Sheets are always dismissible by swipe down and by tapping the scrim.</div>
+      <div style="background:#FFFDF8;border:1px solid #D9CFBC;border-radius:12px;padding:18px 20px"><strong style="color:#1E2420">Read-only viewers.</strong> Same screens. Every edit control is removed (not disabled): Add tab becomes a "Find" tab (search icon), person sheet loses Edit / Add relationship / Remove and shows the "Shared with you by…" lock row, Settings hides "Who can see this tree". Decide with <code>tree.creator === auth.user.id</code>.</div>
+    </div>
+  </div>
+</section>
+
+<section style="display:flex;flex-direction:column;gap:20px">
+  <div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#B5652B">Interaction notes</span><h2 style="font-family:Literata,Georgia,serif;font-weight:600;font-size:30px;margin:0">Sheets, gestures, motion, haptics</h2></div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:20px;font-size:14px;line-height:1.6;color:#4A524C">
+    <div style="background:#FFFDF8;border:1px solid #D9CFBC;border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:10px"><div style="font-weight:700;color:#1E2420;font-size:16px">Bottom sheets (@gorhom/bottom-sheet)</div><ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px"><li>Person: snap points <code>['38%','92%']</code>, opens at index 0. Handle 36×5, radius 24 top corners, surface bg, shadow lg. Backdrop appears only at index 1 (opacity 0 → 0.45, 220 ms).</li><li>Filters: <code>['55%','92%']</code>. Add person / Add relationship: <code>['92%']</code> with <code>keyboardBehavior="extend"</code>.</li><li>Tree picker: <code>['50%']</code>. Confirmations: <code>enableDynamicSizing</code>.</li><li>Sheet open: 320 ms, easing <code>cubic-bezier(0.2,0.8,0.2,1)</code>. Close: 220 ms. Dismiss threshold: 25% of height or velocity &gt; 800 pt/s.</li><li>Tapping a node while the person sheet is at 38% swaps content in place (crossfade 150 ms), no re-open.</li></ul></div>
+    <div style="background:#FFFDF8;border:1px solid #D9CFBC;border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:10px"><div style="font-weight:700;color:#1E2420;font-size:16px">Canvas gestures (gesture-handler + reanimated)</div><ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px"><li>Pan: 1 finger, no activation distance; decays with <code>withDecay</code>, deceleration 0.995, clamped to content bounds + 120 pt.</li><li>Pinch: 0.25 – 3.0 scale, focal-point anchored. Rubber-band 10% past the limits, spring back (damping 20, stiffness 200).</li><li>Tap node: 44 pt hit slop around dots, selects + opens person sheet. Light haptic (<code>impactAsync(Light)</code>).</li><li>Double-tap empty canvas: zoom to 1.0 at that point (280 ms). Double-tap node: focus mode.</li><li>Long-press node (400 ms, owner): quick menu (Edit, Add relationship, Remove). Medium haptic.</li><li>"Reset view": animate to fit-all in 320 ms; button appears when scale ≠ fit or offset &gt; 40 pt.</li></ul></div>
+    <div style="background:#FFFDF8;border:1px solid #D9CFBC;border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:10px"><div style="font-weight:700;color:#1E2420;font-size:16px">Level of detail (react-native-svg)</div><ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px"><li><strong style="color:#1E2420">Dot, scale &lt; 0.45:</strong> circle r 11 pt (13 selected) filled with the gender border colour, initials 8 pt/700 parchment. Edges 1.5 pt, no labels, no arrowheads.</li><li><strong style="color:#1E2420">Compact, 0.45 – 0.9:</strong> 120×56 card, radius 10, fill + 2 pt border, name 12/700, years 11. Edges full spec, no labels.</li><li><strong style="color:#1E2420">Full, ≥ 0.9:</strong> 150×70 card, 32–40 pt photo/initials, name 13/700, years 11, labels on edges near the selected node only.</li><li>LOD switch is a 150 ms opacity crossfade, computed once per gesture end (not per frame). Cull anything outside viewport + 200 pt. Above 150 visible nodes, force Dot level regardless of scale.</li><li>Generation bands: every 20 birth-years, alternating <code>band</code>/transparent, label 11/700 <code>ink3</code>, pinned to the left edge as the canvas pans.</li></ul></div>
+    <div style="background:#FFFDF8;border:1px solid #D9CFBC;border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:10px"><div style="font-weight:700;color:#1E2420;font-size:16px">Focus-on-person transition</div><ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px"><li>Trigger: "Focus" in the sheet, or double-tap a node. Sheet collapses to 38% first (220 ms).</li><li>Compute a local layout: person centred, parents in a row above (Δy −190), partners beside (Δx +170, marriage line 4 pt), children in a row below (Δy +220). Everyone else fades to 0 over 200 ms and stops receiving touches.</li><li>Nodes travel from graph positions to local positions with <code>withTiming(420, easing)</code>, staggered 30 ms by ring (self → partners → parents → children). Edges re-draw each frame from animated positions.</li><li>Camera animates to scale 1.0 centred on the person in the same 420 ms. Success haptic (<code>notificationAsync(Success)</code>) at the end.</li><li>Header pill "Focused on Anna · parents, partner, children" slides down 200 ms. "Go up to Jan" re-runs the transition with Jan as centre. Exit reverses everything in 320 ms.</li></ul></div>
+    <div style="background:#FFFDF8;border:1px solid #D9CFBC;border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:10px"><div style="font-weight:700;color:#1E2420;font-size:16px">Reminders (expo-notifications, local)</div><ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px"><li>Ask for permission only from Onboarding 2 or the first "Remind me" tap, never at launch.</li><li>Schedule on tree load, re-schedule after any node change. Birthdays: yearly trigger, 09:00 the day before, title "{name} turns {age} tomorrow". Remembrance: yearly, 09:00 on the day, "† {name}, {n} years". Round ages (multiples of 5 from 50, plus 18) add a second reminder 7 days before.</li><li>Cap at 60 scheduled notifications (iOS limit is 64); prefer nearest dates.</li><li>Tapping a notification deep-links to <code>familytree://tree/&lt;id&gt;/person/&lt;id&gt;</code>.</li></ul></div>
+    <div style="background:#FFFDF8;border:1px solid #D9CFBC;border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:10px"><div style="font-weight:700;color:#1E2420;font-size:16px">Durations, haptics, misc</div><ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px"><li>Motion tokens: fast 150, base 220, slow 320, focus 420 ms. One easing everywhere: <code>cubic-bezier(0.2,0.8,0.2,1)</code>; springs only for rubber-band.</li><li>Haptics: Light on select, Medium on long-press menu, Success on save / focus complete, Error on failed save (Android falls back to <code>performAndroidHapticsAsync</code>).</li><li>Toasts: bottom, above tab bar, 4 s (6 s with an action), max one visible, swipe to dismiss.</li><li>Skeletons after 300 ms; offline banner from NetInfo; writes queue in zustand + AsyncStorage and retry on reconnect.</li><li>Dynamic Type: all text uses <code>allowFontScaling</code> up to 1.35×; canvas cards and tab labels are exempt.</li></ul></div>
+  </div>
+</section>
+
+<section style="display:flex;flex-direction:column;gap:20px">
+  <div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#B5652B">Component inventory</span><h2 style="font-family:Literata,Georgia,serif;font-weight:600;font-size:30px;margin:0">Every component, every state</h2><p style="margin:0;color:#4A524C;font-size:15px;line-height:1.5;max-width:720px">Light tokens shown; dark swaps the token set only. Pressed = fill darkened one step (primary → primaryHover) or a 12% ink overlay on neutral surfaces. Disabled = 45% opacity, no shadow. Read-only = removed, not disabled.</p></div>
+
+  <div style="background:#FFFDF8;border:1px solid #D9CFBC;border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:20px">
+    <div style="font-weight:700;font-size:15px">Buttons · 52 pt primary, 48 pt secondary, 44 pt tertiary/inline · radius 12 · label 16/700 or 15/600</div>
+    <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center">
+      <span style="height:52px;padding:0 22px;border-radius:12px;background:#2F5D46;color:#F5F0E6;font-size:16px;font-weight:700;display:flex;align-items:center">Primary</span><span style="height:52px;padding:0 22px;border-radius:12px;background:#264C39;color:#F5F0E6;font-size:16px;font-weight:700;display:flex;align-items:center">Pressed</span><span style="height:52px;padding:0 22px;border-radius:12px;background:#2F5D46;color:#F5F0E6;font-size:16px;font-weight:700;display:flex;align-items:center;opacity:0.45">Disabled</span><span style="height:52px;padding:0 22px;border-radius:12px;background:#2F5D46;color:#F5F0E6;font-size:16px;font-weight:700;display:flex;align-items:center;gap:10px"><span style="width:18px;height:18px;border-radius:50%;border:2.5px solid rgba(245,240,230,0.3);border-top-color:#F5F0E6"></span>Saving…</span>
+      <span style="height:48px;padding:0 18px;border-radius:12px;border:1px solid #D9CFBC;background:#FFFDF8;color:#1E2420;font-size:15px;font-weight:600;display:flex;align-items:center">Secondary</span><span style="height:48px;padding:0 18px;border-radius:12px;border:1px solid #D9CFBC;background:#EDE6D8;color:#1E2420;font-size:15px;font-weight:600;display:flex;align-items:center">Pressed</span><span style="height:48px;padding:0 18px;border-radius:12px;border:1px solid #D9CFBC;background:#FFFDF8;color:#A83C32;font-size:15px;font-weight:600;display:flex;align-items:center">Destructive</span><span style="height:52px;padding:0 22px;border-radius:12px;background:#A83C32;color:#FFFDF8;font-size:16px;font-weight:700;display:flex;align-items:center">Confirm delete</span><span style="height:44px;padding:0 12px;color:#B5652B;font-size:15px;font-weight:700;display:flex;align-items:center">Text / accent</span>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px">
+    <div style="background:#FFFDF8;border:1px solid #D9CFBC;border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:14px">
+      <div style="font-weight:700;font-size:15px">Text input · 50 pt · radius 12 · label 13/600 ink2 above</div>
+      <div style="height:50px;border:1px solid #D9CFBC;border-radius:12px;padding:0 16px;display:flex;align-items:center;background:#FFFDF8;font-size:16px;color:#8A8F88">Placeholder</div>
+      <div style="height:50px;border:1.5px solid #B5652B;border-radius:12px;padding:0 16px;display:flex;align-items:center;background:#FFFDF8;font-size:16px;box-shadow:0 0 0 3px rgba(181,101,43,0.18)">Focused, typing</div>
+      <div style="display:flex;flex-direction:column;gap:4px"><div style="height:50px;border:1.5px solid #A83C32;border-radius:12px;padding:0 16px;display:flex;align-items:center;background:#FFFDF8;font-size:16px">Error value</div><span style="font-size:13px;color:#A83C32">Birth date is required.</span></div>
+      <div style="height:50px;border:1px solid #D9CFBC;border-radius:12px;padding:0 16px;display:flex;align-items:center;background:#EDE6D8;font-size:16px;color:#6F776F">Disabled</div>
+      <div style="height:50px;border:1px solid #D9CFBC;border-radius:12px;padding:0 16px;display:flex;align-items:center;justify-content:space-between;background:#FFFDF8;font-size:16px">4 February 1950<span style="padding:4px 10px;border-radius:8px;background:#EDE6D8;font-size:14px;font-weight:600">Change</span></div>
+      <div style="font-size:13px;color:#6F776F">Date field is a pressable row that opens <code>@react-native-community/datetimepicker</code> (iOS inline spinner sheet, Android dialog). Search field is the same input with a leading icon and a 26 pt radius.</div>
+    </div>
+    <div style="background:#FFFDF8;border:1px solid #D9CFBC;border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:14px">
+      <div style="font-weight:700;font-size:15px">Chips · 36 pt (30 on canvas) · pill</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px"><span style="height:36px;padding:0 12px;border-radius:999px;border:1px solid #B9AD95;font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px"><span style="color:#2F5D46">●</span>Default</span><span style="height:36px;padding:0 12px;border-radius:999px;border:2px solid #B5652B;background:#F3E1D2;font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px"><span style="color:#2F5D46">●</span>Selected</span><span style="height:36px;padding:0 12px;border-radius:999px;border:1px solid #D9CFBC;background:#EDE6D8;color:#6F776F;font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;text-decoration:line-through"><span style="color:#B5652B">◆</span>Hidden (filter)</span><span style="height:30px;padding:0 8px 0 12px;border-radius:999px;background:#FFFDF8;border:1px solid #D9CFBC;font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px;box-shadow:0 4px 12px rgba(30,36,32,0.10)">Active filter <span style="width:16px;height:16px;border-radius:50%;background:#EDE6D8;display:flex;align-items:center;justify-content:center;font-size:10px">✕</span></span><span style="height:34px;padding:0 14px;border-radius:999px;background:#1E2420;color:#F5F0E6;font-size:13px;font-weight:600;display:flex;align-items:center">Segment on</span><span style="padding:4px 10px;border-radius:999px;background:#F3E1D2;color:#7A421A;font-size:12px;font-weight:700">Owner</span><span style="padding:4px 10px;border-radius:999px;background:#DCE8E0;color:#264C39;font-size:12px;font-weight:700">Shared with you</span></div>
+      <div style="font-weight:700;font-size:15px;margin-top:8px">Segmented control · 44 pt track, 38 pt thumb</div>
+      <div style="display:flex;padding:3px;gap:3px;background:#EDE6D8;border-radius:12px"><span style="flex:1;height:38px;border-radius:9px;background:#FFFDF8;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;box-shadow:0 1px 2px rgba(30,36,32,0.12)">System</span><span style="flex:1;height:38px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:#4A524C">Light</span><span style="flex:1;height:38px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:#4A524C">Dark</span></div>
+      <div style="font-weight:700;font-size:15px;margin-top:8px">Toggle · 51×31 · thumb 27</div>
+      <div style="display:flex;gap:16px;align-items:center"><span style="width:51px;height:31px;border-radius:16px;background:#2F5D46;position:relative;display:inline-block"><span style="position:absolute;right:2px;top:2px;width:27px;height:27px;border-radius:50%;background:#FFFDF8;box-shadow:0 1px 3px rgba(0,0,0,0.2)"></span></span><span style="width:51px;height:31px;border-radius:16px;background:#EDE6D8;border:1px solid #D9CFBC;position:relative;display:inline-block"><span style="position:absolute;left:2px;top:2px;width:25px;height:25px;border-radius:50%;background:#FFFDF8;box-shadow:0 1px 3px rgba(0,0,0,0.2)"></span></span><span style="font-size:13px;color:#6F776F">On / off. Native <code>Switch</code> with <code>trackColor</code> from tokens.</span></div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px">
+    <div style="background:#FFFDF8;border:1px solid #D9CFBC;border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:14px">
+      <div style="font-weight:700;font-size:15px">Person node · three zoom levels</div>
+      <div style="display:flex;gap:20px;align-items:center;flex-wrap:wrap;padding:16px;background:#F5F0E6;border-radius:8px;background-image:radial-gradient(rgba(30,36,32,0.08) 1px,transparent 1px);background-size:16px 16px">
+        <div style="display:flex;gap:8px;align-items:center"><span style="width:22px;height:22px;border-radius:50%;background:#3F6E7A;color:#F5F0E6;font-size:8px;font-weight:700;display:flex;align-items:center;justify-content:center">JK</span><span style="width:26px;height:26px;border-radius:50%;background:#A5584C;color:#F5F0E6;font-size:8px;font-weight:700;display:flex;align-items:center;justify-content:center;border:3px solid #B5652B;box-sizing:border-box">AW</span></div>
+        <div style="width:120px;height:56px;border-radius:10px;background:#DCE9EC;border:2px solid #3F6E7A;padding:8px 10px;box-sizing:border-box;display:flex;flex-direction:column;gap:2px"><span style="font-size:12px;font-weight:700">Jan Kowalski</span><span style="font-size:11px;color:#4A524C">1948 · 78</span></div>
+        <div style="width:150px;height:70px;border-radius:12px;background:#F1DDD8;border:3px solid #B5652B;padding:10px 12px;box-sizing:border-box;display:flex;gap:10px;align-items:center;box-shadow:0 4px 12px rgba(30,36,32,0.10)"><div style="width:40px;height:40px;border-radius:50%;background:#A5584C;color:#F5F0E6;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:none">AW</div><div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:13px;font-weight:700">Anna</span><span style="font-size:11px;color:#4A524C">1976 · 50</span></div></div>
+        <div style="width:150px;height:70px;border-radius:12px;background:#DCE9EC;border:2px solid #3F6E7A;padding:10px 12px;box-sizing:border-box;display:flex;gap:10px;align-items:center"><div style="width:40px;height:40px;border-radius:50%;background:#3F6E7A;color:#F5F0E6;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:none;filter:saturate(0.4) opacity(0.85)">SK</div><div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:13px;font-weight:700">Stanisław</span><span style="font-size:11px;color:#4A524C">1921 – †1998</span></div></div>
+        <div style="width:120px;height:56px;border-radius:10px;background:#DCE9EC;border:2px solid #3F6E7A;padding:8px 10px;box-sizing:border-box;display:flex;flex-direction:column;gap:2px;opacity:0.3"><span style="font-size:12px;font-weight:700">Dimmed</span><span style="font-size:11px;color:#4A524C">focus mode, others</span></div>
+      </div>
+      <div style="font-size:13px;color:#6F776F;line-height:1.55">Dot (&lt;0.45) · Compact (0.45–0.9) · Full (≥0.9, selected shown) · Full deceased · Dimmed (30% opacity, no touch). Photos: <code>expo-image</code>, circle, <code>contentFit="cover"</code>, deceased at 60% saturation. Filtered-out nodes are not rendered at all.</div>
+    </div>
+    <div style="background:#FFFDF8;border:1px solid #D9CFBC;border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:14px">
+      <div style="font-weight:700;font-size:15px">Relationship lines · react-native-svg <code>Path</code></div>
+      <div style="display:flex;flex-direction:column;gap:10px;padding:16px;background:#F5F0E6;border-radius:8px">
+        <sc-for list="{{ lines }}" as="l" hint-placeholder-count="6"><div style="display:grid;grid-template-columns:160px 1fr;gap:12px;align-items:center"><svg width="160" height="20"><line x1="2" y1="10" x2="{{ l.x2 }}" y2="10" stroke="{{ l.color }}" stroke-width="{{ l.w }}" stroke-dasharray="{{ l.dash }}" stroke-linecap="round"></line><sc-if value="{{ l.arrow }}" hint-placeholder-val="{{ false }}"><path d="M146 5 L158 10 L146 15 Z" fill="{{ l.color }}"></path></sc-if></svg><div style="font-size:13px;color:#4A524C"><strong style="color:#1E2420">{{ l.label }}</strong> · {{ l.spec }}</div></div></sc-for>
+      </div>
+      <div style="font-size:13px;color:#6F776F;line-height:1.55">Directional edges: cubic from parent bottom-centre to child top-centre, arrowhead 7 pt (<code>Marker</code> or a drawn triangle). Bidirectional edges: straight between nearest sides, no arrowhead. Selected edge: accent colour, width +1. Labels only at Full LOD near the selected node: 10/600 on a <code>label-bg</code> pill. Dot LOD: all widths × 0.6, dashes preserved.</div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px">
+    <div style="background:#FFFDF8;border:1px solid #D9CFBC;border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:14px">
+      <div style="font-weight:700;font-size:15px">List rows · 60 pt (48 compact) · 16 pt inset · 1 px separator</div>
+      <div style="border:1px solid #D9CFBC;border-radius:16px;overflow:hidden;display:flex;flex-direction:column">
+        <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid #D9CFBC;min-height:60px"><div style="width:40px;height:40px;border-radius:50%;background:#A5584C;color:#F5F0E6;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center">MK</div><div style="flex:1"><div style="font-size:15px;font-weight:600">Person row</div><div style="font-size:13px;color:#6F776F">Subtitle · 1951</div></div><span style="color:#6F776F">›</span></div>
+        <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid #D9CFBC;min-height:64px;background:#EDE6D8"><div style="width:40px;text-align:center;display:flex;flex-direction:column"><span style="font-size:11px;font-weight:700;text-transform:uppercase;color:#B5652B">Sat</span><span style="font-family:Literata,Georgia,serif;font-size:22px;font-weight:600;line-height:1.1">3</span></div><div style="width:36px;height:36px;border-radius:50%;background:#A5584C"></div><div style="flex:1"><div style="font-size:15px;font-weight:600">Date row (pressed)</div><div style="font-size:13px;color:#6F776F">Birthday · in 8 days</div></div><span style="color:#2F5D46">🔔</span></div>
+        <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid #D9CFBC;min-height:60px"><div style="width:40px;height:40px;border-radius:50%;background:#3F6E7A;color:#F5F0E6;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center">AN</div><div style="flex:1"><div style="font-size:15px;font-weight:600">Invitee row</div><div style="font-size:13px;color:#6F776F">Viewer</div></div><span style="height:36px;padding:0 12px;border-radius:10px;border:1px solid #D9CFBC;font-size:13px;font-weight:600;color:#A83C32;display:flex;align-items:center">Revoke</span></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:14px;min-height:52px;font-size:15px;font-weight:600">Settings row<span style="font-size:13px;color:#6F776F;font-weight:500">Value ›</span></div>
+      </div>
+      <div style="font-size:13px;color:#6F776F">Grouped in a surface card, radius 16. Swipe actions (iOS) / long-press menu (Android) for Revoke and Remove.</div>
+    </div>
+    <div style="background:#FFFDF8;border:1px solid #D9CFBC;border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:14px">
+      <div style="font-weight:700;font-size:15px">Toasts, banners, skeletons</div>
+      <div style="background:#1E2420;color:#F5F0E6;border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:10px;font-size:14px"><span style="width:8px;height:8px;border-radius:50%;background:#6FB08A"></span><span style="flex:1">Barbara added to the tree</span><span style="height:30px;padding:0 10px;border-radius:8px;background:rgba(255,255,255,0.14);font-size:13px;font-weight:700;display:flex;align-items:center">Undo</span></div>
+      <div style="background:#1E2420;color:#F5F0E6;border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:10px;font-size:14px"><span style="width:8px;height:8px;border-radius:50%;background:#E07B71"></span><span style="flex:1">Couldn't save. Kept on this phone.</span><span style="height:30px;padding:0 10px;border-radius:8px;background:rgba(255,255,255,0.14);font-size:13px;font-weight:700;display:flex;align-items:center">Retry</span></div>
+      <div style="height:32px;background:#1E2420;color:#F5F0E6;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600">Offline banner · sticks under the status bar</div>
+      <div style="padding:12px 14px;border-radius:12px;background:#F3E1D2;font-size:13px;display:flex;gap:10px;align-items:center"><span style="color:#B5652B">ⓘ</span>Inline notice (permission denied, proposal, hint)</div>
+      <div style="display:flex;gap:10px;align-items:center"><div style="width:40px;height:40px;border-radius:50%;background:#E4DCCB"></div><div style="flex:1;display:flex;flex-direction:column;gap:8px"><div style="width:70%;height:14px;border-radius:4px;background:#E4DCCB"></div><div style="width:40%;height:12px;border-radius:4px;background:#E4DCCB"></div></div></div>
+      <div style="font-size:13px;color:#6F776F">Toast: ink surface, parchment text, 14/500, 4 s, one at a time, above the tab bar. Skeleton: <code>skeleton</code> token, pulse 1.2 s.</div>
+    </div>
+  </div>
+</section>
+
+<section style="display:flex;flex-direction:column;gap:20px">
+  <div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#B5652B">Store listing</span><h2 style="font-family:Literata,Georgia,serif;font-weight:600;font-size:30px;margin:0">Screenshot frames · 6.7" iPhone (1290×2796) and Android (1080×2400)</h2><p style="margin:0;color:#4A524C;font-size:15px;line-height:1.5;max-width:720px">Shown at 25%. Headline in Literata on parchment, phone on the lower two thirds. Export with the real screens from <a href="Mobile.dc.html">Mobile</a> dropped into the phone area. Same five frames for both stores; the Android set uses the Android device frame.</p></div>
+  <div style="display:flex;flex-wrap:wrap;gap:20px">
+    <sc-for list="{{ frames }}" as="f" hint-placeholder-count="5">
+      <div style="width:322px;height:699px;border-radius:12px;background:{{ f.bg }};color:{{ f.fg }};position:relative;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 1px 3px rgba(0,0,0,0.1)">
+        <div style="padding:44px 28px 0;display:flex;flex-direction:column;gap:10px"><span style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:{{ f.eyebrow }}">{{ f.kicker }}</span><h3 style="font-family:Literata,Georgia,serif;font-weight:600;font-size:30px;line-height:1.1;margin:0;letter-spacing:-0.01em;text-wrap:balance">{{ f.title }}</h3><p style="margin:0;font-size:14px;line-height:1.5;opacity:0.85">{{ f.sub }}</p></div>
+        <div style="position:absolute;left:36px;right:36px;bottom:-60px;height:520px;border-radius:40px;background:#1E2420;padding:10px;box-shadow:0 24px 60px rgba(0,0,0,0.25)"><div style="width:100%;height:100%;border-radius:32px;background:{{ f.screenBg }};display:flex;flex-direction:column;padding:40px 16px 0;box-sizing:border-box;gap:12px;overflow:hidden">
+          <div style="font-family:Literata,Georgia,serif;font-weight:600;font-size:20px;color:{{ f.screenInk }}">{{ f.screenTitle }}</div>
+          <div style="height:40px;border-radius:12px;background:{{ f.screenCard }};border:1px solid {{ f.screenBorder }}"></div>
+          <div style="height:60px;border-radius:12px;background:{{ f.screenCard }};border:1px solid {{ f.screenBorder }};display:flex;align-items:center;gap:10px;padding:0 12px"><div style="width:32px;height:32px;border-radius:50%;background:#A5584C"></div><div style="flex:1;display:flex;flex-direction:column;gap:6px"><div style="width:70%;height:10px;border-radius:3px;background:{{ f.screenBorder }}"></div><div style="width:40%;height:8px;border-radius:3px;background:{{ f.screenBorder }}"></div></div></div>
+          <div style="height:60px;border-radius:12px;background:{{ f.screenCard }};border:1px solid {{ f.screenBorder }};display:flex;align-items:center;gap:10px;padding:0 12px"><div style="width:32px;height:32px;border-radius:50%;background:#3F6E7A"></div><div style="flex:1;display:flex;flex-direction:column;gap:6px"><div style="width:55%;height:10px;border-radius:3px;background:{{ f.screenBorder }}"></div><div style="width:35%;height:8px;border-radius:3px;background:{{ f.screenBorder }}"></div></div></div>
+          <div style="font-size:11px;opacity:0.5;text-align:center;margin-top:auto;padding-bottom:80px;color:{{ f.screenInk }}">← drop screen "{{ f.screenRef }}" here</div>
+        </div></div>
+      </div>
+    </sc-for>
+  </div>
+</section>
+
+<section style="background:#FFFDF8;border:1px solid #D9CFBC;border-radius:12px;padding:28px;display:flex;flex-direction:column;gap:12px">
+  <h2 style="font-family:Literata,Georgia,serif;font-weight:600;font-size:22px;margin:0">Fonts and assets to bundle</h2>
+  <ul style="margin:0;padding-left:20px;color:#4A524C;line-height:1.7;font-size:15px"><li><code>@expo-google-fonts/literata</code>: Literata_400Regular, Literata_600SemiBold, Literata_400Regular_Italic (OFL).</li><li><code>@expo-google-fonts/manrope</code>: Manrope_400Regular, Manrope_500Medium, Manrope_600SemiBold, Manrope_700Bold (OFL).</li><li>Icons: <code>lucide-react-native</code>, size 24, strokeWidth 1.75.</li><li><code>app.json</code>: icon → <code>assets/app/ios-icon-1024</code> (export PNG), android.adaptiveIcon foreground / background / monochrome from <code>assets/app/android-adaptive-*</code>, splash image <code>assets/app/splash-icon</code> with <code>backgroundColor #2F5D46</code> for both light and dark, notification icon <code>assets/app/notification-icon</code> with color <code>#2F5D46</code>, scheme <code>familytree</code>.</li><li>SVG sources are in <a href="Brand.dc.html">Brand</a>; export PNGs at the store-required sizes (1024², 432² adaptive layers, 96² notification, 200² splash @1x / 400² @2x / 600² @3x).</li></ul>
+</section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const lines = [
+      { label: "Biological", color: "#2F5D46", w: 2.5, dash: "", arrow: true, x2: 144, spec: "#2F5D46 / dark #6FB08A · 2.5 · solid · arrow when directional" },
+      { label: "Married (strong)", color: "#B5652B", w: 4, dash: "", arrow: false, x2: 158, spec: "#B5652B / dark #E09A5F · 4 · solid · no arrow" },
+      { label: "In-law default", color: "#B5652B", w: 2, dash: "8 5", arrow: true, x2: 144, spec: "same colour · 2 · dash [8,5]" },
+      { label: "Lives with (weak)", color: "#B5652B", w: 1.25, dash: "2 6", arrow: false, x2: 158, spec: "same colour · 1.25 · dash [2,6]" },
+      { label: "Church", color: "#6B4E9B", w: 2, dash: "2 5", arrow: true, x2: 144, spec: "#6B4E9B / dark #A98BD6 · 2 · dash [2,5]" },
+      { label: "Other", color: "#8A8F88", w: 1, dash: "3 7", arrow: true, x2: 144, spec: "#8A8F88 / dark #6F766F · 1 · dash [3,7]" }
+    ];
+    const light = { bg: "#F5F0E6", fg: "#1E2420", eyebrow: "#B5652B", screenBg: "#F5F0E6", screenInk: "#1E2420", screenCard: "#FFFDF8", screenBorder: "#D9CFBC" };
+    const green = { bg: "#2F5D46", fg: "#F5F0E6", eyebrow: "#E0955E", screenBg: "#F5F0E6", screenInk: "#1E2420", screenCard: "#FFFDF8", screenBorder: "#D9CFBC" };
+    const dark = { bg: "#121714", fg: "#EDE6D8", eyebrow: "#D98A4E", screenBg: "#121714", screenInk: "#EDE6D8", screenCard: "#1A211C", screenBorder: "#33403A" };
+    const frames = [
+      { ...green, kicker: "Family Tree", title: "Your whole family, in your pocket.", sub: "Private. Shared only with the people you invite.", screenTitle: "Kowalski family", screenRef: "Home · active tree" },
+      { ...light, kicker: "Who is this?", title: "Search a name. See how you're related.", sub: "\"Your mother's cousin\", with the path to prove it.", screenTitle: "Your mother's cousin", screenRef: "How are we related · path" },
+      { ...light, kicker: "Never miss a day", title: "Birthdays and remembrance days, remembered for you.", sub: "A quiet reminder the day before. All on your phone.", screenTitle: "Dates", screenRef: "Dates · upcoming" },
+      { ...dark, kicker: "The tree", title: "Pinch, pan, focus on one person.", sub: "Generations line up by birth year. Dark mode included.", screenTitle: "Kowalski family", screenRef: "Canvas + person sheet · dark" },
+      { ...light, kicker: "Add them right now", title: "Photo, name, birth date. Linked in a few taps.", sub: "Met a relative at the wedding? Add them before dessert.", screenTitle: "Add person", screenRef: "Add person" }
+    ];
+    return { lines, frames };
+  }
+}
+</script>
+</body>
+</html>

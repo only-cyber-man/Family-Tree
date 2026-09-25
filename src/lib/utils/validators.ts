@@ -7,3 +7,6 @@ export const isUuid = (uuid: string): boolean => {
 export const isPocketbaseId = (id: string): boolean => {
 	return /^[0-9a-z]{15}$/i.test(id);
 };
+
+export const isValidEmail = (email: string): boolean =>
+	/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);

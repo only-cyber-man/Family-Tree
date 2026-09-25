@@ -1,0 +1,258 @@
+.main {
+	padding: 40px;
+	display: flex;
+	flex-direction: column;
+	gap: 28px;
+	max-width: 1360px;
+	margin: 0 auto;
+}
+
+.head {
+	display: flex;
+	align-items: flex-end;
+	justify-content: space-between;
+	gap: 16px;
+}
+
+.title {
+	font-size: 34px;
+}
+
+.meta {
+	font-size: 15px;
+	color: var(--ink3);
+	margin-top: 6px;
+}
+
+.grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+	gap: 24px;
+}
+
+.card {
+	display: flex;
+	flex-direction: column;
+	position: relative;
+	transition: box-shadow 0.15s, border-color 0.15s;
+}
+
+.card:hover {
+	box-shadow: var(--shadow-md);
+	border-color: var(--border-strong);
+}
+
+.cardOpen {
+	z-index: 2;
+}
+
+.art {
+	height: 120px;
+	background: var(--surface2);
+	position: relative;
+	overflow: hidden;
+	border-radius: 12px 12px 0 0;
+}
+
+.art svg {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+}
+
+.art .badge {
+	position: absolute;
+	top: 12px;
+	left: 12px;
+}
+
+.body {
+	padding: 18px 20px 20px;
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+}
+
+.row {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 12px;
+	position: relative;
+}
+
+.name {
+	font-size: 22px;
+	line-height: 1.2;
+	overflow-wrap: anywhere;
+}
+
+.name a {
+	color: var(--ink);
+}
+
+.stats {
+	font-size: 13px;
+	color: var(--ink3);
+	margin-top: 4px;
+}
+
+.more {
+	width: 36px;
+	height: 36px;
+	border: 1px solid var(--border);
+	border-radius: 8px;
+	background: transparent;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--ink2);
+	cursor: pointer;
+	flex: none;
+}
+
+.more:hover,
+.moreOpen {
+	background: var(--surface2);
+}
+
+.foot {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+}
+
+.share {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	min-width: 0;
+}
+
+.shareText {
+	font-size: 13px;
+	color: var(--ink3);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.open {
+	height: 36px;
+	padding: 0 14px;
+	font-size: 14px;
+}
+
+.empty {
+	flex: 1;
+	min-height: calc(100vh - 64px);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 40px 16px;
+}
+
+.emptyInner {
+	width: 520px;
+	max-width: 100%;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+	gap: 20px;
+}
+
+.emptyTitle {
+	font-size: 30px;
+}
+
+.emptyBody {
+	font-size: 16px;
+	line-height: 1.55;
+	color: var(--ink2);
+	margin-top: 8px;
+	text-wrap: pretty;
+}
+
+.emptyNote {
+	font-size: 13px;
+	color: var(--ink3);
+}
+
+.people {
+	display: flex;
+	flex-direction: column;
+	border: 1px solid var(--surface2);
+	border-radius: 12px;
+	overflow: hidden;
+}
+
+.person {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 12px 14px;
+}
+
+.person + .person {
+	border-top: 1px solid var(--surface2);
+}
+
+.personName {
+	font-size: 15px;
+	font-weight: 600;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.personRole {
+	font-size: 13px;
+	color: var(--ink3);
+}
+
+.inviteForm {
+	display: flex;
+	gap: 8px;
+	align-items: flex-start;
+}
+
+.newIcon {
+	display: none;
+}
+
+@media (max-width: 640px) {
+	.main {
+		padding: 20px 16px 32px;
+		gap: 18px;
+	}
+
+	.title {
+		font-size: 28px;
+	}
+
+	.grid {
+		grid-template-columns: 1fr;
+		gap: 16px;
+	}
+
+	.art {
+		height: 88px;
+	}
+
+	.newLabel {
+		display: none;
+	}
+
+	.newIcon {
+		display: inline-flex;
+	}
+
+	.newButton {
+		width: 44px;
+		padding: 0;
+		border-radius: 10px;
+	}
+}
