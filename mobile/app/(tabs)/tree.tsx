@@ -31,6 +31,10 @@ import { useLayout } from "../../src/hooks/useLayout";
 import { PathView } from "../../src/components/PathView";
 import { personPanelMode } from "../../src/lib/responsive";
 
+/** How long to keep trying to open the person sheet while it finishes its first layout. */
+const SHEET_OPEN_TRIES = 10;
+const SHEET_OPEN_RETRY_MS = 100;
+
 export default function TreeTab() {
 	const t = useTheme();
 	const T = useT();
@@ -51,10 +55,9 @@ export default function TreeTab() {
 	const sheet = useRef<BottomSheet>(null);
 	const sheetStyles = useSheetStyles();
 	const [selectedId, setSelectedId] = useState<string | null>(null);
-	// snapToIndex before the sheet's first layout is dropped, so a screen opened with ?person / ?focus mounts it open.
-	const [initialSheetIndex] = useState(() => (params.person || params.focus ? 0 : -1));
 	const [focusId, setFocusId] = useState<string | null>(null);
 	const [sheetIndex, setSheetIndex] = useState(-1);
+	const sheetIndexRef = useRef(-1);
 	const [away, setAway] = useState(false);
 	const showSpinner = useDelayed(status === "loading" && !full);
 	const chips = filterChips(filters, T);
@@ -87,10 +90,23 @@ export default function TreeTab() {
 	}, [visible, selectedId, focusId]);
 
 	useEffect(() => {
-		if (selectedId) {
-			if (sheetIndex < 0) sheet.current?.snapToIndex(0);
-		} else sheet.current?.close();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
+		if (!selectedId) {
+			// Also covers a sheet that unmounted while open (tree reload), which never reports -1.
+			sheetIndexRef.current = -1;
+			sheet.current?.close();
+			return;
+		}
+		// snapToIndex is dropped until the sheet is laid out, and a selection from a deep link or
+		// Show on tree can arrive while it has just mounted, so retry until it reports being open.
+		let tries = 0;
+		let timer: ReturnType<typeof setTimeout> | undefined;
+		const open = () => {
+			if (sheetIndexRef.current >= 0 || tries++ >= SHEET_OPEN_TRIES) return;
+			sheet.current?.snapToIndex(0);
+			timer = setTimeout(open, SHEET_OPEN_RETRY_MS);
+		};
+		open();
+		return () => clearTimeout(timer);
 	}, [selectedId]);
 
 	// Android back: close the top-most thing on the canvas first.
@@ -351,7 +367,8 @@ export default function TreeTab() {
 			) : (
 			<BottomSheet
 				ref={sheet}
-				index={initialSheetIndex}
+				// Follows the selection, including when the sheet remounts (tree switch, rotation).
+				index={selectedId ? 0 : -1}
 				snapPoints={tokens.mobile.sheetSnapPoints.person as unknown as string[]}
 				enableDynamicSizing={false}
 				enablePanDownToClose
@@ -361,6 +378,7 @@ export default function TreeTab() {
 				animationConfigs={sheetOpenConfig}
 				backdropComponent={renderBackdrop}
 				onChange={(i) => {
+					sheetIndexRef.current = i;
 					setSheetIndex(i);
 					if (i === -1) setSelectedId(null);
 				}}

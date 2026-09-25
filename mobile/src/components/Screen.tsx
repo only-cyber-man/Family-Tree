@@ -49,8 +49,8 @@ export function Screen({
 		>
 			{children}
 		</ScrollView>
-		{/* Scrolled content would otherwise run under the status bar text. */}
-		<View pointerEvents="none" style={[styles.statusScrim, { height: insets.top, backgroundColor: t.c.bg }]} />
+		{/* Scrolled content would otherwise run under the status bar text. Left out with pull-to-refresh, whose spinner sits in that band. */}
+		{onRefresh ? null : <View pointerEvents="none" style={[styles.statusScrim, { height: insets.top, backgroundColor: t.c.bg }]} />}
 		</View>
 	);
 }
