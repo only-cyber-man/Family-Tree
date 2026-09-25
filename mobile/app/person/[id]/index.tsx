@@ -19,10 +19,7 @@ export default function PersonRoute() {
 				focusLabel={T.person.focusOnTree}
 				onClose={() => router.back()}
 				onSelect={(next) => router.setParams({ id: next })}
-				onFocus={(pid) => {
-					router.back();
-					router.navigate({ pathname: "/tree", params: { focus: pid } });
-				}}
+				onFocus={(pid) => router.dismissTo({ pathname: "/tree", params: { focus: pid } })}
 			/>
 		</RouteSheet>
 	);

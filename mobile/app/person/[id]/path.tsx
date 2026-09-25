@@ -13,7 +13,8 @@ export default function PathScreen() {
 				targetId={id}
 				onBack={() => router.back()}
 				onOpen={(pid) => router.push({ pathname: "/person/[id]", params: { id: pid } })}
-				onShowOnTree={(pid) => router.navigate({ pathname: "/tree", params: { person: pid } })}
+				// dismissTo pops back to the tabs; navigate would push a second tab navigator (presented modally on iOS).
+				onShowOnTree={(pid) => router.dismissTo({ pathname: "/tree", params: { person: pid } })}
 			/>
 		</Screen>
 	);

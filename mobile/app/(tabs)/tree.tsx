@@ -51,6 +51,8 @@ export default function TreeTab() {
 	const sheet = useRef<BottomSheet>(null);
 	const sheetStyles = useSheetStyles();
 	const [selectedId, setSelectedId] = useState<string | null>(null);
+	// snapToIndex before the sheet's first layout is dropped, so a screen opened with ?person / ?focus mounts it open.
+	const [initialSheetIndex] = useState(() => (params.person || params.focus ? 0 : -1));
 	const [focusId, setFocusId] = useState<string | null>(null);
 	const [sheetIndex, setSheetIndex] = useState(-1);
 	const [away, setAway] = useState(false);
@@ -349,10 +351,11 @@ export default function TreeTab() {
 			) : (
 			<BottomSheet
 				ref={sheet}
-				index={-1}
+				index={initialSheetIndex}
 				snapPoints={tokens.mobile.sheetSnapPoints.person as unknown as string[]}
 				enableDynamicSizing={false}
 				enablePanDownToClose
+				accessible={false}
 				bottomInset={bottomInset}
 				topInset={insets.top}
 				animationConfigs={sheetOpenConfig}
