@@ -137,9 +137,10 @@ const PrivacyEn = () => (
 		<section className={styles.section}>
 			<h2>Children</h2>
 			<p>
-				Family Tree is not directed at children, and accounts are for people
-				aged 16 and over. Children may of course appear in a tree their
-				family builds.
+				Family Tree is not directed at children under 13. Accounts are for
+				people aged 16 and over; teenagers aged 13 to 15 may use it with the
+				permission of a parent or guardian. Children may of course appear in
+				a tree their family builds.
 			</p>
 		</section>
 
@@ -294,9 +295,10 @@ const PrivacyPl = () => (
 		<section className={styles.section}>
 			<h2>Dzieci</h2>
 			<p>
-				Family Tree nie jest przeznaczony dla dzieci, a konto mogą założyć
-				osoby, które ukończyły 16 lat. Dzieci mogą oczywiście pojawiać się w
-				drzewie tworzonym przez ich rodzinę.
+				Family Tree nie jest przeznaczony dla dzieci poniżej 13 lat. Konto
+				mogą założyć osoby, które ukończyły 16 lat; młodzież w wieku 13–15
+				lat może korzystać z aplikacji za zgodą rodzica lub opiekuna. Dzieci
+				mogą oczywiście pojawiać się w drzewie tworzonym przez ich rodzinę.
 			</p>
 		</section>
 
