@@ -11,6 +11,7 @@
     "primaryColor": "#2F5D46",
     "ios": {
       "bundleIdentifier": "pl.cyberman.familytree",
+      "appleTeamId": "WWJ5SV87NB",
       "supportsTablet": true,
       "buildNumber": "1",
       "config": {
