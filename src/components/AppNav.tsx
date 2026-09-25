@@ -31,7 +31,9 @@ export const AppNav = ({ userName }: { userName: string }) => (
 			<span className="hide-sm" style={{ fontSize: 14, color: "var(--ink2)" }}>
 				{userName}
 			</span>
-			<UserAvatar name={userName} />
+			<Link href="/account" aria-label="Your account" title="Your account" style={{ display: "flex" }}>
+				<UserAvatar name={userName} />
+			</Link>
 			<LogoutButton />
 		</div>
 	</nav>

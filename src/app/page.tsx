@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { initPocketBase } from "@/lib/ssr";
 import { LogoMark } from "@/components/Logo";
 import { AlertIcon, PlusIcon } from "@/components/Icons";
+import { LegalLinks } from "@/components/LegalShell";
 import { LandingNav } from "./LandingNav";
 import { HeroGraph } from "./HeroGraph";
 import s from "./landing.module.css";
@@ -28,9 +29,9 @@ const STEPS = [
 ];
 
 export default async function Landing({
-	searchParams: { err },
+	searchParams: { err, deleted },
 }: {
-	searchParams: { err?: string };
+	searchParams: { err?: string; deleted?: string };
 }) {
 	const pb = await initPocketBase();
 	if (pb.authStore.isValid && !err) {
@@ -40,6 +41,14 @@ export default async function Landing({
 	return (
 		<div className={s.page}>
 			<LandingNav />
+			{deleted ? (
+				<div className={`${s.wrap} ${s.errorBanner}`}>
+					<div className="alert alert-info" role="status">
+						<AlertIcon />
+						<span>Your account and your trees have been deleted.</span>
+					</div>
+				</div>
+			) : null}
 			{err ? (
 				<div className={`${s.wrap} ${s.errorBanner}`}>
 					<div className="alert" role="alert">
@@ -371,7 +380,9 @@ export default async function Landing({
 						<span className={s.footerName}>Family Tree</span>
 						<span>· Created by tomek7667</span>
 					</div>
-					<a href="mailto:family-tree@cyber-man.pl">family-tree@cyber-man.pl</a>
+					<div className={s.footerBrand} style={{ gap: 20 }}>
+						<LegalLinks />
+					</div>
 				</div>
 			</footer>
 		</div>

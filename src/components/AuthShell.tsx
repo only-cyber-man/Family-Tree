@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ReactNode } from "react";
 import { Brand } from "./Logo";
+import { LegalLinks } from "./LegalShell";
 import styles from "./auth.module.css";
 
 export const AuthShell = ({
@@ -27,7 +28,9 @@ export const AuthShell = ({
 		<main className={styles.main}>{children}</main>
 		<footer className={styles.footer}>
 			<span>Created by tomek7667</span>
-			<a href="mailto:family-tree@cyber-man.pl">family-tree@cyber-man.pl</a>
+			<span style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+				<LegalLinks />
+			</span>
 		</footer>
 	</div>
 );
