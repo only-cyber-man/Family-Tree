@@ -40,15 +40,22 @@ export function Screen({
 		);
 	}
 	return (
+		<View style={[styles.fill, { backgroundColor: t.c.bg }]}>
 		<ScrollView
-			style={[styles.fill, { backgroundColor: t.c.bg }]}
+			style={styles.fill}
 			contentContainerStyle={[{ paddingTop: top, paddingBottom: bottom, paddingHorizontal: layout.isTablet ? 32 : 20, gap: 20 }, capped, contentStyle]}
 			keyboardShouldPersistTaps="handled"
 			refreshControl={onRefresh ? <RefreshControl refreshing={!!refreshing} onRefresh={onRefresh} tintColor={t.c.primary} colors={[t.c.primary]} /> : undefined}
 		>
 			{children}
 		</ScrollView>
+		{/* Scrolled content would otherwise run under the status bar text. */}
+		<View pointerEvents="none" style={[styles.statusScrim, { height: insets.top, backgroundColor: t.c.bg }]} />
+		</View>
 	);
 }
 
-const styles = StyleSheet.create({ fill: { flex: 1 } });
+const styles = StyleSheet.create({
+	fill: { flex: 1 },
+	statusScrim: { position: "absolute", top: 0, left: 0, right: 0 },
+});

@@ -101,6 +101,8 @@ export function DateField({
 							value={draft}
 							mode="date"
 							display="spinner"
+							// The iOS spinner keeps its intrinsic width; without this it sits at the left edge.
+							style={styles.picker}
 							minimumDate={minimumDate}
 							maximumDate={maximumDate}
 							themeVariant={t.scheme}
@@ -121,5 +123,6 @@ const styles = StyleSheet.create({
 	change: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
 	scrim: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0 },
 	sheet: { position: "absolute", left: 0, right: 0, bottom: 0, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingTop: 8 },
+	picker: { alignSelf: "center" },
 	sheetHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 8 },
 });
