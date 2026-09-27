@@ -13,7 +13,7 @@
       "bundleIdentifier": "pl.cyberman.familytree",
       "appleTeamId": "WWJ5SV87NB",
       "supportsTablet": true,
-      "buildNumber": "1",
+      "buildNumber": "2",
       "config": {
         "usesNonExemptEncryption": false
       },
@@ -100,7 +100,8 @@
         }
       ],
       "expo-localization",
-      "./plugins/with-release-signing.js"
+      "./plugins/with-release-signing.js",
+      "./plugins/with-scene-lifecycle.js"
     ],
     "experiments": {
       "typedRoutes": true,
