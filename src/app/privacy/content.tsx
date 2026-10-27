@@ -39,9 +39,14 @@ const PrivacyEn = () => (
 				</li>
 			</ul>
 			<p>
-				We do not collect location, contacts, advertising identifiers,
-				analytics or crash reports, and there is no advertising in the web
-				site or the app.
+				We do not collect precise location, contacts, advertising
+				identifiers, analytics or crash reports. There is no third-party
+				advertising. The mobile app shows banners for our own apps, fetched
+				from our own server; that request carries your IP address (used to
+				tell the country, and discarded from view after that), your device
+				model, operating system version, app version and language. These are
+				counted in aggregate so we know where the app is used; they are not
+				linked to your account and are never shared or sold.
 			</p>
 		</section>
 
@@ -192,9 +197,14 @@ const PrivacyPl = () => (
 				</li>
 			</ul>
 			<p>
-				Nie zbieramy danych o lokalizacji, kontaktów, identyfikatorów
-				reklamowych, danych analitycznych ani raportów o awariach, a na stronie
-				internetowej i w aplikacji nie ma reklam.
+				Nie zbieramy dokładnej lokalizacji, kontaktów, identyfikatorów
+				reklamowych, danych analitycznych ani raportów o awariach. Nie ma
+				reklam firm trzecich. Aplikacja mobilna wyświetla banery naszych
+				własnych aplikacji, pobierane z naszego serwera; to żądanie zawiera
+				Twój adres IP (służy do ustalenia kraju), model urządzenia, wersję
+				systemu, wersję aplikacji i język. Dane te liczymy zbiorczo, żeby
+				wiedzieć, gdzie aplikacja jest używana; nie są łączone z Twoim kontem
+				ani nikomu przekazywane.
 			</p>
 		</section>
 
@@ -314,4 +324,14 @@ const PrivacyPl = () => (
 );
 
 /** A Record over Locale, so a missing language is a type error. */
-export const PRIVACY_CONTENT: Record<Locale, () => JSX.Element> = { en: PrivacyEn, pl: PrivacyPl };
+/** Maintained in English and Polish; the other languages read the English text. */
+export const PRIVACY_CONTENT: Record<Locale, () => JSX.Element> = {
+	en: PrivacyEn,
+	pl: PrivacyPl,
+	es: PrivacyEn,
+	fr: PrivacyEn,
+	de: PrivacyEn,
+	pt: PrivacyEn,
+	af: PrivacyEn,
+	hi: PrivacyEn,
+};

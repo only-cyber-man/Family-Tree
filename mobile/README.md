@@ -84,12 +84,20 @@ Cleartext HTTP is **not** enabled in `app.json`. For a screenshot build against 
 
 ## Language and theme
 
-- **Language:** English or Polish. It follows the device (`expo-localization`) unless you pick one in Settings → Appearance or with the switch on the onboarding and sign-in screens. The strings live in `src/i18n/en.ts`, the source of truth. `src/i18n/pl.ts` is typed as the same `Dict`, so a missing Polish key is a compile error. Polish plurals use `Intl.PluralRules` when the engine provides it, with the same CLDR rules built in as a fallback. Month names come from the dictionaries, not from Intl, because Hermes' Intl coverage varies.
+- **Language:** English, Polish, Spanish, French, German, Brazilian Portuguese, Afrikaans and Hindi. It follows the device (`expo-localization`, the first device language the app has) unless you pick one in Settings → Appearance or from the language menu on the onboarding and sign-in screens. The strings live in `src/i18n/en.ts`, the source of truth; every other dictionary (`pl.ts`, `es.ts`, …) is typed as the same `Dict`, so a missing key is a compile error, and `src/i18n/index.ts` lists the languages. Plurals use `Intl.PluralRules` when the engine provides it, with the same CLDR rules built in as a fallback (`src/i18n/plural.ts`). Month names come from the dictionaries, not from Intl, because Hermes' Intl coverage varies.
 - **Theme:** System / Light / Dark, in the same places. The choice applies app-wide at once, status bar included.
+
+## Dates
+
+Birth and death dates are calendar days ("1750-06-15"), never instants, and any day from 1 January of year 1 can be picked, since family trees reach centuries back. The pickers are native: the iOS spinner sheet has a **Year** field that jumps the spinner to a typed year, and the Android calendar dialog opens on its year grid for a new date. Android's dialog (`java.util.GregorianCalendar`) labels days before 15 October 1582 in the Julian calendar while JS Dates are proleptic Gregorian, so `src/lib/julian.ts` converts in both directions and the day the person picks is the day that is saved.
 
 ## People linked to accounts
 
 `ft_nodes.note` (free text) and `ft_nodes.user` (the account this person is) can be edited in Add/Edit person. The account list shows the tree's creator and invitees. "This is me" uses the server link when one exists; the on-device pick is only a fallback. On trees you own, picking yourself offers to save the link on the tree.
+
+## House ads
+
+Home and Settings show one banner for the other cyber-man apps, served by the ads dashboard at `https://ads.cyber-man.pl` (the `ads` repo). `src/services/ads.ts` is the only file that talks to it: every request is signed with this app's Ed25519 key (one app per store in the dashboard, so Android banners link to Google Play and iOS banners to the App Store), the feed is cached for five minutes, an impression is reported once per ad per run, and a tap opens the click-tracking link, which records the click and redirects to the store page. Only image creatives are rendered (`src/lib/ads.ts` drops video), and the banner renders nothing while offline, on an error, or when nothing is scheduled. Which creatives run, their weights and dates are managed in the dashboard, not in the app.
 
 ## Deep links
 

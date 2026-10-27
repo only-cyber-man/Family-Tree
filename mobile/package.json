@@ -1,6 +1,6 @@
 {
   "name": "family-tree-mobile",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "main": "expo-router/entry",
   "private": true,
   "scripts": {
@@ -17,6 +17,8 @@
     "@expo-google-fonts/literata": "^0.4.3",
     "@expo-google-fonts/manrope": "^0.4.2",
     "@gorhom/bottom-sheet": "^5.2.14",
+    "@noble/ed25519": "^2.1.0",
+    "@noble/hashes": "^1.7.0",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-community/datetimepicker": "9.1.0",
     "@react-native-community/netinfo": "12.0.1",

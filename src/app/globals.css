@@ -844,6 +844,44 @@ p {
 	color: var(--on-primary-soft);
 }
 
+/* The language menu: a native <select> dressed as a segment, with its own chevron. */
+.seg-select {
+	position: relative;
+}
+
+.seg-select select {
+	appearance: none;
+	-webkit-appearance: none;
+	height: 28px;
+	padding: 0 24px 0 10px;
+	border: 0;
+	border-radius: 6px;
+	background: transparent;
+	color: var(--ink);
+	font: inherit;
+	font-size: 13px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: background 0.15s;
+}
+
+.seg-select select:hover {
+	background: var(--surface2);
+}
+
+.seg-select::after {
+	content: "";
+	position: absolute;
+	right: 11px;
+	top: 50%;
+	width: 6px;
+	height: 6px;
+	border-right: 1.5px solid var(--ink3);
+	border-bottom: 1.5px solid var(--ink3);
+	transform: translateY(-70%) rotate(45deg);
+	pointer-events: none;
+}
+
 .seg-cycle {
 	width: 34px;
 	height: 34px;

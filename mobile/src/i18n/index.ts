@@ -1,19 +1,47 @@
 import { getLocales } from "expo-localization";
 import { useSettings } from "../store/settings";
+import { af } from "./af";
+import { de } from "./de";
 import { en, type Dict } from "./en";
+import { es } from "./es";
+import { fr } from "./fr";
+import { hi } from "./hi";
 import { pl } from "./pl";
+import { pt } from "./pt";
 
 export type { Dict, KinGender, KinTerm, KinWord, StepMove, TypeText } from "./en";
-export type Lang = "en" | "pl";
+export type Lang = "en" | "pl" | "es" | "fr" | "de" | "pt" | "af" | "hi";
 export type LanguagePreference = "system" | Lang;
 
-export const dictionaries: Record<Lang, Dict> = { en, pl };
+/** In the order they are offered. */
+export const LANGS: Lang[] = ["en", "pl", "es", "fr", "de", "pt", "af", "hi"];
 
-/** The device language if supported, else English. */
+/** Language names are shown in their own language on purpose. */
+export const LANGUAGE_NAMES: Record<Lang, string> = {
+	en: "English",
+	pl: "Polski",
+	es: "Español",
+	fr: "Français",
+	de: "Deutsch",
+	pt: "Português (Brasil)",
+	af: "Afrikaans",
+	hi: "हिन्दी",
+};
+
+export const dictionaries: Record<Lang, Dict> = { en, pl, es, fr, de, pt, af, hi };
+
+export function isLang(code?: string | null): code is Lang {
+	return !!code && (LANGS as string[]).includes(code);
+}
+
+/** The first of the device's languages the app has, else English. */
 export function deviceLang(): Lang {
 	try {
-		const code = getLocales()[0]?.languageCode?.toLowerCase();
-		return code === "pl" ? "pl" : "en";
+		for (const locale of getLocales()) {
+			const code = locale.languageCode?.toLowerCase();
+			if (isLang(code)) return code;
+		}
+		return "en";
 	} catch {
 		return "en";
 	}

@@ -6,9 +6,17 @@ import { describeKinship, relationshipPath, stepLabel, bloodTerm } from "../../l
 import { roleLabel, sheetGroups, typeLabel, typeSentence, groupLabel } from "../../lib/relations";
 import { eventTitle, eventSubtitle, groupByMonth, planReminders, upcomingEvents } from "../../lib/upcoming";
 import { graph } from "../../lib/__tests__/fixtures";
+import { af } from "../af";
+import { de } from "../de";
 import { en } from "../en";
+import { es } from "../es";
+import { fr } from "../fr";
+import { hi } from "../hi";
 import { pl } from "../pl";
-import { manualPluralCategory, pluralCategory, plForm } from "../plural";
+import { pt } from "../pt";
+import { form, manualPluralCategory, PLURAL_LOCALE, pluralCategory, plForm } from "../plural";
+
+const ALL = { en, pl, es, fr, de, pt, af, hi };
 
 /** Same keys, same value kinds, all the way down. */
 function shape(v: unknown): unknown {
@@ -19,32 +27,57 @@ function shape(v: unknown): unknown {
 }
 
 describe("dictionaries", () => {
-	it("Polish has exactly the English keys (compile-time too: pl is typed as Dict)", () => {
-		expect(shape(pl)).toEqual(shape(en));
+	it("every language has exactly the English keys (compile-time too: each is typed as Dict)", () => {
+		for (const [code, d] of Object.entries(ALL)) expect({ code, shape: shape(d) }).toEqual({ code, shape: shape(en) });
 	});
-	it("has no empty strings", () => {
+	it("has no empty strings (separators such as addRel.sentenceJoin may be whitespace)", () => {
 		const walk = (v: unknown, path: string) => {
+			if (path.endsWith(".sentenceJoin")) return;
 			if (typeof v === "string") expect(`${path}=${v.trim()}`).not.toBe(`${path}=`);
 			else if (v && typeof v === "object") for (const [k, x] of Object.entries(v)) walk(x, `${path}.${k}`);
 		};
-		walk(pl, "pl");
-		walk(en, "en");
+		for (const [code, d] of Object.entries(ALL)) walk(d, code);
+	});
+	it("each declares its own code, a matching locale and a month name per month", () => {
+		for (const [code, d] of Object.entries(ALL)) {
+			expect(d.lang).toBe(code);
+			expect(d.locale.toLowerCase().startsWith(code)).toBe(true);
+			expect(d.dateNames.monthsNom).toHaveLength(12);
+			expect(d.dateNames.monthsInDate).toHaveLength(12);
+			expect(d.dateNames.monthsShort).toHaveLength(12);
+			expect(d.dateNames.weekdaysShort).toHaveLength(7);
+		}
 	});
 });
 
-describe("Polish plurals", () => {
-	it("uses one / few / many", () => {
+describe("plurals", () => {
+	it("Polish uses one / few / many", () => {
 		const f = (n: number) => plForm(n, "rok", "lata", "lat");
 		expect([1, 2, 4, 5, 11, 12, 14, 21, 22, 25, 102, 112, 122].map((n) => `${n} ${f(n)}`)).toEqual([
 			"1 rok", "2 lata", "4 lata", "5 lat", "11 lat", "12 lat", "14 lat", "21 lat", "22 lata", "25 lat", "102 lata", "112 lat", "122 lata",
 		]);
 	});
-	it("matches Intl.PluralRules where the engine has it", () => {
+	it("the built-in CLDR rules match Intl.PluralRules for every language the engine has", () => {
 		if (typeof Intl === "undefined" || !("PluralRules" in Intl)) return;
-		const rules = new Intl.PluralRules("pl-PL");
-		for (let n = 0; n < 250; n++) expect(manualPluralCategory("pl", n)).toBe(rules.select(n));
+		for (const [lang, tag] of Object.entries(PLURAL_LOCALE) as [keyof typeof ALL, string][]) {
+			if (Intl.PluralRules.supportedLocalesOf(tag).length === 0) continue;
+			const rules = new Intl.PluralRules(tag);
+			for (let n = 0; n < 250; n++) expect(`${lang} ${n} ${manualPluralCategory(lang, n)}`).toBe(`${lang} ${n} ${rules.select(n)}`);
+		}
 		expect(pluralCategory("en", 1)).toBe("one");
 		expect(pluralCategory("en", 2)).toBe("other");
+	});
+	it("French, Portuguese and Hindi keep 0 singular; German, Spanish and Afrikaans do not", () => {
+		expect(form("fr", 0, "an", "ans")).toBe("an");
+		expect(form("fr", 2, "an", "ans")).toBe("ans");
+		expect(form("pt", 0, "pessoa", "pessoas")).toBe("pessoa");
+		expect(form("pt", 1, "pessoa", "pessoas")).toBe("pessoa");
+		expect(form("hi", 0, "व्यक्ति", "लोग")).toBe("व्यक्ति");
+		expect(form("hi", 3, "व्यक्ति", "लोग")).toBe("लोग");
+		expect(form("de", 1, "Jahr", "Jahre")).toBe("Jahr");
+		expect(form("de", 0, "Jahr", "Jahre")).toBe("Jahre");
+		expect(form("es", 0, "año", "años")).toBe("años");
+		expect(form("af", 1, "jaar", "jaar")).toBe("jaar");
 	});
 });
 

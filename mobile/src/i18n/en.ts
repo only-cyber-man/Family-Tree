@@ -1,3 +1,4 @@
+import type { Lang } from "./index";
 import { enForm } from "./plural";
 
 // English strings. This object is the source of truth: `Dict = typeof en`, and
@@ -38,7 +39,7 @@ const TIMES = ["", "once", "twice", "three times", "four times", "five times"];
 const years = (n: number) => `${n} ${enForm(n, "year", "years")}`;
 
 export const en = {
-	lang: "en" as "en" | "pl",
+	lang: "en" as Lang,
 	locale: "en-GB",
 
 	common: {
@@ -75,6 +76,9 @@ export const en = {
 		chooseDate: "Choose a date",
 		dateA11y: (label: string, value: string) => `${label}: ${value}. Change`,
 		closeDatePicker: "Close date picker",
+		year: "Year",
+		yearHint: "Type a year to jump the picker to it",
+		yearExample: "e.g. 1742",
 		removeFilter: (label: string) => `Remove filter ${label}`,
 		searchByName: "Search by name",
 		noOneCalled: (q: string) => `No one called “${q}”.`,
@@ -115,6 +119,7 @@ export const en = {
 	prefs: {
 		language: "Language",
 		languageSystem: "System",
+		chooseLanguage: "Choose a language",
 		appearance: "Appearance",
 		theme: "Theme",
 		system: "System",
@@ -358,6 +363,8 @@ export const en = {
 		fewer: "Fewer",
 		/** "<A> <verb> <B>." */
 		sentence: (a: string, verb: string, b: string) => `${a} ${verb} ${b}.`,
+		/** Between the verb and the second name of "<A> <verb> <B>." Polish puts a colon there, as its verbs end in a preposition. */
+		sentenceJoin: " ",
 	},
 
 	filters: {
@@ -476,6 +483,13 @@ export const en = {
 		footer: (version: string) => `Family Tree ${version} · Created by tomek7667 · family-tree@cyber-man.pl`,
 	},
 
+	/** House ads (ads.cyber-man.pl) shown on Home and in Settings. */
+	ads: {
+		sponsored: "Sponsored",
+		tag: "Ad",
+		open: (title: string) => `Open ${title}`,
+	},
+
 	deleteAccount: {
 		title: "Delete account",
 		typeToConfirm: (word: string) => `Type ${word} to confirm`,
@@ -528,6 +542,10 @@ export const en = {
 		monthsInDate: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
 		monthsShort: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
 		weekdaysShort: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+		/** "4 February 1950" / "12 Mar 1921": German wants "4. Februar 1950", Portuguese "4 de fevereiro de 1950". */
+		dayMonthYear: (day: number, month: string, year: number) => `${day} ${month} ${year}`,
+		/** "15 Oct" */
+		dayMonth: (day: number, month: string) => `${day} ${month}`,
 	},
 
 	time: {

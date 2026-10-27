@@ -2,7 +2,7 @@
   "expo": {
     "name": "Family Tree",
     "slug": "family-tree",
-    "version": "1.0.0",
+    "version": "1.0.3",
     "orientation": "default",
     "icon": "./assets/icon.png",
     "scheme": "familytree",
@@ -18,13 +18,14 @@
         "usesNonExemptEncryption": false
       },
       "infoPlist": {
+        "CFBundleLocalizations": ["en", "pl", "es", "fr", "de", "pt-BR", "af", "hi"],
         "NSCameraUsageDescription": "Family Tree uses the camera to take a photo of a person you add to your tree.",
         "NSPhotoLibraryUsageDescription": "Family Tree lets you pick a photo of a person from your library."
       }
     },
     "android": {
       "package": "pl.cyberman.familytree",
-      "versionCode": 1,
+      "versionCode": 4,
       "predictiveBackGestureEnabled": true,
       "adaptiveIcon": {
         "foregroundImage": "./assets/android-icon-foreground.png",

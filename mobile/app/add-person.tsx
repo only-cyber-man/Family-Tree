@@ -332,7 +332,7 @@ export default function AddPerson() {
 										{name.trim() || T.addPerson.newPerson}
 									</Text>{" "}
 									{typeName ? typeSentence(typeName.name, gender ?? "female", T) : "…"}
-									{T.lang === "pl" ? ": " : " "}
+									{T.addRel.sentenceJoin}
 									<Text serif size={17} weight={600}>
 										{target?.name ?? "…"}
 									</Text>

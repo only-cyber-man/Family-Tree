@@ -66,6 +66,9 @@ export const pl: Dict = {
 		chooseDate: "Wybierz datę",
 		dateA11y: (label, value) => `${label}: ${value}. Zmień`,
 		closeDatePicker: "Zamknij wybór daty",
+		year: "Rok",
+		yearHint: "Wpisz rok, aby przeskoczyć do niego w wyborze daty",
+		yearExample: "np. 1742",
 		removeFilter: (label) => `Usuń filtr ${label}`,
 		searchByName: "Szukaj po imieniu",
 		noOneCalled: (q) => `Nie ma nikogo o imieniu „${q}”.`,
@@ -115,6 +118,7 @@ export const pl: Dict = {
 	prefs: {
 		language: "Język",
 		languageSystem: "Systemowy",
+		chooseLanguage: "Wybierz język",
 		appearance: "Wygląd",
 		theme: "Motyw",
 		system: "Systemowy",
@@ -359,6 +363,7 @@ export const pl: Dict = {
 		fewer: "Mniej",
 		// Names stay in the nominative after a colon, which reads naturally without declension.
 		sentence: (a, verb, b) => `${a} ${verb}: ${b}.`,
+		sentenceJoin: ": ",
 	},
 
 	filters: {
@@ -477,6 +482,13 @@ export const pl: Dict = {
 		footer: (version) => `Family Tree ${version} · Autor: tomek7667 · family-tree@cyber-man.pl`,
 	},
 
+	/** House ads (ads.cyber-man.pl) shown on Home and in Settings. */
+	ads: {
+		sponsored: "Sponsorowane",
+		tag: "Reklama",
+		open: (title) => `Otwórz ${title}`,
+	},
+
 	deleteAccount: {
 		title: "Usuń konto",
 		typeToConfirm: (word) => `Wpisz ${word}, aby potwierdzić`,
@@ -526,6 +538,8 @@ export const pl: Dict = {
 		monthsInDate: ["stycznia", "lutego", "marca", "kwietnia", "maja", "czerwca", "lipca", "sierpnia", "września", "października", "listopada", "grudnia"],
 		monthsShort: ["sty", "lut", "mar", "kwi", "maj", "cze", "lip", "sie", "wrz", "paź", "lis", "gru"],
 		weekdaysShort: ["Nd", "Pn", "Wt", "Śr", "Cz", "Pt", "Sb"],
+		dayMonthYear: (day, month, year) => `${day} ${month} ${year}`,
+		dayMonth: (day, month) => `${day} ${month}`,
 	},
 
 	time: {

@@ -7,16 +7,26 @@ export type Gender = "male" | "female";
  * Birth and death dates are calendar days, stored by PocketBase as UTC
  * midnight ("1950-05-03 00:00:00.000Z"). Reading them as an instant would show
  * the previous day west of UTC, so the day part is taken as a local date.
+ * Family trees reach centuries back, so any year from 1 is accepted; the year
+ * is set explicitly because `new Date(50, …)` would mean 1950.
  */
 export const parseDay = (value: string): Date => {
 	const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(value);
-	return match ? new Date(+match[1], +match[2] - 1, +match[3]) : new Date(value);
+	if (!match) {
+		return new Date(value);
+	}
+	const date = new Date(2000, 0, 1);
+	date.setFullYear(+match[1], +match[2] - 1, +match[3]);
+	return date;
 };
 
-/** Inverse of parseDay: "YYYY-MM-DD" for the local calendar day. */
+/**
+ * Inverse of parseDay: "YYYY-MM-DD" for the local calendar day. The year is
+ * zero-padded to four digits, as PocketBase and <input type="date"> expect.
+ */
 export const formatDay = (date: Date): string => {
-	const pad = (n: number) => String(n).padStart(2, "0");
-	return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+	const pad = (n: number, width = 2) => String(n).padStart(width, "0");
+	return `${pad(date.getFullYear(), 4)}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 };
 
 export interface NodeData {

@@ -1,6 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
+import type { LanguagePreference } from "../i18n";
 import type { ThemePreference } from "../theme/theme";
 
 export interface ReminderSettings {
@@ -14,8 +15,8 @@ export interface ReminderSettings {
 interface SettingsState {
 	hydrated: boolean;
 	theme: ThemePreference;
-	/** "system" follows the device language (Polish or English). Device-wide, kept across accounts. */
-	language: "system" | "en" | "pl";
+	/** "system" follows the device language when the app has it. Device-wide, kept across accounts. */
+	language: LanguagePreference;
 	onboardingDone: boolean;
 	activeTreeId: string | null;
 	/**
@@ -32,7 +33,7 @@ interface SettingsState {
 	/** Forget per-account choices: reminders opt-in, "This is me", last login. */
 	clearAccount: () => void;
 	setTheme: (t: ThemePreference) => void;
-	setLanguage: (l: "system" | "en" | "pl") => void;
+	setLanguage: (l: LanguagePreference) => void;
 	finishOnboarding: () => void;
 	setActiveTree: (id: string | null) => void;
 	setMe: (treeId: string, nodeId: string | null) => void;

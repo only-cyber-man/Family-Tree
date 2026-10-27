@@ -1,17 +1,14 @@
 "use client";
 
-import { LOCALES, THEMES, type Locale, type ThemePref } from "@/i18n/config";
+import { isLocale, LOCALE_NAMES, LOCALES, THEMES, type ThemePref } from "@/i18n/config";
 import { usePreferences } from "@/i18n/client";
 import { MonitorIcon, MoonIcon, SunIcon } from "./Icons";
-
-/** Language names are written in their own language. */
-const LANGUAGE_NAMES: Record<Locale, string> = { en: "English", pl: "Polski" };
 
 const ThemeIcon = ({ theme }: { theme: ThemePref }) =>
 	theme === "light" ? <SunIcon /> : theme === "dark" ? <MoonIcon /> : <MonitorIcon />;
 
 /**
- * Language (EN / PL) and theme (light / dark / system) switches.
+ * Language (a menu, each language named in itself) and theme (light / dark / system) switches.
  * - "auto": segmented theme control, collapsing to one cycling button on phones.
  * - "full": always the segmented control (menus with room to spare).
  */
@@ -28,21 +25,23 @@ export const PreferenceControls = ({
 
 	return (
 		<div className={`prefs ${className}`} role="group" aria-label={t.prefs.group}>
-			<div className="seg" role="group" aria-label={t.prefs.language}>
-				{LOCALES.map((code) => (
-					<button
-						key={code}
-						type="button"
-						className="seg-btn"
-						lang={code}
-						aria-pressed={locale === code}
-						aria-label={`${LANGUAGE_NAMES[code]} (${code.toUpperCase()})`}
-						title={LANGUAGE_NAMES[code]}
-						onClick={() => locale !== code && setLocale(code)}
-					>
-						{code.toUpperCase()}
-					</button>
-				))}
+			<div className="seg seg-select" title={t.prefs.language}>
+				<select
+					value={locale}
+					aria-label={t.prefs.language}
+					onChange={(event) => {
+						const next = event.target.value;
+						if (isLocale(next) && next !== locale) {
+							setLocale(next);
+						}
+					}}
+				>
+					{LOCALES.map((code) => (
+						<option key={code} value={code} lang={code}>
+							{LOCALE_NAMES[code]}
+						</option>
+					))}
+				</select>
 			</div>
 			<div
 				className={`seg ${variant === "auto" ? "prefs-wide" : ""}`}

@@ -21,6 +21,7 @@ import { useT } from "../../src/i18n";
 import { useLayout } from "../../src/hooks/useLayout";
 import { FORM_MAX, LIST_MAX } from "../../src/lib/responsive";
 import { PersonSheetContent } from "../../src/components/PersonSheetContent";
+import { AdBanner } from "../../src/components/AdBanner";
 
 /** Home opens on search and the upcoming list, not on a list of trees. */
 export default function Home() {
@@ -235,7 +236,10 @@ export default function Home() {
 						{searchField}
 						{upcomingList}
 					</View>
-					<View style={styles.col}>{detail}</View>
+					<View style={styles.col}>
+						{detail}
+						<AdBanner placement="home" />
+					</View>
 				</View>
 			</Screen>
 		);
@@ -247,6 +251,7 @@ export default function Home() {
 			{searchField}
 			{upcomingList}
 			{bottom}
+			<AdBanner placement="home" />
 		</Screen>
 	);
 }

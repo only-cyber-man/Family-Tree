@@ -124,7 +124,14 @@ const DeletePl = () => (
 );
 
 /** A Record over Locale, so a missing language is a type error. */
+/** Maintained in English and Polish; the other languages read the English text. */
 export const DELETE_ACCOUNT_CONTENT: Record<Locale, () => JSX.Element> = {
 	en: DeleteEn,
 	pl: DeletePl,
+	es: DeleteEn,
+	fr: DeleteEn,
+	de: DeleteEn,
+	pt: DeleteEn,
+	af: DeleteEn,
+	hi: DeleteEn,
 };

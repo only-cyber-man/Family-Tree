@@ -121,7 +121,7 @@ export default function AddRelationship() {
 						{fromP?.name ?? "…"}
 					</Text>{" "}
 					{typeRec ? typeSentence(typeRec.name, fromP?.gender ?? "female", T) : T.addRel.isRelatedTo}
-					{T.lang === "pl" ? ": " : " "}
+					{T.addRel.sentenceJoin}
 					<Text serif size={17} weight={600}>
 						{toP?.name ?? "…"}
 					</Text>

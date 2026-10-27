@@ -1,0 +1,106 @@
+android
+├── app
+│   ├── build.gradle
+│   ├── debug.keystore
+│   ├── proguard-rules.pro
+│   └── src
+│       ├── debug
+│       │   └── AndroidManifest.xml
+│       ├── debugOptimized
+│       │   └── AndroidManifest.xml
+│       └── main
+│           ├── AndroidManifest.xml
+│           ├── java
+│           │   └── pl
+│           │       └── cyberman
+│           │           └── familytree
+│           │               ├── MainActivity.kt
+│           │               └── MainApplication.kt
+│           └── res
+│               ├── drawable
+│               │   ├── ic_launcher_background.xml
+│               │   └── rn_edit_text_material.xml
+│               ├── drawable-hdpi
+│               │   ├── notification_icon.png
+│               │   └── splashscreen_logo.png
+│               ├── drawable-mdpi
+│               │   ├── notification_icon.png
+│               │   └── splashscreen_logo.png
+│               ├── drawable-night-hdpi
+│               │   └── splashscreen_logo.png
+│               ├── drawable-night-mdpi
+│               │   └── splashscreen_logo.png
+│               ├── drawable-night-xhdpi
+│               │   └── splashscreen_logo.png
+│               ├── drawable-night-xxhdpi
+│               │   └── splashscreen_logo.png
+│               ├── drawable-night-xxxhdpi
+│               │   └── splashscreen_logo.png
+│               ├── drawable-xhdpi
+│               │   ├── notification_icon.png
+│               │   └── splashscreen_logo.png
+│               ├── drawable-xxhdpi
+│               │   ├── notification_icon.png
+│               │   └── splashscreen_logo.png
+│               ├── drawable-xxxhdpi
+│               │   ├── notification_icon.png
+│               │   └── splashscreen_logo.png
+│               ├── mipmap-anydpi-v26
+│               │   ├── ic_launcher_round.xml
+│               │   └── ic_launcher.xml
+│               ├── mipmap-hdpi
+│               │   ├── ic_launcher_background.webp
+│               │   ├── ic_launcher_foreground.webp
+│               │   ├── ic_launcher_monochrome.webp
+│               │   ├── ic_launcher_round.webp
+│               │   └── ic_launcher.webp
+│               ├── mipmap-mdpi
+│               │   ├── ic_launcher_background.webp
+│               │   ├── ic_launcher_foreground.webp
+│               │   ├── ic_launcher_monochrome.webp
+│               │   ├── ic_launcher_round.webp
+│               │   └── ic_launcher.webp
+│               ├── mipmap-xhdpi
+│               │   ├── ic_launcher_background.webp
+│               │   ├── ic_launcher_foreground.webp
+│               │   ├── ic_launcher_monochrome.webp
+│               │   ├── ic_launcher_round.webp
+│               │   └── ic_launcher.webp
+│               ├── mipmap-xxhdpi
+│               │   ├── ic_launcher_background.webp
+│               │   ├── ic_launcher_foreground.webp
+│               │   ├── ic_launcher_monochrome.webp
+│               │   ├── ic_launcher_round.webp
+│               │   └── ic_launcher.webp
+│               ├── mipmap-xxxhdpi
+│               │   ├── ic_launcher_background.webp
+│               │   ├── ic_launcher_foreground.webp
+│               │   ├── ic_launcher_monochrome.webp
+│               │   ├── ic_launcher_round.webp
+│               │   └── ic_launcher.webp
+│               ├── values
+│               │   ├── colors.xml
+│               │   ├── strings.xml
+│               │   └── styles.xml
+│               └── values-night
+│                   └── colors.xml
+├── build
+│   ├── generated
+│   │   └── autolinking
+│   │       ├── autolinking.json
+│   │       ├── package.json.sha
+│   │       └── yarn.lock.sha
+│   └── reports
+│       └── problems
+│           └── problems-report.html
+├── build.gradle
+├── gradle
+│   └── wrapper
+│       ├── gradle-wrapper.jar
+│       └── gradle-wrapper.properties
+├── gradle.properties
+├── gradlew
+├── gradlew.bat
+└── settings.gradle
+
+37 directories, 67 files

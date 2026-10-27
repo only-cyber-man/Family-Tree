@@ -21,6 +21,7 @@ import { useTree } from "../../src/store/tree";
 import { useTheme } from "../../src/theme/useTheme";
 import { useT } from "../../src/i18n";
 import { PreferencesCard } from "../../src/components/Preferences";
+import { AdBanner } from "../../src/components/AdBanner";
 import { READING_MAX } from "../../src/lib/responsive";
 
 export default function Settings() {
@@ -142,6 +143,8 @@ export default function Settings() {
 					<ValueRow title={T.settings.privacy} onPress={() => WebBrowser.openBrowserAsync(`${WEB_ORIGIN}/privacy`)} />
 				</Card>
 			</View>
+
+			<AdBanner placement="settings" />
 
 			<Button kind="destructive" size="md" label={T.settings.signOut} onPress={confirmSignOut} style={{ height: 50 }} />
 			<Button
