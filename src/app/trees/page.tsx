@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { Tree, getPocketbaseError } from "@/lib";
 import { initPocketBase } from "@/lib/ssr";
 import { AppNav } from "@/components/AppNav";
+import { isAdmin } from "@/lib/adminStats";
 import { getT } from "@/i18n/server";
 import { TreesDashboard, TreeSummary } from "./TreesDashboard";
 
@@ -75,7 +76,7 @@ export default async function TreesPage() {
 
 	return (
 		<>
-			<AppNav userName={userName} />
+			<AppNav userName={userName} isAdmin={isAdmin(me)} />
 			<TreesDashboard trees={summaries} userName={userName} />
 		</>
 	);

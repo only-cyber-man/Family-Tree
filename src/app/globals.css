@@ -540,6 +540,18 @@ p {
 	color: var(--ink);
 }
 
+.nav-link {
+	font-size: 15px;
+	font-weight: 600;
+	color: var(--ink2);
+	padding: 6px 0;
+	border-bottom: 2px solid transparent;
+}
+
+.nav-link:hover {
+	color: var(--ink);
+}
+
 @media (max-width: 640px) {
 	.app-nav {
 		padding: 0 16px;

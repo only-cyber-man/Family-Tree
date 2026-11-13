@@ -23,15 +23,35 @@ export const UserAvatar = ({ name, size = 34 }: { name: string; size?: number })
 	</div>
 );
 
-export const AppNav = ({ userName }: { userName: string }) => {
+export const AppNav = ({
+	userName,
+	isAdmin = false,
+	current = "trees",
+}: {
+	userName: string;
+	/** Shows the link to /admin (only ever true for ADMIN_EMAIL). */
+	isAdmin?: boolean;
+	current?: "trees" | "admin";
+}) => {
 	const t = useT();
+	const link = (page: typeof current) => ({
+		className: `${current === page ? "nav-link-active" : "nav-link"} hide-sm`,
+		"aria-current": current === page ? ("page" as const) : undefined,
+	});
 	return (
 		<nav className="app-nav" aria-label={t.common.mainNav}>
 			<div style={{ display: "flex", alignItems: "center", gap: 32, minWidth: 0 }}>
 				<Brand href="/trees" collapsible />
-				<Link href="/trees" className="nav-link-active hide-sm" aria-current="page">
-					{t.nav.trees}
-				</Link>
+				<div style={{ display: "flex", alignItems: "center", gap: 24 }}>
+					<Link href="/trees" {...link("trees")}>
+						{t.nav.trees}
+					</Link>
+					{isAdmin ? (
+						<Link href="/admin" {...link("admin")}>
+							Admin
+						</Link>
+					) : null}
+				</div>
 			</div>
 			<div style={{ display: "flex", alignItems: "center", gap: 12 }}>
 				<PreferenceControls />

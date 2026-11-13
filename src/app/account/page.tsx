@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { initPocketBase } from "@/lib/ssr";
 import { AppNav } from "@/components/AppNav";
+import { isAdmin } from "@/lib/adminStats";
 import { getT } from "@/i18n/server";
 import styles from "@/components/legal.module.css";
 import { DeleteAccount } from "./DeleteAccount";
@@ -21,7 +22,7 @@ export default async function AccountPage() {
 
 	return (
 		<>
-			<AppNav userName={userName} />
+			<AppNav userName={userName} isAdmin={isAdmin(me)} />
 			<main className={styles.main}>
 				<header>
 					<h1 className={styles.title}>{t.account.title}</h1>

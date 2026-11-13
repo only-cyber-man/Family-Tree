@@ -272,12 +272,11 @@
 
 .statValue {
 	margin: 0;
-	font-family: var(--font-heading);
-	font-weight: 600;
+	font-family: var(--font-body);
+	font-weight: 700;
 	font-size: clamp(30px, 3.8cqw, 44px);
 	line-height: 1.05;
-	letter-spacing: -0.015em;
-	font-variant-numeric: tabular-nums;
+	letter-spacing: -0.02em;
 	color: var(--primary);
 }
 
