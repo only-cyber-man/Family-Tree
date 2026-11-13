@@ -519,14 +519,10 @@ export const fr: Dict = {
 		everyTree: "• chaque arbre que vous avez créé, avec toutes ses personnes, photos et relations",
 		consequences:
 			"Les personnes que vous avez invitées perdent l’accès à ces arbres. Les arbres que d’autres ont partagés avec vous ne sont pas concernés. Cette action est irréversible.",
-		notFully: (reason) => `Votre compte n’a pas été entièrement supprimé. ${reason}`,
-		askUs: (email) => `Vous pouvez réessayer, ou nous demander de le supprimer pour vous à l’adresse ${email}.`,
-		emailRequest: "Envoyer une demande de suppression par e-mail",
+		failed: (reason) => `Votre compte n’a pas été supprimé. ${reason} Rien n’a été effacé ; réessayez.`,
 		deleteMine: "Supprimer mon compte",
 		deleting: "Suppression…",
 		keep: "Garder mon compte",
-		mailSubject: "Supprimer mon compte Family Tree",
-		mailBody: (email) => `Merci de supprimer mon compte Family Tree${email ? ` (${email})` : ""} ainsi que tous les arbres que j’ai créés.`,
 	},
 
 	pickMe: {

@@ -6,7 +6,9 @@ import { AlertIcon, PlusIcon } from "@/components/Icons";
 import { LegalLinks } from "@/components/LegalShell";
 import { LandingNav } from "./LandingNav";
 import { HeroGraph } from "./HeroGraph";
-import { getT } from "@/i18n/server";
+import { getLocale, getT } from "@/i18n/server";
+import { LOCALE_TAGS } from "@/i18n/plural";
+import { getSiteStats } from "@/lib/stats";
 import s from "./landing.module.css";
 
 const LINES = [
@@ -23,6 +25,8 @@ const CALENDAR_DAYS = [
 	{ day: 28, color: "var(--accent)" },
 ];
 
+const STATS = ["trees", "people", "relationships", "users"] as const;
+
 /** The phone mock-up is always drawn in the light theme. */
 const PHONE_DOTS = [{ c: "#A5584C" }, { c: "#3F6E7A", o: 0.6 }, { c: "#A5584C" }];
 
@@ -37,6 +41,8 @@ export default async function Landing({
 	}
 	const t = getT();
 	const l = t.landing;
+	const stats = await getSiteStats();
+	const numbers = new Intl.NumberFormat(LOCALE_TAGS[getLocale()]);
 
 	return (
 		<div className={s.page}>
@@ -76,6 +82,21 @@ export default async function Landing({
 				<div className={s.heroArt}>
 					<HeroGraph />
 				</div>
+				{stats ? (
+					<div className={s.heroStats}>
+						<h2 className={s.eyebrow} id="site-stats">
+							{l.statsTitle}
+						</h2>
+						<dl className={s.stats} aria-labelledby="site-stats">
+							{STATS.map((key) => (
+								<div key={key} className={s.stat}>
+									<dt className={s.statLabel}>{l.stats[key](stats[key])}</dt>
+									<dd className={s.statValue}>{numbers.format(stats[key])}</dd>
+								</div>
+							))}
+						</dl>
+					</div>
+				) : null}
 			</section>
 
 			<section id="features" className={s.band}>

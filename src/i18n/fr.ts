@@ -1,6 +1,6 @@
 import type { Gender, Locale, ThemePref } from "./config";
 import type { Dict, KnownRelationship } from "./en";
-import { simple } from "./plural";
+import { plural, simple } from "./plural";
 
 // Français (France). Typed as Dict, so TypeScript fails when a key is missing.
 // Register: "vous" throughout. French typography: a no-break space before
@@ -150,9 +150,6 @@ export const fr: Dict = {
 		deleteTitle: "Supprimer votre compte",
 		deleteAppliesTo:
 			"S’applique au site web Family Tree et à l’application Family Tree pour Android et iOS (pl.cyberman.familytree).",
-		deleteMailSubject: "Supprimer mon compte Family Tree",
-		deleteMailBody: (email) =>
-			`Merci de supprimer mon compte Family Tree${email ? ` (${email})` : ""} ainsi que tous les arbres que j’ai créés.`,
 	},
 
 	errorPage: {
@@ -172,6 +169,13 @@ export const fr: Dict = {
 			closeMenu: "Fermer le menu",
 		},
 		deleted: "Votre compte et vos arbres ont été supprimés.",
+		statsTitle: "Jusqu’ici sur Family Tree",
+		stats: {
+			trees: (count) => plural("fr", count, { one: "arbre généalogique", other: "arbres généalogiques" }),
+			people: (count) => plural("fr", count, { one: "personne", other: "personnes" }),
+			relationships: (count) => plural("fr", count, { one: "relation", other: "relations" }),
+			users: (count) => plural("fr", count, { one: "utilisateur", other: "utilisateurs" }),
+		},
 		eyebrow: "Un arbre généalogique privé, dessiné comme un graphe",
 		title: "Chaque famille est un graphe. Dessinez le vôtre.",
 		lead:
@@ -322,9 +326,7 @@ export const fr: Dict = {
 			"Supprime votre compte et chaque arbre que vous avez créé, avec toutes les personnes, photos et relations qu’ils contiennent. Les arbres que d’autres ont partagés avec vous ne sont pas concernés. Voir la ",
 		deleteBodyLink: "politique de confidentialité",
 		deleteBodyAfter: ".",
-		failedBefore: (error) => `Votre compte n’a pas pu être supprimé ici (${error}). `,
-		failedLink: "Envoyez une demande de suppression par e-mail",
-		failedAfter: " et elle sera traitée sous 30 jours.",
+		failed: (error) => `Votre compte n’a pas pu être supprimé (${error}). Rien n’a été effacé ; réessayez.`,
 		deleteButton: "Supprimer le compte…",
 		confirmTitle: "Supprimer votre compte ?",
 		confirmBody:

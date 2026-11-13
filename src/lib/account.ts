@@ -1,40 +1,17 @@
 import { pb } from "./data";
-import type { Dict } from "@/i18n";
-
-export const SUPPORT_EMAIL = "family-tree@cyber-man.pl";
-
-export const deletionRequestMailto = (t: Dict, email?: string) =>
-	`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(
-		t.legal.deleteMailSubject
-	)}&body=${encodeURIComponent(t.legal.deleteMailBody(email))}`;
 
 /**
- * Deletes the signed-in account: every tree it created (with their people and
- * relationships), then the user record. Trees shared with the account are not
- * touched; the server drops the account from their invited lists.
+ * Deletes the signed-in account in one request. PocketBase lets a user delete
+ * their own `ft_users` record (delete rule `id = @request.auth.id`) and does
+ * the rest in the same transaction: `ft_trees.creator` cascades to every tree
+ * the account created, and those cascade to their people and relationships.
+ * Trees shared with the account lose it from their invited lists, and people
+ * linked to it in other trees are unlinked. Nothing is deleted if it fails.
  */
 export const deleteOwnAccount = async () => {
 	const me = pb.authStore.record;
 	if (!me) {
 		throw new Error("You are not signed in.");
-	}
-	const trees = await pb.collection("ft_trees").getFullList({
-		filter: pb.filter("creator = {:id}", { id: me.id }),
-		fields: "id",
-	});
-	for (const tree of trees) {
-		const filter = pb.filter("tree = {:tree}", { tree: tree.id });
-		const [relationships, nodes] = await Promise.all([
-			pb.collection("ft_relationships").getFullList({ filter, fields: "id" }),
-			pb.collection("ft_nodes").getFullList({ filter, fields: "id" }),
-		]);
-		for (const r of relationships) {
-			await pb.collection("ft_relationships").delete(r.id);
-		}
-		for (const n of nodes) {
-			await pb.collection("ft_nodes").delete(n.id);
-		}
-		await pb.collection("ft_trees").delete(tree.id);
 	}
 	await pb.collection("ft_users").delete(me.id);
 	pb.authStore.clear();

@@ -501,14 +501,10 @@ export const af: Dict = {
 		yourAccount: (email) => `• jou rekening${email ? ` (${email})` : ""}`,
 		everyTree: "• elke stamboom wat jy geskep het, met al sy mense, foto's en verwantskappe",
 		consequences: "Mense wat jy genooi het, verloor toegang tot daardie stambome. Stambome wat ander met jou gedeel het, word nie geraak nie. Dit kan nie ontdoen word nie.",
-		notFully: (reason) => `Jou rekening is nie heeltemal uitgevee nie. ${reason}`,
-		askUs: (email) => `Jy kan weer probeer, of ons by ${email} vra om dit vir jou uit te vee.`,
-		emailRequest: "E-pos 'n uitveeversoek",
+		failed: (reason) => `Jou rekening is nie uitgevee nie. ${reason} Niks is verwyder nie; probeer weer.`,
 		deleteMine: "Vee my rekening uit",
 		deleting: "Vee uit…",
 		keep: "Hou my rekening",
-		mailSubject: "Vee my Family Tree-rekening uit",
-		mailBody: (email) => `Vee asseblief my Family Tree-rekening${email ? ` (${email})` : ""} en alle stambome wat ek geskep het uit.`,
 	},
 
 	pickMe: {

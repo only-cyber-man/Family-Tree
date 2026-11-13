@@ -1,6 +1,6 @@
 import type { Gender, Locale, ThemePref } from "./config";
 import type { Dict, KnownRelationship } from "./en";
-import { simple } from "./plural";
+import { plural, simple } from "./plural";
 
 // Brazilian Portuguese strings. Typed as Dict, so TypeScript fails when a key is missing.
 
@@ -147,9 +147,6 @@ export const pt: Dict = {
 		deleteTitle: "Excluir sua conta",
 		deleteAppliesTo:
 			"Aplica-se ao site Family Tree e ao app Family Tree para Android e iOS (pl.cyberman.familytree).",
-		deleteMailSubject: "Excluir minha conta do Family Tree",
-		deleteMailBody: (email) =>
-			`Por favor, excluam minha conta do Family Tree${email ? ` (${email})` : ""} e todas as árvores que eu criei.`,
 	},
 
 	errorPage: {
@@ -169,6 +166,13 @@ export const pt: Dict = {
 			closeMenu: "Fechar menu",
 		},
 		deleted: "Sua conta e suas árvores foram excluídas.",
+		statsTitle: "Até agora no Family Tree",
+		stats: {
+			trees: (count) => plural("pt", count, { one: "árvore genealógica", other: "árvores genealógicas" }),
+			people: (count) => plural("pt", count, { one: "pessoa", other: "pessoas" }),
+			relationships: (count) => plural("pt", count, { one: "relação", other: "relações" }),
+			users: (count) => plural("pt", count, { one: "usuário", other: "usuários" }),
+		},
 		eyebrow: "Uma árvore genealógica privada, desenhada como um grafo",
 		title: "Toda família é um grafo. Desenhe a sua.",
 		lead:
@@ -319,9 +323,7 @@ export const pt: Dict = {
 			"Exclui sua conta e todas as árvores que você criou, com todas as pessoas, fotos e relações nelas. Árvores que outras pessoas compartilharam com você não são afetadas. Veja a ",
 		deleteBodyLink: "política de privacidade",
 		deleteBodyAfter: ".",
-		failedBefore: (error) => `Não foi possível excluir sua conta por aqui (${error}). `,
-		failedLink: "Envie um pedido de exclusão por e-mail",
-		failedAfter: " e isso será feito em até 30 dias.",
+		failed: (error) => `Não foi possível excluir sua conta (${error}). Nada foi apagado; tente novamente.`,
 		deleteButton: "Excluir conta…",
 		confirmTitle: "Excluir sua conta?",
 		confirmBody:

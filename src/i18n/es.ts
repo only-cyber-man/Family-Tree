@@ -1,6 +1,6 @@
 import type { Gender, Locale, ThemePref } from "./config";
 import type { Dict, KnownRelationship } from "./en";
-import { simple } from "./plural";
+import { plural, simple } from "./plural";
 
 // Spanish strings. Typed as Dict, so TypeScript fails when a key is missing.
 // Neutral international Spanish, informal address ("tú").
@@ -146,9 +146,6 @@ export const es: Dict = {
 		deleteTitle: "Eliminar tu cuenta",
 		deleteAppliesTo:
 			"Se aplica al sitio web de Family Tree y a la app de Family Tree para Android e iOS (pl.cyberman.familytree).",
-		deleteMailSubject: "Eliminar mi cuenta de Family Tree",
-		deleteMailBody: (email) =>
-			`Por favor, eliminen mi cuenta de Family Tree${email ? ` (${email})` : ""} y todos los árboles que creé.`,
 	},
 
 	errorPage: {
@@ -168,6 +165,13 @@ export const es: Dict = {
 			closeMenu: "Cerrar menú",
 		},
 		deleted: "Tu cuenta y tus árboles se han eliminado.",
+		statsTitle: "Hasta ahora en Family Tree",
+		stats: {
+			trees: (count) => plural("es", count, { one: "árbol genealógico", other: "árboles genealógicos" }),
+			people: (count) => plural("es", count, { one: "persona", other: "personas" }),
+			relationships: (count) => plural("es", count, { one: "relación", other: "relaciones" }),
+			users: (count) => plural("es", count, { one: "usuario", other: "usuarios" }),
+		},
 		eyebrow: "Un árbol genealógico privado, dibujado como un grafo",
 		title: "Cada familia es un grafo. Dibuja el tuyo.",
 		lead:
@@ -318,9 +322,7 @@ export const es: Dict = {
 			"Elimina tu cuenta y todos los árboles que creaste, con todas las personas, fotos y relaciones que contienen. Los árboles que otras personas compartieron contigo no se ven afectados. Consulta la ",
 		deleteBodyLink: "política de privacidad",
 		deleteBodyAfter: ".",
-		failedBefore: (error) => `Tu cuenta no se pudo eliminar aquí (${error}). `,
-		failedLink: "Envía una solicitud de eliminación por correo",
-		failedAfter: " y se hará en un plazo de 30 días.",
+		failed: (error) => `No se pudo eliminar tu cuenta (${error}). No se ha borrado nada; inténtalo de nuevo.`,
 		deleteButton: "Eliminar cuenta…",
 		confirmTitle: "¿Eliminar tu cuenta?",
 		confirmBody:

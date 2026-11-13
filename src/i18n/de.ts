@@ -1,6 +1,6 @@
 import type { Gender, Locale, ThemePref } from "./config";
 import type { Dict, KnownRelationship } from "./en";
-import { simple } from "./plural";
+import { plural, simple } from "./plural";
 
 // Deutsch. Typed as Dict, so TypeScript fails when a key is missing.
 // Register: the informal, lower-case "du" of consumer apps.
@@ -144,9 +144,6 @@ export const de: Dict = {
 		deleteTitle: "Dein Konto löschen",
 		deleteAppliesTo:
 			"Gilt für die Website von Family Tree und die App Family Tree für Android und iOS (pl.cyberman.familytree).",
-		deleteMailSubject: "Mein Konto bei Family Tree löschen",
-		deleteMailBody: (email) =>
-			`Bitte löschen Sie mein Konto bei Family Tree${email ? ` (${email})` : ""} und alle Stammbäume, die ich erstellt habe.`,
 	},
 
 	errorPage: {
@@ -166,6 +163,13 @@ export const de: Dict = {
 			closeMenu: "Menü schließen",
 		},
 		deleted: "Dein Konto und deine Stammbäume wurden gelöscht.",
+		statsTitle: "Bisher bei Family Tree",
+		stats: {
+			trees: (count) => plural("de", count, { one: "Stammbaum", other: "Stammbäume" }),
+			people: (count) => plural("de", count, { one: "Person", other: "Personen" }),
+			relationships: (count) => plural("de", count, { one: "Beziehung", other: "Beziehungen" }),
+			users: (count) => plural("de", count, { one: "Nutzer", other: "Nutzer" }),
+		},
 		eyebrow: "Ein privater Stammbaum, als Graph gezeichnet",
 		title: "Jede Familie ist ein Graph. Zeichne deinen.",
 		lead:
@@ -316,9 +320,7 @@ export const de: Dict = {
 			"Löscht dein Konto und jeden Stammbaum, den du erstellt hast, mit allen Personen, Fotos und Beziehungen darin. Stammbäume, die andere mit dir geteilt haben, sind nicht betroffen. Siehe die ",
 		deleteBodyLink: "Datenschutzerklärung",
 		deleteBodyAfter: ".",
-		failedBefore: (error) => `Dein Konto konnte hier nicht gelöscht werden (${error}). `,
-		failedLink: "Schick stattdessen einen Löschantrag per E-Mail",
-		failedAfter: ", dann wird es innerhalb von 30 Tagen erledigt.",
+		failed: (error) => `Dein Konto konnte nicht gelöscht werden (${error}). Es wurde nichts entfernt; versuch es noch einmal.`,
 		deleteButton: "Konto löschen…",
 		confirmTitle: "Dein Konto löschen?",
 		confirmBody:

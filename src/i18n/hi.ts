@@ -1,6 +1,6 @@
 import type { Gender, Locale, ThemePref } from "./config";
 import type { Dict, KnownRelationship } from "./en";
-import { simple } from "./plural";
+import { plural, simple } from "./plural";
 
 // हिन्दी. Typed as Dict, so TypeScript fails when a key is missing.
 // Respectful "आप", everyday vocabulary with the usual loanwords, danda "।" as the full stop.
@@ -151,9 +151,6 @@ export const hi: Dict = {
 		deleteTitle: "अपना खाता हटाएँ",
 		deleteAppliesTo:
 			"Family Tree वेबसाइट और Android व iOS के लिए Family Tree ऐप (pl.cyberman.familytree) पर लागू होता है।",
-		deleteMailSubject: "मेरा Family Tree खाता हटाएँ",
-		deleteMailBody: (email) =>
-			`कृपया मेरा Family Tree खाता${email ? ` (${email})` : ""} और मेरे बनाए सभी वंश वृक्ष हटा दें।`,
 	},
 
 	errorPage: {
@@ -173,6 +170,13 @@ export const hi: Dict = {
 			closeMenu: "मेनू बंद करें",
 		},
 		deleted: "आपका खाता और आपके वंश वृक्ष हटा दिए गए हैं।",
+		statsTitle: "अब तक Family Tree पर",
+		stats: {
+			trees: (count) => plural("hi", count, { one: "वंश वृक्ष", other: "वंश वृक्ष" }),
+			people: (count) => plural("hi", count, { one: "व्यक्ति", other: "लोग" }),
+			relationships: (count) => plural("hi", count, { one: "रिश्ता", other: "रिश्ते" }),
+			users: (count) => plural("hi", count, { one: "उपयोगकर्ता", other: "उपयोगकर्ता" }),
+		},
 		eyebrow: "एक निजी वंश वृक्ष, ग्राफ़ की तरह बनाया हुआ",
 		title: "हर परिवार एक ग्राफ़ है। अपना बनाइए।",
 		lead:
@@ -323,9 +327,7 @@ export const hi: Dict = {
 			"आपका खाता और आपके बनाए हर वंश वृक्ष को, उनके सभी लोगों, फ़ोटो और रिश्तों समेत, हटा देता है। दूसरों के आपके साथ शेयर किए वंश वृक्षों पर कोई असर नहीं पड़ता। देखें: ",
 		deleteBodyLink: "गोपनीयता नीति",
 		deleteBodyAfter: "।",
-		failedBefore: (error) => `आपका खाता यहाँ नहीं हटाया जा सका (${error})। इसके बजाय `,
-		failedLink: "हटाने का अनुरोध ईमेल करें",
-		failedAfter: ", और यह 30 दिनों के भीतर कर दिया जाएगा।",
+		failed: (error) => `आपका खाता नहीं हटाया जा सका (${error})। कुछ भी नहीं हटाया गया; फिर से कोशिश करें।`,
 		deleteButton: "खाता हटाएँ…",
 		confirmTitle: "अपना खाता हटाएँ?",
 		confirmBody:

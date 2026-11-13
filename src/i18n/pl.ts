@@ -151,11 +151,6 @@ export const pl: Dict = {
 		deleteTitle: "Usuwanie konta",
 		deleteAppliesTo:
 			"Dotyczy strony internetowej Family Tree oraz aplikacji Family Tree na Androida i iOS (pl.cyberman.familytree).",
-		deleteMailSubject: "Usunięcie konta Family Tree",
-		deleteMailBody: (email) =>
-			`Proszę o usunięcie mojego konta Family Tree${
-				email ? ` (${email})` : ""
-			} oraz wszystkich drzew, które utworzyłem/utworzyłam.`,
 	},
 
 	errorPage: {
@@ -175,6 +170,13 @@ export const pl: Dict = {
 			closeMenu: "Zamknij menu",
 		},
 		deleted: "Twoje konto i Twoje drzewa zostały usunięte.",
+		statsTitle: "Dotychczas w Family Tree",
+		stats: {
+			trees: (count) => plural("pl", count, { one: "drzewo genealogiczne", few: "drzewa genealogiczne", many: "drzew genealogicznych", other: "drzew genealogicznych" }),
+			people: (count) => plural("pl", count, { one: "osoba", few: "osoby", many: "osób", other: "osób" }),
+			relationships: (count) => plural("pl", count, { one: "relacja", few: "relacje", many: "relacji", other: "relacji" }),
+			users: (count) => plural("pl", count, { one: "użytkownik", few: "użytkownicy", many: "użytkowników", other: "użytkowników" }),
+		},
 		eyebrow: "Prywatne drzewo genealogiczne w formie grafu",
 		title: "Każda rodzina to graf. Narysuj swoją.",
 		lead:
@@ -325,9 +327,7 @@ export const pl: Dict = {
 			"Usuwa Twoje konto i wszystkie utworzone przez Ciebie drzewa wraz ze wszystkimi osobami, zdjęciami i relacjami. Drzewa udostępnione Ci przez inne osoby pozostają bez zmian. Szczegóły znajdziesz w ",
 		deleteBodyLink: "polityce prywatności",
 		deleteBodyAfter: ".",
-		failedBefore: (error) => `Nie udało się tutaj usunąć konta (${error}). `,
-		failedLink: "Wyślij e-mailem prośbę o usunięcie",
-		failedAfter: ", a usuniemy je w ciągu 30 dni.",
+		failed: (error) => `Nie udało się usunąć konta (${error}). Nic nie zostało usunięte; spróbuj ponownie.`,
 		deleteButton: "Usuń konto…",
 		confirmTitle: "Usunąć konto?",
 		confirmBody:

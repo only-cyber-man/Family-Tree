@@ -1,6 +1,6 @@
 import type { Gender, Locale, ThemePref } from "./config";
 import type { Dict, KnownRelationship } from "./en";
-import { simple } from "./plural";
+import { plural, simple } from "./plural";
 
 // Afrikaans strings. Typed as Dict, so TypeScript fails when a key is missing.
 // Informal address ("jy/jou") and the everyday family register ("pa", "ma", "skoonma").
@@ -145,9 +145,6 @@ export const af: Dict = {
 		deleteTitle: "Vee jou rekening uit",
 		deleteAppliesTo:
 			"Geld vir die Family Tree-webwerf en die Family Tree-app vir Android en iOS (pl.cyberman.familytree).",
-		deleteMailSubject: "Vee my Family Tree-rekening uit",
-		deleteMailBody: (email) =>
-			`Vee asseblief my Family Tree-rekening${email ? ` (${email})` : ""} en alle stambome wat ek geskep het uit.`,
 	},
 
 	errorPage: {
@@ -167,6 +164,13 @@ export const af: Dict = {
 			closeMenu: "Maak kieslys toe",
 		},
 		deleted: "Jou rekening en jou stambome is uitgevee.",
+		statsTitle: "Tot dusver op Family Tree",
+		stats: {
+			trees: (count) => plural("af", count, { one: "stamboom", other: "stambome" }),
+			people: (count) => plural("af", count, { one: "persoon", other: "persone" }),
+			relationships: (count) => plural("af", count, { one: "verwantskap", other: "verwantskappe" }),
+			users: (count) => plural("af", count, { one: "gebruiker", other: "gebruikers" }),
+		},
 		eyebrow: "'n Privaat stamboom, geteken as 'n grafiek",
 		title: "Elke familie is 'n grafiek. Teken joune.",
 		lead:
@@ -316,9 +320,7 @@ export const af: Dict = {
 			"Vee jou rekening uit en elke stamboom wat jy geskep het, met al die mense, foto's en verwantskappe daarin. Stambome wat ander mense met jou gedeel het, word nie geraak nie. Sien die ",
 		deleteBodyLink: "privaatheidsbeleid",
 		deleteBodyAfter: ".",
-		failedBefore: (error) => `Jou rekening kon nie hier uitgevee word nie (${error}). `,
-		failedLink: "E-pos eerder 'n uitveeversoek",
-		failedAfter: " en dit sal binne 30 dae gedoen word.",
+		failed: (error) => `Jou rekening kon nie uitgevee word nie (${error}). Niks is verwyder nie; probeer weer.`,
 		deleteButton: "Vee rekening uit…",
 		confirmTitle: "Vee jou rekening uit?",
 		confirmBody:

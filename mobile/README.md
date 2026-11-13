@@ -79,7 +79,7 @@ Cleartext HTTP is **not** enabled in `app.json`. For a screenshot build against 
 
 ## Account deletion and privacy
 
-- Settings → **Delete account** asks for confirmation, then opens a screen where the user types `DELETE`. It works exactly like the web (`../src/lib/account.ts`): each tree the account created is deleted with its relationships and people, then the `ft_users` record is deleted, then the device is signed out and wiped. It needs a connection. If a server step fails, the screen shows the error and an **Email a deletion request** button (mailto `family-tree@cyber-man.pl` with the account email).
+- Settings → **Delete account** asks for confirmation, then opens a screen where the user types `DELETE`. It works exactly like the web (`../src/lib/account.ts`): one request deletes the `ft_users` record (its delete rule is `id = @request.auth.id`), and PocketBase cascades in the same transaction to every tree the account created, with their people and relationships (`ft_trees.creator`, `ft_nodes.tree` and `ft_relationships.tree` have cascade delete). Then the device is signed out and wiped. It needs a connection. If the request fails nothing is deleted, and the screen shows the error so the user can try again.
 - Settings → **Privacy policy** and the sign-up screen link to `https://family-tree.cyber-man.pl/privacy`.
 
 ## Language and theme

@@ -48,7 +48,7 @@ export default async function AccountPage() {
 						<Link href="/privacy">{t.account.deleteBodyLink}</Link>
 						{t.account.deleteBodyAfter}
 					</p>
-					<DeleteAccount email={email} />
+					<DeleteAccount />
 				</section>
 			</main>
 		</>

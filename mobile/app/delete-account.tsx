@@ -1,14 +1,13 @@
 import { useRouter } from "expo-router";
-import { ChevronLeft, Mail } from "lucide-react-native";
+import { ChevronLeft } from "lucide-react-native";
 import { useState } from "react";
-import { Linking, Pressable, StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import { Button } from "../src/components/Button";
 import { OfflineWriteHint } from "../src/components/Feedback";
 import { Screen } from "../src/components/Screen";
 import { Text } from "../src/components/Text";
 import { TextField } from "../src/components/TextField";
 import { useCanWrite } from "../src/hooks/useTreeData";
-import { deletionRequestMailto, SUPPORT_EMAIL } from "../src/lib/account";
 import { errorMessage } from "../src/lib/errors";
 import { haptics } from "../src/services/haptics";
 import { useSession } from "../src/store/session";
@@ -20,9 +19,9 @@ const CONFIRM_WORD = "DELETE";
 
 /**
  * Account deletion (required by Google Play and the App Store). Mirrors the
- * web: every tree the account created with its people, photos and
- * relationships, then the account itself. Online only; typing DELETE is the
- * second, explicit confirmation.
+ * web: one request deletes the account, and the server cascades to every tree
+ * it created with their people, photos and relationships. Online only; typing
+ * DELETE is the second, explicit confirmation.
  */
 export default function DeleteAccount() {
 	const t = useTheme();
@@ -47,7 +46,7 @@ export default function DeleteAccount() {
 			// Signed out: the auth gate takes over navigation.
 		} catch (e) {
 			haptics.error();
-			setError(errorMessage(e, T));
+			setError(T.deleteAccount.failed(errorMessage(e, T)));
 		} finally {
 			setBusy(false);
 		}
@@ -94,18 +93,8 @@ export default function DeleteAccount() {
 			{error ? (
 				<View accessibilityRole="alert" style={[styles.box, { backgroundColor: t.c.surface2 }]}>
 					<Text size={14} color={t.c.danger} style={{ lineHeight: 20 }}>
-						{T.deleteAccount.notFully(error)}
+						{error}
 					</Text>
-					<Text size={13} color={t.c.ink2} style={{ lineHeight: 19 }}>
-						{T.deleteAccount.askUs(SUPPORT_EMAIL)}
-					</Text>
-					<Button
-						kind="secondary"
-						size="sm"
-						icon={<Mail size={16} color={t.c.ink} strokeWidth={2} />}
-						label={T.deleteAccount.emailRequest}
-						onPress={() => Linking.openURL(deletionRequestMailto(user?.email, T))}
-					/>
 				</View>
 			) : null}
 			<Button kind="danger" label={T.deleteAccount.deleteMine} loadingLabel={T.deleteAccount.deleting} loading={busy} disabled={!confirmed || !canWrite} onPress={submit} />

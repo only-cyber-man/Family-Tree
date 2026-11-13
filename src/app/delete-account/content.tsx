@@ -1,11 +1,6 @@
 import Link from "next/link";
 import type { Locale } from "@/i18n/config";
-import { en } from "@/i18n/en";
-import { pl } from "@/i18n/pl";
-import { deletionRequestMailto, SUPPORT_EMAIL } from "@/lib/account";
 import styles from "@/components/legal.module.css";
-
-const Mail = () => <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>;
 
 const DeleteEn = () => (
 	<>
@@ -43,14 +38,14 @@ const DeleteEn = () => (
 			</div>
 			<div className={styles.card}>
 				<p>
-					<strong>Can&apos;t sign in?</strong> Email <Mail /> from the address on
-					your account and ask for it to be deleted. We confirm by email and
-					delete everything listed above within 30 days.
+					<strong>Forgot your password?</strong> Choose &ldquo;Forgot?&rdquo; on
+					the sign-in page to get a reset link by email, then sign in and
+					delete your account.
 				</p>
 				<div className={styles.actions}>
-					<a href={deletionRequestMailto(en)} className="btn btn-outline">
-						Email a deletion request
-					</a>
+					<Link href="/sign-in" className="btn btn-outline">
+						Sign in
+					</Link>
 				</div>
 			</div>
 		</section>
@@ -101,15 +96,14 @@ const DeletePl = () => (
 			</div>
 			<div className={styles.card}>
 				<p>
-					<strong>Nie możesz się zalogować?</strong> Wyślij wiadomość na adres{" "}
-					<Mail /> z adresu e-mail przypisanego do konta i poproś o jego
-					usunięcie. Potwierdzimy to e-mailem i usuniemy wszystkie wymienione
-					wyżej dane w ciągu 30 dni.
+					<strong>Nie pamiętasz hasła?</strong> Na stronie logowania wybierz
+					&bdquo;Nie pamiętasz?&rdquo;, a wyślemy Ci e-mailem link do zmiany
+					hasła. Potem zaloguj się i usuń konto.
 				</p>
 				<div className={styles.actions}>
-					<a href={deletionRequestMailto(pl)} className="btn btn-outline">
-						Wyślij prośbę o usunięcie
-					</a>
+					<Link href="/sign-in" className="btn btn-outline">
+						Zaloguj się
+					</Link>
 				</div>
 			</div>
 		</section>

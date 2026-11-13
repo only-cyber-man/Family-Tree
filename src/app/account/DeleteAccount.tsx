@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { deleteOwnAccount, deletionRequestMailto } from "@/lib/account";
+import { deleteOwnAccount } from "@/lib/account";
 import { getPocketbaseError } from "@/lib";
 import { ConfirmDialog } from "@/components/Dialog";
 import { AlertIcon } from "@/components/Icons";
 import { useT } from "@/i18n/client";
 
-export const DeleteAccount = ({ email }: { email: string }) => {
+export const DeleteAccount = () => {
 	const t = useT();
 	const a = t.account;
 	const [open, setOpen] = useState(false);
@@ -33,13 +33,7 @@ export const DeleteAccount = ({ email }: { email: string }) => {
 			{error ? (
 				<div className="alert" role="alert">
 					<AlertIcon />
-					<span>
-						{a.failedBefore(error)}
-						<a href={deletionRequestMailto(t, email)} style={{ color: "inherit", fontWeight: 700 }}>
-							{a.failedLink}
-						</a>
-						{a.failedAfter}
-					</span>
+					<span>{a.failed(error)}</span>
 				</div>
 			) : null}
 			<div>

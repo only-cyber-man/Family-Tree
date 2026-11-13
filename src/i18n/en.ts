@@ -1,5 +1,5 @@
 import type { Gender, Locale, ThemePref } from "./config";
-import { en as n } from "./plural";
+import { en as n, plural } from "./plural";
 
 // English strings. This object is the source of truth: `Dict = typeof en`, and
 // pl.ts is typed as Dict, so a missing (or extra) Polish key is a TS error.
@@ -93,9 +93,6 @@ export const en = {
 		deleteTitle: "Delete your account",
 		deleteAppliesTo:
 			"Applies to the Family Tree web site and the Family Tree app for Android and iOS (pl.cyberman.familytree).",
-		deleteMailSubject: "Delete my Family Tree account",
-		deleteMailBody: (email?: string) =>
-			`Please delete my Family Tree account${email ? ` (${email})` : ""} and all trees I created.`,
 	},
 
 	errorPage: {
@@ -115,6 +112,13 @@ export const en = {
 			closeMenu: "Close menu",
 		},
 		deleted: "Your account and your trees have been deleted.",
+		statsTitle: "So far on Family Tree",
+		stats: {
+			trees: (count: number) => plural("en", count, { one: "family tree", other: "family trees" }),
+			people: (count: number) => plural("en", count, { one: "person", other: "people" }),
+			relationships: (count: number) => plural("en", count, { one: "relationship", other: "relationships" }),
+			users: (count: number) => plural("en", count, { one: "user", other: "users" }),
+		},
 		eyebrow: "A private family tree, drawn as a graph",
 		title: "Every family is a graph. Draw yours.",
 		lead:
@@ -265,9 +269,7 @@ export const en = {
 			"Deletes your account and every tree you created, with all the people, photos and relationships in them. Trees other people shared with you are not affected. See the ",
 		deleteBodyLink: "privacy policy",
 		deleteBodyAfter: ".",
-		failedBefore: (error: string) => `Your account could not be deleted here (${error}). `,
-		failedLink: "Email a deletion request",
-		failedAfter: " instead and it will be done within 30 days.",
+		failed: (error: string) => `Your account could not be deleted (${error}). Nothing was removed; please try again.`,
 		deleteButton: "Delete account…",
 		confirmTitle: "Delete your account?",
 		confirmBody:

@@ -9,8 +9,8 @@ export interface PluralForms {
 	other: string;
 }
 
-/** BCP 47 tag whose CLDR plural rules each language uses. */
-const LOCALE_TAGS: Record<Locale, string> = {
+/** BCP 47 tag whose CLDR plural and number rules each language uses. */
+export const LOCALE_TAGS: Record<Locale, string> = {
 	en: "en-GB",
 	pl: "pl-PL",
 	es: "es-ES",

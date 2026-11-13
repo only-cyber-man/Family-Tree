@@ -499,14 +499,10 @@ export const en = {
 		yourAccount: (email?: string) => `• your account${email ? ` (${email})` : ""}`,
 		everyTree: "• every tree you created, with all its people, photos and relationships",
 		consequences: "People you invited lose access to those trees. Trees others shared with you are not affected. There is no undo.",
-		notFully: (reason: string) => `Your account was not fully deleted. ${reason}`,
-		askUs: (email: string) => `You can try again, or ask us to delete it for you at ${email}.`,
-		emailRequest: "Email a deletion request",
+		failed: (reason: string) => `Your account was not deleted. ${reason} Nothing was removed; try again.`,
 		deleteMine: "Delete my account",
 		deleting: "Deleting…",
 		keep: "Keep my account",
-		mailSubject: "Delete my Family Tree account",
-		mailBody: (email?: string) => `Please delete my Family Tree account${email ? ` (${email})` : ""} and all trees I created.`,
 	},
 
 	pickMe: {

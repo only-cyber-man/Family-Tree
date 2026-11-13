@@ -4,7 +4,6 @@ import { errorMessage, isNetworkError } from "../lib/errors";
 import { loadAuth, onUnauthorized, pb } from "../lib/pb";
 import type { UserRecord } from "../lib/types";
 import { getT } from "../i18n";
-import { deleteOwnAccount } from "../lib/account";
 import { wipeAccountData } from "../services/account";
 import { useSettings } from "./settings";
 
@@ -76,7 +75,7 @@ export const useSession = create<SessionState>()((set, get) => ({
 	deleteAccount: async () => {
 		const user = get().user;
 		if (!user) throw new Error(getT().errors.notSignedIn);
-		await deleteOwnAccount(pb, user.id);
+		await api.deleteAccount(user.id);
 		pb.authStore.clear();
 		set({ user: null, expired: false });
 		await wipeAccountData();

@@ -507,14 +507,10 @@ export const pt: Dict = {
 		yourAccount: (email) => `• sua conta${email ? ` (${email})` : ""}`,
 		everyTree: "• todas as árvores que você criou, com todas as pessoas, fotos e relações",
 		consequences: "As pessoas que você convidou perdem o acesso a essas árvores. Árvores que outras pessoas compartilharam com você não são afetadas. Não há como desfazer.",
-		notFully: (reason) => `Sua conta não foi totalmente excluída. ${reason}`,
-		askUs: (email) => `Você pode tentar novamente ou nos pedir para excluí-la pelo e-mail ${email}.`,
-		emailRequest: "Enviar pedido de exclusão por e-mail",
+		failed: (reason) => `Sua conta não foi excluída. ${reason} Nada foi apagado; tente novamente.`,
 		deleteMine: "Excluir minha conta",
 		deleting: "Excluindo…",
 		keep: "Manter minha conta",
-		mailSubject: "Excluir minha conta do Family Tree",
-		mailBody: (email) => `Por favor, excluam minha conta do Family Tree${email ? ` (${email})` : ""} e todas as árvores que eu criei.`,
 	},
 
 	pickMe: {

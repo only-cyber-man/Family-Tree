@@ -501,14 +501,10 @@ export const es: Dict = {
 		yourAccount: (email) => `• tu cuenta${email ? ` (${email})` : ""}`,
 		everyTree: "• todos los árboles que creaste, con todas sus personas, fotos y relaciones",
 		consequences: "Las personas que invitaste pierden el acceso a esos árboles. Los árboles que otros compartieron contigo no se ven afectados. No se puede deshacer.",
-		notFully: (reason) => `Tu cuenta no se eliminó por completo. ${reason}`,
-		askUs: (email) => `Puedes intentarlo de nuevo o pedirnos que la eliminemos por ti en ${email}.`,
-		emailRequest: "Enviar una solicitud por correo",
+		failed: (reason) => `Tu cuenta no se eliminó. ${reason} No se ha borrado nada; inténtalo de nuevo.`,
 		deleteMine: "Eliminar mi cuenta",
 		deleting: "Eliminando…",
 		keep: "Conservar mi cuenta",
-		mailSubject: "Eliminar mi cuenta de Family Tree",
-		mailBody: (email) => `Por favor, eliminen mi cuenta de Family Tree${email ? ` (${email})` : ""} y todos los árboles que creé.`,
 	},
 
 	pickMe: {

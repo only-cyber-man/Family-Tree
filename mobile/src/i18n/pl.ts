@@ -498,14 +498,10 @@ export const pl: Dict = {
 		yourAccount: (email) => `• Twoje konto${email ? ` (${email})` : ""}`,
 		everyTree: "• każde utworzone przez Ciebie drzewo ze wszystkimi osobami, zdjęciami i relacjami",
 		consequences: "Zaproszone osoby stracą dostęp do tych drzew. Drzewa udostępnione Tobie przez innych pozostaną bez zmian. Tego nie można cofnąć.",
-		notFully: (reason) => `Konto nie zostało całkowicie usunięte. ${reason}`,
-		askUs: (email) => `Możesz spróbować ponownie albo poprosić nas o usunięcie konta: ${email}.`,
-		emailRequest: "Wyślij prośbę o usunięcie",
+		failed: (reason) => `Konto nie zostało usunięte. ${reason} Nic nie zostało usunięte; spróbuj ponownie.`,
 		deleteMine: "Usuń moje konto",
 		deleting: "Usuwanie…",
 		keep: "Zachowaj konto",
-		mailSubject: "Usuń moje konto Family Tree",
-		mailBody: (email) => `Proszę o usunięcie mojego konta Family Tree${email ? ` (${email})` : ""} i wszystkich utworzonych przeze mnie drzew.`,
 	},
 
 	pickMe: {

@@ -544,14 +544,10 @@ export const de: Dict = {
 		yourAccount: (email) => `• dein Konto${email ? ` (${email})` : ""}`,
 		everyTree: "• jeden Stammbaum, den du erstellt hast, mit allen Personen, Fotos und Beziehungen",
 		consequences: "Eingeladene verlieren den Zugriff auf diese Stammbäume. Stammbäume, die andere mit dir geteilt haben, sind nicht betroffen. Das lässt sich nicht rückgängig machen.",
-		notFully: (reason) => `Dein Konto wurde nicht vollständig gelöscht. ${reason}`,
-		askUs: (email) => `Du kannst es noch einmal versuchen oder uns unter ${email} bitten, es für dich zu löschen.`,
-		emailRequest: "Löschantrag per E-Mail senden",
+		failed: (reason) => `Dein Konto wurde nicht gelöscht. ${reason} Es wurde nichts entfernt; versuch es noch einmal.`,
 		deleteMine: "Mein Konto löschen",
 		deleting: "Wird gelöscht…",
 		keep: "Konto behalten",
-		mailSubject: "Mein Konto bei Family Tree löschen",
-		mailBody: (email) => `Bitte löschen Sie mein Konto bei Family Tree${email ? ` (${email})` : ""} und alle Stammbäume, die ich erstellt habe.`,
 	},
 
 	pickMe: {

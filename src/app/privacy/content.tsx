@@ -121,8 +121,7 @@ const PrivacyEn = () => (
 			</p>
 			<p>
 				Delete your account in the app (Settings → Delete account), on the
-				web on your <Link href="/account">account page</Link>, or by emailing{" "}
-				<Mail /> from the address on your account. See{" "}
+				web on your <Link href="/account">account page</Link>. See{" "}
 				<Link href="/delete-account">how to delete your account</Link>. Signing
 				out of the app removes everything it stored on your phone.
 			</p>
@@ -282,9 +281,8 @@ const PrivacyPl = () => (
 			</p>
 			<p>
 				Konto możesz usunąć w aplikacji (Ustawienia → Usuń konto), w
-				przeglądarce na <Link href="/account">stronie swojego konta</Link> lub
-				wysyłając wiadomość na adres <Mail /> z adresu e-mail przypisanego do
-				konta. Zobacz też,{" "}
+				przeglądarce na <Link href="/account">stronie swojego konta</Link>.
+				Zobacz też,{" "}
 				<Link href="/delete-account">jak usunąć konto</Link>. Wylogowanie z
 				aplikacji usuwa wszystko, co zapisała ona na telefonie.
 			</p>

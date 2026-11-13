@@ -52,6 +52,17 @@ export async function refreshAuth(): Promise<UserRecord> {
 	return res.record;
 }
 
+/**
+ * Deletes the signed-in account in one request (src/lib/account.ts on the web).
+ * The server allows it (ft_users delete rule `id = @request.auth.id`) and
+ * cascades in the same transaction: the trees it created, with their people
+ * and relationships. Shared trees just drop it from `invited`. On failure
+ * nothing is deleted.
+ */
+export async function deleteAccount(userId: string): Promise<void> {
+	await pb.collection("ft_users").delete(userId);
+}
+
 export function currentUser(): UserRecord | null {
 	return pb.authStore.isValid ? (pb.authStore.record as unknown as UserRecord | null) : null;
 }
