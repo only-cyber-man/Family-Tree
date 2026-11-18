@@ -11,10 +11,6 @@ import s from "./admin.module.css";
 export const metadata: Metadata = { title: "Admin", robots: { index: false, follow: false } };
 
 const str = (value: unknown) => (typeof value === "string" ? value : "");
-const num = (value: unknown) => {
-	const n = Number(value);
-	return Number.isFinite(n) ? n : 0;
-};
 
 const toTree = (r: RecordModel): AdminTreeRow => ({
 	id: r.id,
@@ -23,7 +19,6 @@ const toTree = (r: RecordModel): AdminTreeRow => ({
 	updated: str(r.updated),
 	creatorEmail: str(r.creatorEmail),
 	creatorUsername: str(r.creatorUsername),
-	invited: num(r.invited),
 });
 
 const toNode = (r: RecordModel): AdminNodeRow => ({

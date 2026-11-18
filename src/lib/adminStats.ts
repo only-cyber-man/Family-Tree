@@ -7,8 +7,7 @@
 // ft_admin_trees:
 //   SELECT t.id, t.name, t.created, t.updated,
 //     COALESCE(u.email, '') AS creatorEmail,
-//     COALESCE(u.username, '') AS creatorUsername,
-//     CASE WHEN json_valid(t.invited) THEN json_array_length(t.invited) ELSE 0 END AS invited
+//     COALESCE(u.username, '') AS creatorUsername
 //   FROM ft_trees t LEFT JOIN ft_users u ON u.id = t.creator
 //
 // ft_admin_nodes:
@@ -39,7 +38,6 @@ export interface AdminTreeRow {
 	updated: string;
 	creatorEmail: string;
 	creatorUsername: string;
-	invited: number;
 }
 
 export interface AdminNodeRow {
