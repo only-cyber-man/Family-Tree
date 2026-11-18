@@ -231,8 +231,8 @@ export const fr: Dict = {
 		mobileTitle: "L’arbre dans votre poche, pour les moments où vous en avez besoin.",
 		mobileBody:
 			"À un mariage, un visage vous échappe ? Cherchez un nom et voyez quel est votre lien. L’application garde aussi la liste des anniversaires et commémorations à venir, avec un rappel la veille, et vous permet d’ajouter un nouveau proche avec sa photo en quelques gestes.",
-		appStoreSmall: "Bientôt disponible sur",
-		playStoreSmall: "BIENTÔT SUR",
+		appStoreSmall: "Télécharger dans l’",
+		playStoreSmall: "DISPONIBLE SUR",
 		phoneUpcoming: "À venir",
 		phoneRows: [
 			{ t: "Maria fête ses 75 ans", m: "sam. 3 oct. · dans 8 jours" },

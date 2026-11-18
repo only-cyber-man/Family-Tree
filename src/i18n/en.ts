@@ -174,8 +174,8 @@ export const en = {
 		mobileTitle: "The tree in your pocket, for the moments you need it.",
 		mobileBody:
 			"At a wedding and can’t place a face? Search a name and see how you are related. The app also keeps an upcoming list of birthdays and remembrance days, with a reminder the day before, and lets you add a new relative with a photo in a few taps.",
-		appStoreSmall: "Coming soon to the",
-		playStoreSmall: "COMING SOON TO",
+		appStoreSmall: "Download on the",
+		playStoreSmall: "GET IT ON",
 		phoneUpcoming: "Upcoming",
 		phoneRows: [
 			{ t: "Maria turns 75", m: "Sat 3 Oct · in 8 days" },

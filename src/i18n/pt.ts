@@ -228,8 +228,8 @@ export const pt: Dict = {
 		mobileTitle: "A árvore no seu bolso, para as horas em que você precisa dela.",
 		mobileBody:
 			"Está em um casamento e não consegue lembrar de quem é aquele rosto? Busque um nome e veja qual é o parentesco. O app também mantém uma lista dos próximos aniversários e datas de falecimento, com um lembrete no dia anterior, e permite adicionar um novo parente com foto em poucos toques.",
-		appStoreSmall: "Em breve na",
-		playStoreSmall: "EM BREVE NO",
+		appStoreSmall: "Baixar na",
+		playStoreSmall: "DISPONÍVEL NO",
 		phoneUpcoming: "Próximas datas",
 		phoneRows: [
 			{ t: "Maria faz 75 anos", m: "sáb 3 de out · em 8 dias" },

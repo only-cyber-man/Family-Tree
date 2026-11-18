@@ -641,7 +641,17 @@
 	background: #1e2420;
 	color: #fffdf8;
 	min-width: 168px;
-	opacity: 0.9;
+	transition: background 0.15s ease;
+}
+
+.store:hover {
+	background: #2b332e;
+	color: #fffdf8;
+}
+
+.store:focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: 2px;
 }
 
 .storeText {

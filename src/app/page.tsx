@@ -27,6 +27,10 @@ const CALENDAR_DAYS = [
 
 const STATS = ["trees", "people", "relationships", "users"] as const;
 
+/** The released mobile app (bundle id pl.cyberman.familytree on both stores). */
+const APP_STORE_URL = "https://apps.apple.com/app/id6816243812";
+const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=pl.cyberman.familytree";
+
 /** The phone mock-up is always drawn in the light theme. */
 const PHONE_DOTS = [{ c: "#A5584C" }, { c: "#3F6E7A", o: 0.6 }, { c: "#A5584C" }];
 
@@ -247,7 +251,7 @@ export default async function Landing({
 					<h2 className={s.h2}>{l.mobileTitle}</h2>
 					<p className={s.body}>{l.mobileBody}</p>
 					<div className={s.stores}>
-						<span className={s.store}>
+						<a className={s.store} href={APP_STORE_URL}>
 							<svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
 								<path d="M16.4 12.6c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.1-2.8.9-3.5.9-.7 0-1.9-.8-3.1-.8C6.1 7.4 3.7 9.3 3.7 13c0 1.1.2 2.3.6 3.4.6 1.6 2.6 5.5 4.7 5.4 1.1 0 1.8-.8 3.2-.8s2 .8 3.2.8c2.1 0 3.9-3.5 4.5-5.1-2.8-1.3-3.5-3.9-3.5-4.1zM13.9 5.7c1-1.2 1-2.9.9-3.5-1.4.1-2.9.9-3.7 1.9-.8.9-1.3 2.1-1.1 3.4 1.5.1 2.9-.7 3.9-1.8z" />
 							</svg>
@@ -255,8 +259,8 @@ export default async function Landing({
 								<span className={s.storeSmall}>{l.appStoreSmall}</span>
 								<span className={s.storeBig}>App Store</span>
 							</span>
-						</span>
-						<span className={s.store}>
+						</a>
+						<a className={s.store} href={PLAY_STORE_URL}>
 							<svg width="26" height="26" viewBox="0 0 24 24" aria-hidden>
 								<path d="M4 3.5v17l9.5-8.5L4 3.5z" fill="#6FA3B0" />
 								<path d="M4 3.5l9.5 8.5 3-2.7L5.2 3.1c-.5-.3-.9-.1-1.2.4z" fill="#6FB08A" />
@@ -267,7 +271,7 @@ export default async function Landing({
 								<span className={s.storeSmall}>{l.playStoreSmall}</span>
 								<span className={s.storeBig}>Google Play</span>
 							</span>
-						</span>
+						</a>
 					</div>
 				</div>
 				<div className={`${s.splitArt} ${s.phones}`} aria-hidden>

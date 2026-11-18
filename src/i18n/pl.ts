@@ -232,8 +232,8 @@ export const pl: Dict = {
 		mobileTitle: "Drzewo w kieszeni, zawsze pod ręką.",
 		mobileBody:
 			"Jesteś na weselu i nie możesz skojarzyć twarzy? Wyszukaj imię i sprawdź, jak jesteście spokrewnieni. Aplikacja pokazuje też listę nadchodzących urodzin i rocznic śmierci z przypomnieniem dzień wcześniej, a nowego krewnego ze zdjęciem dodasz w kilku dotknięciach.",
-		appStoreSmall: "Już wkrótce w",
-		playStoreSmall: "JUŻ WKRÓTCE W",
+		appStoreSmall: "Pobierz z",
+		playStoreSmall: "POBIERZ Z",
 		phoneUpcoming: "Nadchodzące",
 		phoneRows: [
 			{ t: "Maria kończy 75 lat", m: "sob. 3 paź · za 8 dni" },

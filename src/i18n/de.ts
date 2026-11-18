@@ -225,8 +225,8 @@ export const de: Dict = {
 		mobileTitle: "Der Stammbaum in der Tasche, für die Momente, in denen du ihn brauchst.",
 		mobileBody:
 			"Auf einer Hochzeit und du kannst ein Gesicht nicht einordnen? Such den Namen und sieh, wie ihr verwandt seid. Die App führt außerdem eine Liste der nächsten Geburtstage und Gedenktage, erinnert dich am Vortag und lässt dich mit ein paar Tipps einen neuen Verwandten samt Foto hinzufügen.",
-		appStoreSmall: "Demnächst im",
-		playStoreSmall: "DEMNÄCHST BEI",
+		appStoreSmall: "Laden im",
+		playStoreSmall: "JETZT BEI",
 		phoneUpcoming: "Demnächst",
 		phoneRows: [
 			{ t: "Maria wird 75", m: "Sa., 3. Okt. · in 8 Tagen" },

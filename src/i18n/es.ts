@@ -227,8 +227,8 @@ export const es: Dict = {
 		mobileTitle: "El árbol en tu bolsillo, para los momentos en que lo necesitas.",
 		mobileBody:
 			"¿Estás en una boda y no ubicas una cara? Busca un nombre y mira qué parentesco tiene contigo. La app también lleva una lista de próximos cumpleaños y aniversarios, con un recordatorio el día anterior, y te deja añadir a un nuevo familiar con foto en unos pocos toques.",
-		appStoreSmall: "Próximamente en el",
-		playStoreSmall: "PRÓXIMAMENTE EN",
+		appStoreSmall: "Descárgalo en el",
+		playStoreSmall: "DISPONIBLE EN",
 		phoneUpcoming: "Próximas fechas",
 		phoneRows: [
 			{ t: "Maria cumple 75 años", m: "sáb 3 oct · en 8 días" },

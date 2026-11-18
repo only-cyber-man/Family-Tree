@@ -226,8 +226,8 @@ export const af: Dict = {
 		mobileTitle: "Die stamboom in jou sak, vir die oomblikke wanneer jy dit nodig het.",
 		mobileBody:
 			"By 'n troue en kan jy nie 'n gesig plaas nie? Soek 'n naam en sien hoe julle verwant is. Die app hou ook 'n lys van komende verjaarsdae en herdenkingsdae, met 'n herinnering die dag vantevore, en laat jou 'n nuwe familielid met 'n foto in 'n paar tikke byvoeg.",
-		appStoreSmall: "Binnekort op die",
-		playStoreSmall: "BINNEKORT OP",
+		appStoreSmall: "Laai af op die",
+		playStoreSmall: "KRY DIT OP",
 		phoneUpcoming: "Binnekort",
 		phoneRows: [
 			{ t: "Maria word 75", m: "Sa. 3 Okt. · oor 8 dae" },
